@@ -1,6 +1,9 @@
 # RemoteExplorer
 Remote Explorer C++
 
+## 목적
+- 프로그램의 **설계**부터 **구현**까지 전 과정을 작업해보는것
+
 ## 종류
 ### 1. 윈도우 기본
 #### 기능
@@ -40,8 +43,7 @@ Remote Explorer C++
 - 파일 비교
 - 파일 검색
 
-
-## Todo
+### To do list Remote Explorer By tdm1223
 - [ ] 원격 접속 (ip + port)
 - [ ] 정렬 기능(각 항목별)
 - [ ] 파일 추가
@@ -49,3 +51,15 @@ Remote Explorer C++
 - [ ] 파일 업로드
 - [ ] 파일 다운로드
 
+## 1차 설계
+### Client
+- Recv thread
+- Recv queue
+- Send thread
+- Send queue
+- 동시전송은 하지 않는다.
+
+### Server
+- Event Select 모델을 활용한다.
+
+### 클래스 다이어그램 (주요 함수 위주로 작성 해보기)
