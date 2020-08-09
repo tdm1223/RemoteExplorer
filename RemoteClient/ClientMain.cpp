@@ -1,114 +1,71 @@
-﻿#include<winsock2.h>
-#include<stdlib.h>
-#include<stdio.h>
+﻿#include<stdio.h>
+#include<WinSock2.h>
 
-#define BUFSIZE 4096
+#define BUFSIZE 1024
 
 #pragma warning(disable:4996)
-#pragma warning(disable:6319)
-
 #pragma comment(lib, "Ws2_32.lib")
 
 int main()
 {
-    // 윈속 초기화
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    WSADATA wsa;
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
         return -1;
     }
 
-    // 소켓 생성
-    SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientSocket == INVALID_SOCKET)
-    {
-        return -1;
-    }
+    // 클라이언트 소켓 초기화
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    // 소켓 연결
-    SOCKADDR_IN serverAddress;
-    ZeroMemory(&serverAddress, sizeof(serverAddress));
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(9000);
-    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    int retval = connect(clientSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
-    if (retval == SOCKET_ERROR)
-    {
-        return -1;
-    }
+    // 서버에 연결
+    SOCKADDR_IN serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(9000);
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
+    // 보낼 파일 설정
+    char sendFileName[256] = "test.txt";
+
+    connect(sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+    printf("서버에 접속 성공 : IP = %s, Port = %d\n", inet_ntoa(serverAddr.sin_addr), ntohs(serverAddr.sin_port));
+
+    // 파일 열고 파일명 보내기
+    FILE* fp = fopen(sendFileName, "rb");
+    char fileName[256];
+    ZeroMemory(fileName, 256);
+    sprintf(fileName, sendFileName);
+    send(sock, fileName, 256, 0);
+    printf("보내는 파일의 이름 : %s\n", fileName);
+
+    // 파일 크기 얻고 보내기
+    fseek(fp, 0, SEEK_END);
+    int totalbytes = ftell(fp);
+    send(sock, (char*)&totalbytes, sizeof(totalbytes), 0);
+    rewind(fp); // 파일 크기 얻고 파일 포인터를 제일 앞으로 이동시켜줌
+
+    // 파일 보내기
+    char buf[BUFSIZE];
+    int numRead;
+    int total = 0;
     while (1)
     {
-        int k;
-        scanf("%d", &k);
-        if (k == 1)
+        numRead = fread(buf, 1, BUFSIZE, fp);
+        if (numRead > 0)
         {
-            // 파일 열기
-            char sendFile[256] = "test.txt";
-            FILE* fp = fopen(sendFile, "rb");
-            if (fp == NULL) {
-                perror("파일 입출력 오류");
-                return -1;
-            }
-
-            // 파일 이름 보내기
-            char filename[256];
-            ZeroMemory(filename, 256);
-            sprintf(filename, sendFile);
-            retval = send(clientSocket, filename, 256, 0);
-            if (retval == SOCKET_ERROR)
-            {
-                return -1;
-            }
-
-            // 파일 크기 얻기
-            fseek(fp, 0, SEEK_END);
-            int totalbytes = ftell(fp);
-
-            // 파일 크기 보내기
-            retval = send(clientSocket, (char*)&totalbytes, sizeof(totalbytes), 0);
-            if (retval == SOCKET_ERROR)
-            {
-                return -1;
-            }
-
-            // 파일 데이터 전송에 사용할 변수
-            char buf[BUFSIZE];
-            int numread;
-            int numtotal = 0;
-
-            // 파일 데이터 보내기
-            rewind(fp); // 파일 포인터를 제일 앞으로 이동
-            while (1) {
-                numread = fread(buf, 1, BUFSIZE, fp);
-                if (numread > 0) {
-                    retval = send(clientSocket, buf, numread, 0);
-                    if (retval == SOCKET_ERROR) {
-                        return -1;
-                        break;
-                    }
-                    numtotal += numread;
-                }
-                else if (numread == 0 && numtotal == totalbytes) {
-                    printf("파일 전송 완료!: %d 바이트\n", numtotal);
-                    break;
-                }
-                else {
-                    perror("파일 입출력 오류");
-                    break;
-                }
-            }
-            fclose(fp);
+            send(sock, buf, numRead, 0);
+            total += numRead;
         }
-        else
+        else if (numRead == 0 && total == totalbytes)
         {
-            // 연결 종료
-            closesocket(clientSocket);
+            printf("총 %d 바이트 파일 전송을 완료했습니다.\n", total);
             break;
         }
     }
+    fclose(fp);
 
-    // 윈속 종료
+    closesocket(sock);
+    printf("접속 종료 : IP = %s, Port = %d\n", inet_ntoa(serverAddr.sin_addr), ntohs(serverAddr.sin_port));
     WSACleanup();
     return 0;
 }
