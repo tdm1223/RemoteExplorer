@@ -102,6 +102,12 @@ int main()
                         break;
                     }
                     strLen = recv(socketArray[signaledEventIdx], msg, sizeof(msg), 0);
+                    
+                    // 파일 이름 받기
+                    char fileName[256];
+                    sprintf(fileName, msg);
+                    printf("-> 받을 파일 이름:%s\n", msg);
+
                     send(socketArray[signaledEventIdx], msg, strLen, 0);
                 }
 

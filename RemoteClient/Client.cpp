@@ -72,9 +72,20 @@ unsigned WINAPI Proc(void *arg)
             closesocket(sock);
             break;
         }
-        send(sock, message, strlen(message), 0);
+
+        // 보낼 파일 설정
+        char sendFileName[256] = "test.txt";
+
+        // 파일 열고 파일명 보내기
+        //FILE* fp = fopen(sendFileName, "rb");
+        char fileName[256];
+        ZeroMemory(fileName, 256);
+        sprintf(fileName, sendFileName);
+        send(sock, fileName, strlen(fileName), 0);
+        printf("보내는 파일의 이름 : %s\n", fileName);
+
         int strLen = recv(sock, message, BUF_SIZE - 1, 0);
         message[strLen] = 0;
-        printf("Message from server: %s", message);
+        printf("Message from server: %s\n", message);
     }
 }
