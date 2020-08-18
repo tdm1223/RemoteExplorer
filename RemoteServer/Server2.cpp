@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #define SERVERPORT 9000
-#define BUFSIZE    1024
+#define BUFSIZE    4096
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char*);

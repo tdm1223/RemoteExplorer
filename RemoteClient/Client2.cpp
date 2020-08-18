@@ -6,13 +6,7 @@
 
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000
-#define BUFSIZE    1024
-
-// 소켓 함수 오류 출력 후 종료
-void err_quit(char*);
-
-// 소켓 함수 오류 출력
-void err_display(char*);
+#define BUFSIZE    4096
 
 // 사용자 정의 데이터 수신 함수
 int recvn(SOCKET, char*, int, int);
@@ -41,7 +35,11 @@ int main()
     } while (files.name == NULL);
 
     fp = fopen(files.name, "rb");
-    if (fp == NULL) { printf("FILE Pointer ERROR"); exit(1); };
+    if (fp == NULL)
+    {
+        printf("FILE Pointer ERROR");
+        exit(1);
+    };
 
     //파일 끝으로 위치 옮김
     fseek(fp, 0L, SEEK_END);
@@ -58,11 +56,16 @@ int main()
     // 윈속 초기화
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
         return 1;
+    }
 
     // socket()
     SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == INVALID_SOCKET) err_quit("socket()");
+    if (sock == INVALID_SOCKET)
+    {
+        exit(1);
+    }
 
     // connect()
     SOCKADDR_IN serveraddr; //서버와 통신용 소켓
@@ -71,7 +74,10 @@ int main()
     serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
     serveraddr.sin_port = htons(SERVERPORT);
     retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit("connect()");
+    if (retval == SOCKET_ERROR)
+    {
+        exit(1);
+    }
 
     // 데이터 통신에 사용할 변수
     char buf[BUFSIZE]; //보낼 데이터를 저장할 공간
@@ -80,7 +86,6 @@ int main()
     retval = send(sock, (char*)&files, sizeof(files), 0);
     if (retval == SOCKET_ERROR)
     {
-        err_display("send()");
         exit(1);
     }
 
@@ -96,12 +101,13 @@ int main()
 
         //전송
         retval = send(sock, buf, BUFSIZE, 0);
-        if (retval == SOCKET_ERROR) {
-            err_display("send()");
+        if (retval == SOCKET_ERROR)
+        {
             exit(1);
         }
 
         printf("\n진행도 : %d %%", (per - count) * 100 / per);
+        Sleep(500);
         count--;
     }
 
@@ -110,8 +116,8 @@ int main()
     fread(buf, 1, count, fp);
 
     retval = send(sock, buf, BUFSIZE, 0);
-    if (retval == SOCKET_ERROR) {
-        err_display("send()");
+    if (retval == SOCKET_ERROR)
+    {
         exit(1);
     }
 
@@ -130,32 +136,6 @@ int main()
     fclose(fp);
 
 }
-
-void err_display(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    printf("[%s] %s", msg, (char*)lpMsgBuf);
-    LocalFree(lpMsgBuf);
-}
-
-void err_quit(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    LocalFree(lpMsgBuf);
-    exit(1);
-}
-
-
 
 int recvn(SOCKET s, char* buf, int len, int flags)
 {
