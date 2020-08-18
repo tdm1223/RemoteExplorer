@@ -6,7 +6,7 @@
 
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000
-#define BUFSIZE    4096
+#define BUFSIZE    8192
 
 // 사용자 정의 데이터 수신 함수
 int recvn(SOCKET, char*, int, int);
@@ -107,7 +107,7 @@ int main()
         }
 
         printf("\n진행도 : %d %%", (per - count) * 100 / per);
-        Sleep(500);
+        Sleep(100);
         count--;
     }
 
@@ -135,6 +135,7 @@ int main()
     //파일포인터 닫기
     fclose(fp);
 
+    return 0;
 }
 
 int recvn(SOCKET s, char* buf, int len, int flags)

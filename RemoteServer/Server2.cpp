@@ -5,28 +5,20 @@
 #include <stdio.h>
 
 #define SERVERPORT 9000
-#define BUFSIZE    4096
-
-// 소켓 함수 오류 출력 후 종료
-void err_quit(char*);
-
-// 소켓 함수 오류 출력
-void err_display(char*);
+#define BUFSIZE    8192
 
 // 사용자 정의 데이터 수신 함수
 int recvn(SOCKET, char*, int, int);
 
 //파일 기본 정보
-typedef struct Files {
-
+struct Files 
+{
     char name[255];
     unsigned int byte;
-
-}Files;
+};
 
 int main()
 {
-
     //send, recv 함수 출력값 저장용
     int retval;
 
@@ -40,7 +32,10 @@ int main()
 
     // socket()
     SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_sock == INVALID_SOCKET) err_quit("socket()");
+    if (listen_sock == INVALID_SOCKET)
+    {
+        exit(1);
+    }
 
     // bind()
     SOCKADDR_IN serveraddr;
@@ -49,13 +44,17 @@ int main()
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serveraddr.sin_port = htons(SERVERPORT);
     retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit("bind()");
+    if (retval == SOCKET_ERROR)
+    {
+        exit(1);
+    }
 
     // listen()
     retval = listen(listen_sock, SOMAXCONN);
-    if (retval == SOCKET_ERROR) err_quit("listen()");
-
-    //서버 대기 상태 완료--------------------------------------------------------
+    if (retval == SOCKET_ERROR)
+    {
+        exit(1);
+    }
 
     // 데이터 통신에 사용할 변수
     SOCKET client_sock;  //클라이언트 저장 소켓
@@ -68,8 +67,8 @@ int main()
         // accept()
         addrlen = sizeof(clientaddr);
         client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
-        if (client_sock == INVALID_SOCKET) {
-            err_display("accept()");
+        if (client_sock == INVALID_SOCKET) 
+        {
             break;
         }
 
@@ -82,8 +81,8 @@ int main()
         Files files;
 
         retval = recvn(client_sock, (char*)&files, sizeof(files), 0);
-        if (retval == SOCKET_ERROR) {
-            err_display("recv()");
+        if (retval == SOCKET_ERROR) 
+        {
             exit(1);
         }
 
@@ -112,7 +111,6 @@ int main()
             retval = recvn(client_sock, buf, BUFSIZE, 0);
             printf("retval : %d\n", retval);
             if (retval == SOCKET_ERROR) {
-                err_display("recv()");
                 exit(1);
             }
 
@@ -127,7 +125,6 @@ int main()
 
         retval = recvn(client_sock, buf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
-            err_display("recv()");
             exit(1);
         }
 
@@ -143,31 +140,8 @@ int main()
 
     // 윈속 종료
     WSACleanup();
-}
 
-void err_display(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    printf("[%s] %s", msg, (char*)lpMsgBuf);
-    LocalFree(lpMsgBuf);
-}
-
-void err_quit(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    //MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
-    LocalFree(lpMsgBuf);
-    exit(1);
+    return 0;
 }
 
 int recvn(SOCKET s, char* buf, int len, int flags)
