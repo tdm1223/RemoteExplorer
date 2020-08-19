@@ -2,20 +2,14 @@
 //#include<string.h>
 //#include<winsock2.h>
 //
-//#define BUF_SIZE 1024
+//#define BUF_SIZE 8192
 //#pragma comment(lib,"ws2_32")
 //
 //void ErrorHandling(char* msg);
 //int recvn(SOCKET, char*, int, int);
 //
-//// 소켓 함수 오류 출력 후 종료
-//void err_quit(char*);
-//
-//// 소켓 함수 오류 출력
-//void err_display(char*);
-//
 ////파일 기본 정보
-//struct Files{
+//struct Files {
 //    char name[255];
 //    unsigned int byte;
 //};
@@ -120,7 +114,6 @@
 //                        puts("Read Error");
 //                        break;
 //                    }
-//                    printf("%d 클라로부터 정보 받음\n", signaledEventIdx);
 //
 //                    //클라이언트로 부터 파일 기본 정보 받기
 //                    FILE* fp = NULL;
@@ -128,7 +121,6 @@
 //
 //                    retval = recvn(socketArray[signaledEventIdx], (char*)&files, sizeof(files), 0);
 //                    if (retval == SOCKET_ERROR) {
-//                        err_display("recv()");
 //                        exit(1);
 //                    }
 //                    //기존 파일 여부 확인
@@ -142,7 +134,7 @@
 //                        break;
 //                    }
 //
-//                    printf("파일을 전송받습니다.\n");
+//                    printf("%d 클라로부터 파일을 전송받습니다.\n", signaledEventIdx);
 //                    printf("전송받는 파일 : %s, 전송받는 파일 크기 : %d Byte\n", files.name, files.byte);
 //                    printf("\n클라이언트로 부터 파일을 전송 받는 중 입니다.\n");
 //
@@ -157,9 +149,8 @@
 //                        retval = recvn(socketArray[signaledEventIdx], msg, BUF_SIZE, 0);
 //                        printf("retval : %d", retval);
 //                        while (1);
-//                        if (retval == SOCKET_ERROR) {
-//                            err_display("recv()");
-//                            while (1);
+//                        if (retval == SOCKET_ERROR)
+//                        {
 //                            exit(1);
 //                        }
 //
@@ -168,12 +159,11 @@
 //                        count--;
 //                    }
 //
-//
 //                    //남은 파일 크기만큼 나머지 받기
 //                    count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
 //                    retval = recvn(socketArray[signaledEventIdx], msg, BUF_SIZE, 0);
-//                    if (retval == SOCKET_ERROR) {
-//                        err_display("recv()");
+//                    if (retval == SOCKET_ERROR)
+//                    {
 //                        exit(1);
 //                    }
 //
@@ -193,7 +183,7 @@
 //                    }
 //                    WSACloseEvent(eventArray[signaledEventIdx]);
 //                    closesocket(socketArray[signaledEventIdx]);
-//                    printf("종료 된 소켓의 핸들 %d\n", socketArray[signaledEventIdx]);
+//                    printf("%d 클라 연결 종료\n", signaledEventIdx);
 //                    numOfClientSock--;
 //                    for (int i = signaledEventIdx; i < numOfClientSock; i++)
 //                    {
@@ -222,11 +212,13 @@
 //    char* ptr = buf;
 //    int left = len;
 //
-//    while (left > 0) {
+//    while (left > 0)
+//    {
 //        received = recv(sock, ptr, left, flags);
 //        printf("received : %d\n", received);
 //        if (received == SOCKET_ERROR)
 //        {
+//            printf("에러\n");
 //            return SOCKET_ERROR;
 //        }
 //        else if (received == 0)
@@ -238,31 +230,4 @@
 //    }
 //    closesocket(sock);
 //    return (len - left);
-//}
-//
-//void err_display(char* msg)
-//{
-//    LPVOID lpMsgBuf;
-//    FormatMessage(
-//        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-//        NULL, WSAGetLastError(),
-//        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//        (LPTSTR)&lpMsgBuf, 0, NULL);
-//    printf("[%s] %s", msg, (char*)lpMsgBuf);
-//    LocalFree(lpMsgBuf);
-//}
-//
-//
-//
-//void err_quit(char* msg)
-//{
-//    LPVOID lpMsgBuf;
-//    FormatMessage(
-//        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-//        NULL, WSAGetLastError(),
-//        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//        (LPTSTR)&lpMsgBuf, 0, NULL);
-//    //MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
-//    LocalFree(lpMsgBuf);
-//    exit(1);
 //}
