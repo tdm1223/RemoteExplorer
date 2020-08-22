@@ -1,58 +1,76 @@
-#include<stdio.h>
+ï»¿#include<stdio.h>
 #include<string.h>
 #include<winsock2.h>
 
 #pragma comment(lib,"ws2_32")
 
-#define PORT_NUM      10200
-#define BLOG_SIZE       5
+#define PORT_NUM 10200
+#define ServerSize 1024
 #define MAX_MSG_LEN 256
 
-SOCKET SetTCPServer(short pnum, int blog);//´ë±â ¼ÒÄÏ ¼³Á¤
-void EventLoop(SOCKET sock);//Event Ã³¸® Loop
+SOCKET  sock_base[FD_SETSIZE];
+HANDLE hev_base[FD_SETSIZE];
+int numOfClient;
+
+// ëŒ€ê¸° ì†Œì¼“ ì„¤ì •
+SOCKET SetServer(short pnum, int blog);
+
+// Event ì²˜ë¦¬ Loop
+void EventLoop(SOCKET sock);
 
 int main()
 {
     WSADATA wsadata;
-    WSAStartup(MAKEWORD(2, 2), &wsadata);//À©¼Ó ÃÊ±âÈ­           
-    SOCKET sock = SetTCPServer(PORT_NUM, BLOG_SIZE);//´ë±â ¼ÒÄÏ ¼³Á¤
-    if (sock == -1) { perror("´ë±â ¼ÒÄÏ ¿À·ù"); }
-    else { EventLoop(sock); }
-    WSACleanup();//À©¼Ó ÇØÁ¦È­
+    WSAStartup(MAKEWORD(2, 2), &wsadata);//ìœˆì† ì´ˆê¸°í™”           
+    SOCKET sock = SetServer(PORT_NUM, ServerSize);//ëŒ€ê¸° ì†Œì¼“ ì„¤ì •
+    if (sock == -1)
+    {
+        perror("ëŒ€ê¸° ì†Œì¼“ ì˜¤ë¥˜");
+    }
+    else
+    {
+        EventLoop(sock);
+    }
+    WSACleanup();//ìœˆì† í•´ì œí™”
     return 0;
 }
 
-SOCKET SetTCPServer(short pnum, int blog)
+SOCKET SetServer(short pnum, int blog)
 {
     SOCKET sock;
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);//¼ÒÄÏ »ı¼º
-    if (sock == -1) { return -1; }
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);//ì†Œì¼“ ìƒì„±
+    if (sock == -1)
+    {
+        return -1;
+    }
 
-    SOCKADDR_IN servaddr = { 0 };//¼ÒÄÏ ÁÖ¼Ò
+    SOCKADDR_IN servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT_NUM);
 
     int re = 0;
-    re = bind(sock, (struct sockaddr*)&servaddr, sizeof(servaddr));//¼ÒÄÏ ÁÖ¼Ò¿Í ³×Æ®¿öÅ© ÀÎÅÍÆäÀÌ½º °áÇÕ
-    if (re == -1) { return -1; }
+    // ì†Œì¼“ ì£¼ì†Œì™€ ë„¤íŠ¸ì›Œí¬ ì¸í„°í˜ì´ìŠ¤ ê²°í•©
+    if (bind(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
+    {
+        return -1;
+    }
 
-    re = listen(sock, blog);//¹é ·Î±× Å¥ ¼³Á¤
-    if (re == -1) { return -1; }
+    //ë°± ë¡œê·¸ í ì„¤ì •
+    if (listen(sock, blog) == -1)
+    {
+        return -1;
+    }
     return sock;
 }
-
-SOCKET  sock_base[FD_SETSIZE];
-HANDLE hev_base[FD_SETSIZE];
-int cnt;
 
 HANDLE AddNetworkEvent(SOCKET sock, long net_event)
 {
     HANDLE hev = WSACreateEvent();
 
-    sock_base[cnt] = sock;
-    hev_base[cnt] = hev;
-    cnt++;
+    sock_base[numOfClient] = sock;
+    hev_base[numOfClient] = hev;
+    numOfClient++;
 
     WSAEventSelect(sock, hev, net_event);
     return hev;
@@ -67,17 +85,23 @@ void EventLoop(SOCKET sock)
     AddNetworkEvent(sock, FD_ACCEPT);
     while (true)
     {
-        int index = WSAWaitForMultipleEvents(cnt, hev_base, false, INFINITE, false);
+        int index = WSAWaitForMultipleEvents(numOfClient, hev_base, false, INFINITE, false);
         WSANETWORKEVENTS net_events;
         WSAEnumNetworkEvents(sock_base[index], hev_base[index], &net_events);
         switch (net_events.lNetworkEvents)
         {
-        case FD_ACCEPT: AcceptProc(index); break;
-        case FD_READ: ReadProc(index); break;
-        case FD_CLOSE: CloseProc(index); break;
+        case FD_ACCEPT:
+            AcceptProc(index);
+            break;
+        case FD_READ:
+            ReadProc(index);
+            break;
+        case FD_CLOSE:
+            CloseProc(index);
+            break;
         }
     }
-    closesocket(sock);//¼ÒÄÏ ´İ±â
+    closesocket(sock);
 }
 
 void AcceptProc(int index)
@@ -86,16 +110,15 @@ void AcceptProc(int index)
     int len = sizeof(cliaddr);
     SOCKET dosock = accept(sock_base[0], (SOCKADDR*)&cliaddr, &len);
 
-    if (cnt == FD_SETSIZE)
+    if (numOfClient == FD_SETSIZE)
     {
-        printf("Ã¤ÆÃ ¹æ¿¡ ²Ë Â÷¼­ %s:%d ÀÔÀåÇÏÁö ¸øÇÏ¿´À½!\n",
-            inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+        printf("ì±„íŒ… ë°©ì— ê½‰ ì°¨ì„œ %s:%d ì…ì¥í•˜ì§€ ëª»í•˜ì˜€ìŒ!\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
         closesocket(dosock);
         return;
     }
 
     AddNetworkEvent(dosock, FD_READ | FD_CLOSE);
-    printf("%s:%d ÀÔÀå\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    printf("%s:%d ì…ì¥\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 }
 
 void ReadProc(int index)
@@ -110,7 +133,8 @@ void ReadProc(int index)
     char smsg[MAX_MSG_LEN];
     sprintf(smsg, "[%s:%d]:%s", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port), msg);
 
-    for (int i = 1; i < cnt; i++)
+    // ì±„íŒ…
+    for (int i = 1; i < numOfClient; i++)
     {
         send(sock_base[i], smsg, MAX_MSG_LEN, 0);
     }
@@ -121,18 +145,18 @@ void CloseProc(int index)
     SOCKADDR_IN cliaddr = { 0 };
     int len = sizeof(cliaddr);
     getpeername(sock_base[index], (SOCKADDR*)&cliaddr, &len);
-    printf("[%s:%d]  ´Ô ³ª°¨~\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    printf("[%s:%d] ë‚˜ê°\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 
     closesocket(sock_base[index]);
     WSACloseEvent(hev_base[index]);
 
-    cnt--;
-    sock_base[index] = sock_base[cnt];
-    hev_base[index] = hev_base[cnt];
+    numOfClient--;
+    sock_base[index] = sock_base[numOfClient];
+    hev_base[index] = hev_base[numOfClient];
 
     char msg[MAX_MSG_LEN];
-    sprintf(msg, "[%s:%d]´Ô ³ª°¨~\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
-    for (int i = 1; i < cnt; i++)
+    sprintf(msg, "[%s:%d] ë‚˜ê°\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    for (int i = 1; i < numOfClient; i++)
     {
         send(sock_base[i], msg, MAX_MSG_LEN, 0);
     }

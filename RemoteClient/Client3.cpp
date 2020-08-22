@@ -1,51 +1,59 @@
-#pragma comment(lib, "ws2_32")
+ï»¿#pragma comment(lib, "ws2_32")
 #include <winsock2.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <thread>
 
-#define PORT_NUM      10200
+#define PORT_NUM 10200
 #define MAX_MSG_LEN 256
-#define SERVER_IP        "127.0.0.1"
+#define SERVER_IP "127.0.0.1"
 
-void RecvThreadPoint(void* param);
+void ReceiveFunc(void* param);
 
 int main()
 {
     WSADATA wsadata;
-    WSAStartup(MAKEWORD(2, 2), &wsadata);//À©¼Ó ÃÊ±âÈ­           
+    WSAStartup(MAKEWORD(2, 2), &wsadata);//ìœˆì† ì´ˆê¸°í™”
 
+    // ì„œë²„ì™€ í†µì‹ ìš© ì†Œì¼“ ìƒì„±
     SOCKET sock;
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);//¼ÒÄÏ »ı¼º
-    if (sock == -1) { return -1; }
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock == -1)
+    {
+        return -1;
+    }
 
-    SOCKADDR_IN servaddr = { 0 };//¼ÒÄÏ ÁÖ¼Ò
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    servaddr.sin_port = htons(PORT_NUM);
+    SOCKADDR_IN serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
+    serverAddress.sin_port = htons(PORT_NUM);
 
-    int re = 0;
-    re = connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr));//¿¬°á ¿äÃ»
-    if (re == -1) { return -1; }
-    _beginthread(RecvThreadPoint, 0, (void*)sock);
+    // ì—°ê²° ìš”ì²­
+    if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
+    {
+        return -1;
+    }
+
+    _beginthread(ReceiveFunc, 0, (void*)sock);
     char msg[MAX_MSG_LEN] = "";
     while (true)
     {
         gets_s(msg, MAX_MSG_LEN);
-        send(sock, msg, sizeof(msg), 0);//¼Û½Å
+        // ì†¡ì‹ 
+        send(sock, msg, sizeof(msg), 0);
         if (strcmp(msg, "exit") == 0)
         {
             break;
         }
     }
-    closesocket(sock);//¼ÒÄÏ ´İ±â   
+    closesocket(sock); // ì†Œì¼“ ë‹«ê¸°
 
-    WSACleanup();//À©¼Ó ÇØÁ¦È­
+    WSACleanup(); // ìœˆì† í•´ì œí™”
     return 0;
 }
 
-void RecvThreadPoint(void* param)
+void ReceiveFunc(void* param)
 {
     SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN];
