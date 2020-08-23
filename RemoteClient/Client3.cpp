@@ -9,7 +9,8 @@
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
 
-void ReceiveFunc(void* param);
+unsigned ReceiveFunc(void* param);
+unsigned SendProc(void* param);
 
 int main()
 {
@@ -35,7 +36,19 @@ int main()
         return -1;
     }
 
-    _beginthread(ReceiveFunc, 0, (void*)sock);
+    unsigned sendThreadId, receiceThreadId;
+    HANDLE sendThread = (HANDLE)_beginthreadex(NULL, 0, SendProc, (void*)sock, 0, &sendThreadId);
+    HANDLE receiveThread = (HANDLE)_beginthreadex(NULL, 0, ReceiveProc, (void*)sock, 0, &receiceThreadId);
+    DWORD retval = WaitForSingleObject(sendThread, INFINITE);
+    CloseHandle(sendThread);
+    CloseHandle(receiveThread);
+    WSACleanup(); // 윈속 해제화
+    return 0;
+}
+
+unsigned SendProc(void* param)
+{
+    SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN] = "";
     while (true)
     {
@@ -44,16 +57,13 @@ int main()
         send(sock, msg, sizeof(msg), 0);
         if (strcmp(msg, "exit") == 0)
         {
-            break;
+            closesocket(sock); // 소켓 닫기
+            return 0;
         }
     }
-    closesocket(sock); // 소켓 닫기
-
-    WSACleanup(); // 윈속 해제화
-    return 0;
 }
 
-void ReceiveFunc(void* param)
+unsigned ReceiveProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN];
@@ -64,4 +74,5 @@ void ReceiveFunc(void* param)
         printf("%s\n", msg);
     }
     closesocket(sock);
+    return 0;
 }
