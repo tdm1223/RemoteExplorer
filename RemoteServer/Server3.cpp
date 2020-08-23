@@ -16,10 +16,10 @@ int numOfClient;
 // 대기 소켓 설정
 SOCKET SetServer(short pnum, int blog);
 
-// Event 처리 Loop
 void EventLoop(SOCKET sock);
 
-HANDLE AddNetworkEvent(SOCKET sock, long net_event);
+// 클라리언트 소켓 등록하는 함수
+void AddEvent(SOCKET sock, long net_event);
 
 void AcceptProc(int index);
 void ReadProc(int index);
@@ -42,15 +42,15 @@ int main()
     return 0;
 }
 
-SOCKET SetServer(short pnum, int blog)
+SOCKET SetServer(short pnum, int size)
 {
-    SOCKET sock;
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == -1)
     {
         return -1;
     }
 
+    // 서버 정보 설정
     SOCKADDR_IN servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -63,7 +63,7 @@ SOCKET SetServer(short pnum, int blog)
     }
 
     //백 로그 큐 설정
-    if (listen(sock, blog) == -1)
+    if (listen(sock, size) == -1)
     {
         return -1;
     }
@@ -72,11 +72,10 @@ SOCKET SetServer(short pnum, int blog)
 
 void EventLoop(SOCKET sock)
 {
-    AddNetworkEvent(sock, FD_ACCEPT | FD_CLOSE);
+    AddEvent(sock, FD_ACCEPT | FD_CLOSE);
     while (true)
     {
-        // 이벤트 기다리기
-        // 가장 처음 발생한 index를 반환
+        // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
         int index = WSAWaitForMultipleEvents(numOfClient, eventArray, false, INFINITE, false);
         WSANETWORKEVENTS net_events;
 
@@ -98,32 +97,29 @@ void EventLoop(SOCKET sock)
     closesocket(sock);
 }
 
-HANDLE AddNetworkEvent(SOCKET sock, long net_event)
+void AddEvent(SOCKET sock, long eventType)
 {
     HANDLE wsaEvent = WSACreateEvent();
-
     socketArray[numOfClient] = sock;
     eventArray[numOfClient] = wsaEvent;
     numOfClient++;
-
-    WSAEventSelect(sock, wsaEvent, net_event);
-    return wsaEvent;
+    WSAEventSelect(sock, wsaEvent, eventType);
 }
 
 void AcceptProc(int index)
 {
-    SOCKADDR_IN cliaddr = { 0 };
-    int len = sizeof(cliaddr);
-    SOCKET dosock = accept(socketArray[0], (SOCKADDR*)&cliaddr, &len);
+    SOCKADDR_IN clientAddress = { 0 };
+    int len = sizeof(clientAddress);
+    SOCKET sock = accept(socketArray[0], (SOCKADDR*)&clientAddress, &len);
 
     if (numOfClient == FD_SETSIZE)
     {
-        closesocket(dosock);
+        closesocket(sock);
         return;
     }
 
-    AddNetworkEvent(dosock, FD_READ | FD_CLOSE);
-    printf("[%s:%d] 입장\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    AddEvent(sock, FD_READ | FD_CLOSE);
+    printf("[%s:%d] 입장\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
 }
 
 void ReadProc(int index)
@@ -131,14 +127,15 @@ void ReadProc(int index)
     char msg[MAX_MSG_LEN];
     recv(socketArray[index], msg, MAX_MSG_LEN, 0);
 
-    SOCKADDR_IN cliaddr = { 0 };
-    int len = sizeof(cliaddr);
-    getpeername(socketArray[index], (SOCKADDR*)&cliaddr, &len);
+    // 연결된 클라이언트 정보를 얻어온다.
+    SOCKADDR_IN clientAddress;
+    int clientLen = sizeof(clientAddress);
+    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &clientLen);
 
     if (strcmp(msg, "exit") != 0)
     {
         char smsg[MAX_MSG_LEN];
-        sprintf_s(smsg, "[%s:%d]:%s", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port), msg);
+        sprintf_s(smsg, "[%s:%d]:%s", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port), msg);
 
         // 채팅
         for (int i = 1; i < numOfClient; i++)
