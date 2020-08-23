@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <thread>
 
-#define PORT_NUM 10200
+#define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
 
-unsigned ReceiveFunc(void* param);
+unsigned ReceiveProc(void* param);
 unsigned SendProc(void* param);
 
 int main()
@@ -28,7 +28,7 @@ int main()
     SOCKADDR_IN serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
-    serverAddress.sin_port = htons(PORT_NUM);
+    serverAddress.sin_port = htons(PORT);
 
     // 연결 요청
     if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
@@ -39,7 +39,7 @@ int main()
     unsigned sendThreadId, receiceThreadId;
     HANDLE sendThread = (HANDLE)_beginthreadex(NULL, 0, SendProc, (void*)sock, 0, &sendThreadId);
     HANDLE receiveThread = (HANDLE)_beginthreadex(NULL, 0, ReceiveProc, (void*)sock, 0, &receiceThreadId);
-    DWORD retval = WaitForSingleObject(sendThread, INFINITE);
+    WaitForSingleObject(sendThread, INFINITE);
     CloseHandle(sendThread);
     CloseHandle(receiveThread);
     WSACleanup(); // 윈속 해제화
@@ -67,8 +67,6 @@ unsigned ReceiveProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN];
-    SOCKADDR_IN cliaddr = { 0 };
-    int len = sizeof(cliaddr);
     while (recv(sock, msg, MAX_MSG_LEN, 0) > 0)
     {
         printf("%s\n", msg);
