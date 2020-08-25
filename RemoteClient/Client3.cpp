@@ -39,14 +39,17 @@ int main()
     unsigned sendThreadId, receiceThreadId;
     HANDLE sendThread = (HANDLE)_beginthreadex(NULL, 0, SendProc, (void*)sock, 0, &sendThreadId);
     HANDLE receiveThread = (HANDLE)_beginthreadex(NULL, 0, ReceiveProc, (void*)sock, 0, &receiceThreadId);
+
+    // 보내는 스레드가 종료할때까지 대기
     WaitForSingleObject(sendThread, INFINITE);
+
     CloseHandle(sendThread);
     CloseHandle(receiveThread);
     WSACleanup(); // 윈속 해제화
     return 0;
 }
 
-unsigned SendProc(void* param)
+unsigned WINAPI SendProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN] = "";
@@ -63,7 +66,7 @@ unsigned SendProc(void* param)
     }
 }
 
-unsigned ReceiveProc(void* param)
+unsigned WINAPI ReceiveProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
     char msg[MAX_MSG_LEN];

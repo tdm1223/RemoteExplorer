@@ -2,6 +2,7 @@
 #include<string.h>
 #include<winsock2.h>
 #include<queue>
+#include<thread>
 
 #pragma comment(lib,"ws2_32")
 
@@ -16,7 +17,7 @@ int numOfClient;
 // 대기 소켓 설정
 SOCKET SetServer(short pnum, int blog);
 
-void EventLoop(SOCKET sock);
+unsigned WINAPI EventLoop(void* param);
 
 // 클라리언트 소켓 등록하는 함수
 void AddEvent(SOCKET sock, long net_event);
@@ -27,6 +28,7 @@ void CloseProc(int index);
 
 int main()
 {
+    HANDLE mainThread;
     WSADATA wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata); // 윈속 초기화
     SOCKET sock = SetServer(PORT, ServerSize); // 대기 소켓 설정
@@ -36,8 +38,12 @@ int main()
     }
     else
     {
-        EventLoop(sock);
+        printf("Create Main Thread...\n");
+        unsigned int mainThreadId;
+        mainThread = (HANDLE)_beginthreadex(NULL, 0, EventLoop, (void*)sock, 0, (unsigned*)&mainThreadId);
+        WaitForSingleObject(mainThread, INFINITE);
     }
+    CloseHandle(mainThread);
     WSACleanup();
     return 0;
 }
@@ -70,8 +76,9 @@ SOCKET SetServer(short pnum, int size)
     return sock;
 }
 
-void EventLoop(SOCKET sock)
+unsigned WINAPI EventLoop(void* param)
 {
+    SOCKET sock = (SOCKET)param;
     AddEvent(sock, FD_ACCEPT | FD_CLOSE);
     while (true)
     {
@@ -95,6 +102,7 @@ void EventLoop(SOCKET sock)
         }
     }
     closesocket(sock);
+    return 0;
 }
 
 void AddEvent(SOCKET sock, long eventType)
