@@ -18,20 +18,18 @@ int numOfClient;
 // 대기 소켓 설정
 SOCKET SetServer(short pnum, int blog);
 
-unsigned WINAPI EventLoop(void* param);
+void EventLoop(SOCKET sock);
 
 // 클라리언트 소켓 등록하는 함수
 void AddEvent(SOCKET sock, long net_event);
 
 unsigned WINAPI AcceptProc(void* param);
 
-void ReadProc(int index);
-void CloseProc(int index);
+unsigned WINAPI ReadProc(void* param);
+unsigned WINAPI CloseProc(void* param);
 
 int main()
 {
-    HANDLE mainThread;
-    unsigned int mainThreadId;
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
@@ -45,9 +43,7 @@ int main()
     else
     {
         printf("Create Main Thread...\n");
-        mainThread = (HANDLE)_beginthreadex(NULL, 0, EventLoop, (void*)sock, 0, (unsigned*)&mainThreadId);
-        WaitForSingleObject(mainThread, INFINITE);
-        CloseHandle(mainThread);
+        EventLoop(sock);
     }
     WSACleanup();
     return 0;
@@ -81,12 +77,11 @@ SOCKET SetServer(short pnum, int size)
     return sock;
 }
 
-unsigned WINAPI EventLoop(void* param)
+void EventLoop(SOCKET sock)
 {
-    SOCKET sock = (SOCKET)param;
     AddEvent(sock, FD_ACCEPT | FD_CLOSE);
-    unsigned int acceptThreadId;
-    HANDLE acceptThread;
+    unsigned int acceptThreadId, readThreadId, closeThreadId;
+    HANDLE acceptThread, readThread, closeThread;
     while (true)
     {
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
@@ -103,15 +98,18 @@ unsigned WINAPI EventLoop(void* param)
             CloseHandle(acceptThread);
             break;
         case FD_READ:
-            ReadProc(index);
+            readThread = (HANDLE)_beginthreadex(NULL, 0, ReadProc, (void*)index, 0, (unsigned*)&readThreadId);
+            WaitForSingleObject(readThread, INFINITE);
+            CloseHandle(readThread);
             break;
         case FD_CLOSE:
-            CloseProc(index);
+            closeThread = (HANDLE)_beginthreadex(NULL, 0, CloseProc, (void*)index, 0, (unsigned*)&closeThreadId);
+            WaitForSingleObject(closeThread, INFINITE);
+            CloseHandle(closeThread);
             break;
         }
     }
     closesocket(sock);
-    return 0;
 }
 
 void AddEvent(SOCKET sock, long eventType)
@@ -139,8 +137,9 @@ unsigned WINAPI AcceptProc(void* param)
     return 0;
 }
 
-void ReadProc(int index)
+unsigned WINAPI ReadProc(void* param)
 {
+    int index = (int)param;
     char msg[MAX_MSG_LEN];
     recv(socketArray[index], msg, MAX_MSG_LEN, 0);
 
@@ -148,7 +147,7 @@ void ReadProc(int index)
     SOCKADDR_IN clientAddress;
     int clientLen = sizeof(clientAddress);
     getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &clientLen);
-
+    printf("%s\n", msg);
     if (strcmp(msg, "exit") != 0)
     {
         char smsg[MAX_MSG_LEN];
@@ -160,10 +159,12 @@ void ReadProc(int index)
             send(socketArray[i], smsg, MAX_MSG_LEN, 0);
         }
     }
+    return 0;
 }
 
-void CloseProc(int index)
+unsigned WINAPI CloseProc(void* param)
 {
+    int index = (int)param;
     SOCKADDR_IN cliaddr = { 0 };
     int len = sizeof(cliaddr);
     getpeername(socketArray[index], (SOCKADDR*)&cliaddr, &len);
@@ -183,4 +184,5 @@ void CloseProc(int index)
     {
         send(socketArray[i], msg, MAX_MSG_LEN, 0);
     }
+    return 0;
 }
