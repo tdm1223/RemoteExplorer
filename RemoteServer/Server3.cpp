@@ -5,6 +5,7 @@
 #include<thread>
 
 #pragma comment(lib,"ws2_32")
+#pragma warning(disable: 4996)
 
 #define PORT 9000
 #define ServerSize 1024
@@ -22,15 +23,20 @@ unsigned WINAPI EventLoop(void* param);
 // 클라리언트 소켓 등록하는 함수
 void AddEvent(SOCKET sock, long net_event);
 
-void AcceptProc(int index);
+unsigned WINAPI AcceptProc(void* param);
+
 void ReadProc(int index);
 void CloseProc(int index);
 
 int main()
 {
     HANDLE mainThread;
+    unsigned int mainThreadId;
     WSADATA wsadata;
-    WSAStartup(MAKEWORD(2, 2), &wsadata); // 윈속 초기화
+    if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
+    {
+        exit(1);
+    }
     SOCKET sock = SetServer(PORT, ServerSize); // 대기 소켓 설정
     if (sock == -1)
     {
@@ -39,11 +45,10 @@ int main()
     else
     {
         printf("Create Main Thread...\n");
-        unsigned int mainThreadId;
         mainThread = (HANDLE)_beginthreadex(NULL, 0, EventLoop, (void*)sock, 0, (unsigned*)&mainThreadId);
         WaitForSingleObject(mainThread, INFINITE);
+        CloseHandle(mainThread);
     }
-    CloseHandle(mainThread);
     WSACleanup();
     return 0;
 }
@@ -80,6 +85,8 @@ unsigned WINAPI EventLoop(void* param)
 {
     SOCKET sock = (SOCKET)param;
     AddEvent(sock, FD_ACCEPT | FD_CLOSE);
+    unsigned int acceptThreadId;
+    HANDLE acceptThread;
     while (true)
     {
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
@@ -91,7 +98,9 @@ unsigned WINAPI EventLoop(void* param)
         switch (net_events.lNetworkEvents)
         {
         case FD_ACCEPT:
-            AcceptProc(index);
+            acceptThread = (HANDLE)_beginthreadex(NULL, 0, AcceptProc, (void*)index, 0, (unsigned*)&acceptThreadId);
+            WaitForSingleObject(acceptThread, INFINITE);
+            CloseHandle(acceptThread);
             break;
         case FD_READ:
             ReadProc(index);
@@ -114,7 +123,7 @@ void AddEvent(SOCKET sock, long eventType)
     WSAEventSelect(sock, wsaEvent, eventType);
 }
 
-void AcceptProc(int index)
+unsigned WINAPI AcceptProc(void* param)
 {
     SOCKADDR_IN clientAddress = { 0 };
     int len = sizeof(clientAddress);
@@ -123,11 +132,11 @@ void AcceptProc(int index)
     if (numOfClient == FD_SETSIZE)
     {
         closesocket(sock);
-        return;
+        return 0;
     }
-
     AddEvent(sock, FD_READ | FD_CLOSE);
     printf("[%s:%d] 입장\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+    return 0;
 }
 
 void ReadProc(int index)
