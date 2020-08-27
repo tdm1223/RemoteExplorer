@@ -8,6 +8,7 @@
 #define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
+#define BUF_SIZE 8096
 
 unsigned ReceiveProc(void* param);
 unsigned SendProc(void* param);
@@ -73,7 +74,60 @@ unsigned WINAPI SendProc(void* param)
             closesocket(sock); // 소켓 닫기
             return 0;
         }
-        send(sock, files.name, sizeof(files.name), 0);
+
+        fp = fopen(files.name, "rb");
+        if (fp == NULL)
+        {
+            printf("FILE Pointer ERROR\n");
+            continue;
+        };
+
+        // 파일 끝으로 위치 옮김
+        fseek(fp, 0L, SEEK_END);
+
+        // 파일 바이트값 출력
+        files.byte = ftell(fp);
+
+        // 다시 파일 처음으로 위치 옮김
+        fseek(fp, 0L, SEEK_SET);
+
+        // 1. 파일 기본 정보 전송
+        printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.byte);
+        send(sock, (char*)&files, sizeof(files), 0);
+
+        // 데이터 통신에 사용할 변수
+        char buf[BUF_SIZE];
+        int retval;
+        unsigned int count = files.byte / BUF_SIZE;
+
+        while (count)
+        {
+            //파일 읽어서 버퍼에 저장
+            fread(buf, 1, BUF_SIZE, fp);
+
+            //전송
+            retval = send(sock, buf, BUF_SIZE, 0);
+            if (retval == SOCKET_ERROR)
+            {
+                return 0;
+            }
+
+            Sleep(100);
+            count--;
+        }
+
+        //남은 파일 크기만큼 나머지 전송
+        count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
+        fread(buf, 1, count, fp);
+
+        retval = send(sock, buf, BUF_SIZE, 0);
+        if (retval == SOCKET_ERROR)
+        {
+            return 0;
+        }
+
+        //파일포인터 닫기
+        fclose(fp);
     }
 }
 

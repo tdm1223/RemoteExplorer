@@ -10,6 +10,7 @@
 #define PORT 9000
 #define ServerSize 1024
 #define MAX_MSG_LEN 256
+#define BUF_SIZE 8096
 
 SOCKET  socketArray[FD_SETSIZE];
 HANDLE eventArray[FD_SETSIZE];
@@ -20,7 +21,7 @@ SOCKET SetServer(short pnum, int blog);
 
 void EventLoop(SOCKET sock);
 
-// 클라리언트 소켓 등록하는 함수
+// 클라이언트 소켓 등록하는 함수
 void AddEvent(SOCKET sock, long net_event);
 
 unsigned WINAPI AcceptProc(void* param);
@@ -31,7 +32,7 @@ unsigned WINAPI CloseProc(void* param);
 //파일 기본 정보
 struct Files
 {
-    char name[255];
+    char name[MAX_MSG_LEN];
     unsigned int byte;
 };
 
@@ -146,13 +147,59 @@ unsigned WINAPI AcceptProc(void* param)
 
 unsigned WINAPI ReadProc(void* param)
 {
+    FILE* fp = NULL;
     Files files;
     int index = (int)param;
-    char msg[MAX_MSG_LEN];
-    recv(socketArray[index], files.name, MAX_MSG_LEN, 0);
 
-    printf("filename : %s\n", files.name);
+    // 1. 파일 기본 정보를 받음
+    int retval = recv(socketArray[index], (char*)&files, sizeof(files), 0);
+    if (retval == SOCKET_ERROR)
+    {
+        return 0;
+    }
+    printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.byte);
 
+    // 기존 파일 여부 확인
+    fp = fopen(files.name, "rb");
+    if (fp == NULL) 
+    {
+        printf("같은 파일 이름이 없으므로 전송을 진행합니다.\n");
+    }
+    else
+    {
+        fclose(fp);
+        return 0;
+    }
+
+    // 데이터 받아서 파일 쓰는 로직
+    unsigned int count = files.byte / BUF_SIZE;
+    char buf[BUF_SIZE]; //전송하는 데이터
+    fp = fopen(files.name, "wb");
+
+    while (count)
+    {
+        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+        printf("retval : %d\n", retval);
+        //if (retval == SOCKET_ERROR) 
+        //{
+        //    return 0;
+        //}
+        fwrite(buf, 1, BUF_SIZE, fp);
+        count--;
+    }
+
+    //남은 파일 크기만큼 나머지 받기
+    count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
+    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+    //if (retval == SOCKET_ERROR) 
+    //{
+    //    return 0;
+    //}
+    fwrite(buf, 1, count, fp);
+
+    //파일포인터 닫기
+    fclose(fp);
+    printf("\n파일 전송이 완료되었습니다.\n");
 
     // 연결된 클라이언트 정보를 얻어온다.
     //SOCKADDR_IN clientAddress;
