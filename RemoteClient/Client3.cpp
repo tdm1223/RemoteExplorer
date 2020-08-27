@@ -57,12 +57,12 @@ unsigned WINAPI SendProc(void* param)
     {
         gets_s(msg, MAX_MSG_LEN);
         // 송신
-        send(sock, msg, sizeof(msg), 0);
         if (strcmp(msg, "exit") == 0)
         {
             closesocket(sock); // 소켓 닫기
             return 0;
         }
+        send(sock, msg, sizeof(msg), 0);
     }
 }
 

@@ -168,7 +168,7 @@ unsigned WINAPI CloseProc(void* param)
     SOCKADDR_IN cliaddr = { 0 };
     int len = sizeof(cliaddr);
     getpeername(socketArray[index], (SOCKADDR*)&cliaddr, &len);
-    printf("[%s:%d] 나감\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    printf("[%s:%d] 연결 종료\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 
     closesocket(socketArray[index]);
     WSACloseEvent(eventArray[index]);
@@ -177,12 +177,5 @@ unsigned WINAPI CloseProc(void* param)
     socketArray[index] = socketArray[numOfClient];
     eventArray[index] = eventArray[numOfClient];
 
-    char msg[MAX_MSG_LEN];
-    sprintf_s(msg, "[%s:%d] 나감", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
-    // 나간것 알려줌
-    for (int i = 1; i < numOfClient; i++)
-    {
-        send(socketArray[i], msg, MAX_MSG_LEN, 0);
-    }
     return 0;
 }
