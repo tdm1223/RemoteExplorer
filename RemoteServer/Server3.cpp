@@ -28,6 +28,13 @@ unsigned WINAPI AcceptProc(void* param);
 unsigned WINAPI ReadProc(void* param);
 unsigned WINAPI CloseProc(void* param);
 
+//파일 기본 정보
+struct Files
+{
+    char name[255];
+    unsigned int byte;
+};
+
 int main()
 {
     WSADATA wsadata;
@@ -139,26 +146,29 @@ unsigned WINAPI AcceptProc(void* param)
 
 unsigned WINAPI ReadProc(void* param)
 {
+    Files files;
     int index = (int)param;
     char msg[MAX_MSG_LEN];
-    recv(socketArray[index], msg, MAX_MSG_LEN, 0);
+    recv(socketArray[index], files.name, MAX_MSG_LEN, 0);
+
+    printf("filename : %s\n", files.name);
+
 
     // 연결된 클라이언트 정보를 얻어온다.
-    SOCKADDR_IN clientAddress;
-    int clientLen = sizeof(clientAddress);
-    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &clientLen);
-    printf("%s\n", msg);
-    if (strcmp(msg, "exit") != 0)
-    {
-        char smsg[MAX_MSG_LEN];
-        sprintf_s(smsg, "[%s:%d]:%s", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port), msg);
+    //SOCKADDR_IN clientAddress;
+    //int clientLen = sizeof(clientAddress);
+    //getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &clientLen);
 
-        // 채팅
-        for (int i = 1; i < numOfClient; i++)
-        {
-            send(socketArray[i], smsg, MAX_MSG_LEN, 0);
-        }
-    }
+    //char smsg[MAX_MSG_LEN];
+    //sprintf_s(smsg, "[%s:%d]:%s", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port), msg);
+
+    //// 채팅
+    //for (int i = 1; i < numOfClient; i++)
+    //{
+    //    send(socketArray[i], smsg, MAX_MSG_LEN, 0);
+    //}
+
+
     return 0;
 }
 

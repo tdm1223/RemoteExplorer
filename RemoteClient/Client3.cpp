@@ -12,6 +12,13 @@
 unsigned ReceiveProc(void* param);
 unsigned SendProc(void* param);
 
+//파일 기본 정보
+struct Files
+{
+    char name[MAX_MSG_LEN];
+    unsigned int byte;
+};
+
 int main()
 {
     WSADATA wsadata;
@@ -52,17 +59,21 @@ int main()
 unsigned WINAPI SendProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
-    char msg[MAX_MSG_LEN] = "";
+    //char msg[MAX_MSG_LEN] = "";
+    FILE* fp;
+    Files files;
+
     while (true)
     {
-        gets_s(msg, MAX_MSG_LEN);
+        gets_s(files.name, MAX_MSG_LEN);
+        
         // 송신
-        if (strcmp(msg, "exit") == 0)
+        if (strcmp(files.name, "exit") == 0)
         {
             closesocket(sock); // 소켓 닫기
             return 0;
         }
-        send(sock, msg, sizeof(msg), 0);
+        send(sock, files.name, sizeof(files.name), 0);
     }
 }
 
