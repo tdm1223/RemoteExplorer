@@ -17,7 +17,7 @@ unsigned SendProc(void* param);
 struct Files
 {
     char name[MAX_MSG_LEN];
-    unsigned int byte;
+    unsigned int size;
 };
 
 int main()
@@ -78,56 +78,56 @@ unsigned WINAPI SendProc(void* param)
         fp = fopen(files.name, "rb");
         if (fp == NULL)
         {
-            printf("FILE Pointer ERROR\n");
+            printf("파일이 없습니다. 파일명을 확인해 주세요\n");
             continue;
         };
 
         // 파일 끝으로 위치 옮김
         fseek(fp, 0L, SEEK_END);
 
-        // 파일 바이트값 출력
-        files.byte = ftell(fp);
+        // 파일 크기 얻음
+        files.size = ftell(fp);
 
         // 다시 파일 처음으로 위치 옮김
         fseek(fp, 0L, SEEK_SET);
 
         // 1. 파일 기본 정보 전송
-        printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.byte);
+        printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
         send(sock, (char*)&files, sizeof(files), 0);
 
-        // 데이터 통신에 사용할 변수
-        char buf[BUF_SIZE];
-        int retval;
-        unsigned int count = files.byte / BUF_SIZE;
+        //// 데이터 통신에 사용할 변수
+        //char buf[BUF_SIZE];
+        //int retval;
+        //unsigned int count = files.byte / BUF_SIZE;
 
-        while (count)
-        {
-            //파일 읽어서 버퍼에 저장
-            fread(buf, 1, BUF_SIZE, fp);
+        //while (count)
+        //{
+        //    //파일 읽어서 버퍼에 저장
+        //    fread(buf, 1, BUF_SIZE, fp);
 
-            //전송
-            retval = send(sock, buf, BUF_SIZE, 0);
-            if (retval == SOCKET_ERROR)
-            {
-                return 0;
-            }
+        //    //전송
+        //    retval = send(sock, buf, BUF_SIZE, 0);
+        //    if (retval == SOCKET_ERROR)
+        //    {
+        //        return 0;
+        //    }
 
-            Sleep(100);
-            count--;
-        }
+        //    Sleep(100);
+        //    count--;
+        //}
 
-        //남은 파일 크기만큼 나머지 전송
-        count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
-        fread(buf, 1, count, fp);
+        ////남은 파일 크기만큼 나머지 전송
+        //count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
+        //fread(buf, 1, count, fp);
 
-        retval = send(sock, buf, BUF_SIZE, 0);
-        if (retval == SOCKET_ERROR)
-        {
-            return 0;
-        }
+        //retval = send(sock, buf, BUF_SIZE, 0);
+        //if (retval == SOCKET_ERROR)
+        //{
+        //    return 0;
+        //}
 
-        //파일포인터 닫기
-        fclose(fp);
+        ////파일포인터 닫기
+        //fclose(fp);
     }
 }
 

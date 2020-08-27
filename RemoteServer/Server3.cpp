@@ -33,7 +33,7 @@ unsigned WINAPI CloseProc(void* param);
 struct Files
 {
     char name[MAX_MSG_LEN];
-    unsigned int byte;
+    unsigned int size;
 };
 
 int main()
@@ -140,7 +140,7 @@ unsigned WINAPI AcceptProc(void* param)
         closesocket(sock);
         return 0;
     }
-    AddEvent(sock, FD_READ | FD_CLOSE);
+    AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
     printf("[%s:%d] 입장\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
     return 0;
 }
@@ -157,48 +157,48 @@ unsigned WINAPI ReadProc(void* param)
     {
         return 0;
     }
-    printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.byte);
+    printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
 
-    // 기존 파일 여부 확인
-    fp = fopen(files.name, "rb");
-    if (fp == NULL) 
-    {
-        printf("같은 파일 이름이 없으므로 전송을 진행합니다.\n");
-    }
-    else
-    {
-        fclose(fp);
-        return 0;
-    }
+    //// 기존 파일 여부 확인
+    //fp = fopen(files.name, "rb");
+    //if (fp == NULL) 
+    //{
+    //    printf("같은 파일 이름이 없으므로 전송을 진행합니다.\n");
+    //}
+    //else
+    //{
+    //    fclose(fp);
+    //    return 0;
+    //}
 
-    // 데이터 받아서 파일 쓰는 로직
-    unsigned int count = files.byte / BUF_SIZE;
-    char buf[BUF_SIZE]; //전송하는 데이터
-    fp = fopen(files.name, "wb");
+    //// 데이터 받아서 파일 쓰는 로직
+    //unsigned int count = files.byte / BUF_SIZE;
+    //char buf[BUF_SIZE]; //전송하는 데이터
+    //fp = fopen(files.name, "wb");
 
-    while (count)
-    {
-        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-        printf("retval : %d\n", retval);
-        //if (retval == SOCKET_ERROR) 
-        //{
-        //    return 0;
-        //}
-        fwrite(buf, 1, BUF_SIZE, fp);
-        count--;
-    }
+    //while (count)
+    //{
+    //    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+    //    printf("retval : %d\n", retval);
+    //    if (retval == SOCKET_ERROR) 
+    //    {
+    //        return 0;
+    //    }
+    //    fwrite(buf, 1, BUF_SIZE, fp);
+    //    count--;
+    //}
 
-    //남은 파일 크기만큼 나머지 받기
-    count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
-    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+    ////남은 파일 크기만큼 나머지 받기
+    //count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
+    //retval = recv(socketArray[index], buf, BUF_SIZE, 0);
     //if (retval == SOCKET_ERROR) 
     //{
     //    return 0;
     //}
-    fwrite(buf, 1, count, fp);
+    //fwrite(buf, 1, count, fp);
 
-    //파일포인터 닫기
-    fclose(fp);
+    ////파일포인터 닫기
+    //fclose(fp);
     printf("\n파일 전송이 완료되었습니다.\n");
 
     // 연결된 클라이언트 정보를 얻어온다.
