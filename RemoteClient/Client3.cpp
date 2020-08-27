@@ -95,39 +95,30 @@ unsigned WINAPI SendProc(void* param)
         printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
         send(sock, (char*)&files, sizeof(files), 0);
 
-        //// 데이터 통신에 사용할 변수
-        //char buf[BUF_SIZE];
-        //int retval;
-        //unsigned int count = files.byte / BUF_SIZE;
+        // 데이터 통신에 사용할 변수
+        char buf[BUF_SIZE];
+        int retval;
+        int numread = 0;
+        int numtotal = 0;
+        int count = 1;
+        while (1)
+        {
+            printf("%d번째 보내는중...\n", count++);
 
-        //while (count)
-        //{
-        //    //파일 읽어서 버퍼에 저장
-        //    fread(buf, 1, BUF_SIZE, fp);
+            numread = fread(buf, 1, BUF_SIZE, fp);
 
-        //    //전송
-        //    retval = send(sock, buf, BUF_SIZE, 0);
-        //    if (retval == SOCKET_ERROR)
-        //    {
-        //        return 0;
-        //    }
-
-        //    Sleep(100);
-        //    count--;
-        //}
-
-        ////남은 파일 크기만큼 나머지 전송
-        //count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
-        //fread(buf, 1, count, fp);
-
-        //retval = send(sock, buf, BUF_SIZE, 0);
-        //if (retval == SOCKET_ERROR)
-        //{
-        //    return 0;
-        //}
-
-        ////파일포인터 닫기
-        //fclose(fp);
+            if (numread > 0)
+            {
+                send(sock, buf, numread, 0);
+                numtotal += numread;
+            }
+            else if (numread == 0 && numtotal == files.size)
+            {
+                printf("파일 전송 완료\n");
+                break;
+            }
+        }
+        fclose(fp);
     }
 }
 

@@ -28,6 +28,7 @@ unsigned WINAPI AcceptProc(void* param);
 
 unsigned WINAPI ReadProc(void* param);
 unsigned WINAPI CloseProc(void* param);
+int recvn(SOCKET s, char* buf, int len, int flags);
 
 //파일 기본 정보
 struct Files
@@ -106,6 +107,7 @@ void EventLoop(SOCKET sock)
             CloseHandle(acceptThread);
             break;
         case FD_READ:
+            printf("인덱스 : %d\n", index);
             readThread = (HANDLE)_beginthreadex(NULL, 0, ReadProc, (void*)index, 0, (unsigned*)&readThreadId);
             WaitForSingleObject(readThread, INFINITE);
             CloseHandle(readThread);
@@ -147,11 +149,10 @@ unsigned WINAPI AcceptProc(void* param)
 
 unsigned WINAPI ReadProc(void* param)
 {
-    FILE* fp = NULL;
     Files files;
     int index = (int)param;
 
-    // 1. 파일 기본 정보를 받음
+    // 1. 파일 기본 정보를 수신
     int retval = recv(socketArray[index], (char*)&files, sizeof(files), 0);
     if (retval == SOCKET_ERROR)
     {
@@ -159,63 +160,47 @@ unsigned WINAPI ReadProc(void* param)
     }
     printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
 
-    //// 기존 파일 여부 확인
-    //fp = fopen(files.name, "rb");
-    //if (fp == NULL) 
-    //{
-    //    printf("같은 파일 이름이 없으므로 전송을 진행합니다.\n");
-    //}
-    //else
-    //{
-    //    fclose(fp);
-    //    return 0;
-    //}
+    // 기존 파일 여부 확인
+    FILE* fp = fopen(files.name, "rb");
+    if (fp == NULL) 
+    {
+        printf("파일명이 같은 파일이 존재하지 않습니다.\n");
+    }
+    else
+    {
+        printf("파일명이 같은 파일이 존재합니다.\n");
+    }
 
-    //// 데이터 받아서 파일 쓰는 로직
-    //unsigned int count = files.byte / BUF_SIZE;
-    //char buf[BUF_SIZE]; //전송하는 데이터
-    //fp = fopen(files.name, "wb");
+    // 데이터 받아서 파일 쓰는 로직
+    fp = fopen(files.name, "wb");
+    int numtotal = 0;
+    char buf[BUF_SIZE];
+    int count = 1;
 
-    //while (count)
-    //{
-    //    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-    //    printf("retval : %d\n", retval);
-    //    if (retval == SOCKET_ERROR) 
-    //    {
-    //        return 0;
-    //    }
-    //    fwrite(buf, 1, BUF_SIZE, fp);
-    //    count--;
-    //}
+    while (1)
+    {
+        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+        printf("%d번째 받는중...%d \n", count++, retval);
+        if (retval == -1)
+        {
+            fclose(fp);
+            break;
+        }
+        else
+        {
+            fwrite(buf, 1, retval, fp);
+            numtotal += retval;
+        }
+    }
 
-    ////남은 파일 크기만큼 나머지 받기
-    //count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
-    //retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-    //if (retval == SOCKET_ERROR) 
-    //{
-    //    return 0;
-    //}
-    //fwrite(buf, 1, count, fp);
-
-    ////파일포인터 닫기
-    //fclose(fp);
-    printf("\n파일 전송이 완료되었습니다.\n");
-
-    // 연결된 클라이언트 정보를 얻어온다.
-    //SOCKADDR_IN clientAddress;
-    //int clientLen = sizeof(clientAddress);
-    //getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &clientLen);
-
-    //char smsg[MAX_MSG_LEN];
-    //sprintf_s(smsg, "[%s:%d]:%s", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port), msg);
-
-    //// 채팅
-    //for (int i = 1; i < numOfClient; i++)
-    //{
-    //    send(socketArray[i], smsg, MAX_MSG_LEN, 0);
-    //}
-
-
+    if (numtotal == files.size)
+    {
+        printf("파일 전송이 완료되었습니다.\n");
+    }
+    else
+    {
+        printf("파일 전송에 문제가 있습니다\n");
+    }
     return 0;
 }
 
@@ -235,4 +220,29 @@ unsigned WINAPI CloseProc(void* param)
     eventArray[index] = eventArray[numOfClient];
 
     return 0;
+}
+
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+    SOCKET sock = (SOCKET)s;
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0)
+    {
+        received = recv(sock, ptr, left, flags);
+        if (received == SOCKET_ERROR)
+        {
+            return SOCKET_ERROR;
+        }
+        else if (received == 0)
+        {
+            break;
+        }
+        left -= received;
+        ptr += received;
+    }
+    closesocket(sock);
+    return (len - left);
 }
