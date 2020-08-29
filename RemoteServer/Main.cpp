@@ -26,10 +26,9 @@ void EventLoop(SOCKET sock);
 void AddEvent(SOCKET sock, long net_event);
 
 void AcceptProc();
-
 void ReadProc(int num);
-
 void CloseProc(int num);
+void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
 
 //파일 기본 정보
 struct Files
@@ -110,8 +109,8 @@ void EventLoop(SOCKET sock)
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
-            std::thread CloseThread(CloseProc, index);
-            CloseThread.join();
+            std::thread closeThread(CloseProc, index);
+            closeThread.join();
         }
     }
     closesocket(sock);
@@ -145,13 +144,16 @@ void ReadProc(int num)
     Files recvFile;
     int index = num;
 
+    SOCKADDR_IN clientAddress = { 0 };
+    GetClientAddress(clientAddress, index);
+
     // 파일 기본 정보를 수신
     int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
     if (retval == SOCKET_ERROR)
     {
         return;
     }
-    std::cout << "전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
 
     // 기존 파일 여부 확인
     FILE* fp = fopen(recvFile.name, "rb");
@@ -168,7 +170,6 @@ void ReadProc(int num)
     fp = fopen(recvFile.name, "wb");
     int numtotal = 0;
     char buf[BUF_SIZE];
-    int count = 1;
 
     while (1)
     {
@@ -200,8 +201,7 @@ void CloseProc(int num)
 {
     int index = num;
     SOCKADDR_IN clientAddress = { 0 };
-    int len = sizeof(clientAddress);
-    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
+    GetClientAddress(clientAddress, index);
     std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
 
     closesocket(socketArray[index]);
@@ -210,4 +210,10 @@ void CloseProc(int num)
     numOfClient--;
     socketArray[index] = socketArray[numOfClient];
     eventArray[index] = eventArray[numOfClient];
+}
+
+void GetClientAddress(SOCKADDR_IN& clientAddress, int index)
+{
+    int len = sizeof(clientAddress);
+    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
 }
