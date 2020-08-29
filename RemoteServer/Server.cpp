@@ -1,233 +1,248 @@
-﻿//#include<stdio.h>
-//#include<string.h>
-//#include<winsock2.h>
-//
-//#define BUF_SIZE 8192
-//#pragma comment(lib,"ws2_32")
-//
-//void ErrorHandling(char* msg);
-//int recvn(SOCKET, char*, int, int);
-//
-////파일 기본 정보
-//struct Files {
-//    char name[255];
-//    unsigned int byte;
-//};
-//
-//int main()
-//{
-//    //send, recv 함수 출력값 저장용
-//    int retval;
-//
-//    //(파일 크기 / 버퍼 사이즈) 계산한 값을 while문으로 돌리기 위한 변수
-//    unsigned int count;
-//
-//    WSADATA wsaData;
-//    SOCKET serverSock, clientSock;
-//    SOCKADDR_IN serverAddress, clientAddress;
-//
-//    SOCKET socketArray[WSA_MAXIMUM_WAIT_EVENTS]; // 소켓의 핸들 정보를 저장하기 위한 배열
-//    WSAEVENT eventArray[WSA_MAXIMUM_WAIT_EVENTS]; // 이벤트 오브젝트 핸들 정보를 저장하기 위한 배열
-//    WSANETWORKEVENTS netEvents;
-//
-//    int numOfClientSock = 0;
-//    int strLen;
-//    int posInfo, startIdx;
-//    char msg[BUF_SIZE];
-//
-//    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-//    {
-//        ErrorHandling("WSAStartup() error!");
-//    }
-//
-//    // 서버 소켓 생성 후 초기화
-//    serverSock = socket(PF_INET, SOCK_STREAM, 0);
-//    memset(&serverAddress, 0, sizeof(serverAddress));
-//    serverAddress.sin_family = AF_INET;
-//    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-//    serverAddress.sin_port = htons(9000);
-//
-//    // bind
-//    if (bind(serverSock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
-//    {
-//        ErrorHandling("bind() error");
-//    }
-//
-//    // listen
-//    if (listen(serverSock, SOMAXCONN) == SOCKET_ERROR)
-//    {
-//        ErrorHandling("listen() error");
-//    }
-//
-//    WSAEVENT newEvent = WSACreateEvent(); // 이벤트 오브젝트 생성
-//
-//    // accept 요청, serverSock의 변화발생시 newEvent를 signaled상태로 바꾼다.
-//    if (WSAEventSelect(serverSock, newEvent, FD_ACCEPT | FD_CLOSE) == SOCKET_ERROR)
-//    {
-//        ErrorHandling("WSAEventSelect() error");
-//    }
-//
-//    // 동일한 인덱스에 정보 저장
-//    socketArray[numOfClientSock] = serverSock;
-//    eventArray[numOfClientSock] = newEvent;
-//    numOfClientSock++;
-//
-//    while (1)
-//    {
-//        posInfo = WSAWaitForMultipleEvents(numOfClientSock, eventArray, FALSE, WSA_INFINITE, FALSE);
-//        startIdx = posInfo - WSA_WAIT_EVENT_0; // 실제로 변화가 발생한 이벤트 오브젝트의 첫번째 index 값
-//
-//        for (int i = startIdx; i < numOfClientSock; i++)
-//        {
-//            int signaledEventIdx = WSAWaitForMultipleEvents(1, &eventArray[i], TRUE, 0, FALSE); // 확인을 위한 함수 호출
-//            if ((signaledEventIdx == WSA_WAIT_FAILED || signaledEventIdx == WSA_WAIT_TIMEOUT))
-//            {
-//                continue; // 반환 결과가 위에꺼면 CONTINUE
-//            }
-//            else
-//            {
-//                signaledEventIdx = i;
-//                WSAEnumNetworkEvents(socketArray[signaledEventIdx], eventArray[signaledEventIdx], &netEvents);
-//
-//                if (netEvents.lNetworkEvents & FD_ACCEPT) // 연결 요청시
-//                {
-//                    if (netEvents.iErrorCode[FD_ACCEPT_BIT] != 0)
-//                    {
-//                        puts("Accept Error");
-//                        break;
-//                    }
-//                    int clientAddressLength = sizeof(clientAddress);
-//                    clientSock = accept(socketArray[signaledEventIdx], (SOCKADDR*)&clientAddress, &clientAddressLength);
-//                    newEvent = WSACreateEvent();
-//                    WSAEventSelect(clientSock, newEvent, FD_READ | FD_CLOSE);
-//
-//                    eventArray[numOfClientSock] = newEvent;
-//                    socketArray[numOfClientSock] = clientSock;
-//                    printf("%d 클라 접속 : IP = %s, Port = %d\n", numOfClientSock, inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
-//                    numOfClientSock++;
-//                }
-//
-//                if (netEvents.lNetworkEvents & FD_READ) // 데이터 수신
-//                {
-//                    if (netEvents.iErrorCode[FD_READ_BIT] != 0)
-//                    {
-//                        puts("Read Error");
-//                        break;
-//                    }
-//
-//                    //클라이언트로 부터 파일 기본 정보 받기
-//                    FILE* fp = NULL;
-//                    Files files;
-//
-//                    retval = recvn(socketArray[signaledEventIdx], (char*)&files, sizeof(files), 0);
-//                    if (retval == SOCKET_ERROR) {
-//                        exit(1);
-//                    }
-//                    //기존 파일 여부 확인
-//                    fp = fopen(files.name, "rb");
-//                    if (fp == NULL) { printf("같은 파일 이름이 없으므로 전송을 진행합니다.\n"); }
-//                    else
-//                    {
-//                        system("cls");
-//                        printf("이미 같은 이름의 파일이 존재 합니다.\n전송을 종료합니다.\n");
-//                        fclose(fp);
-//                        break;
-//                    }
-//
-//                    printf("%d 클라로부터 파일을 전송받습니다.\n", signaledEventIdx);
-//                    printf("전송받는 파일 : %s, 전송받는 파일 크기 : %d Byte\n", files.name, files.byte);
-//                    printf("\n클라이언트로 부터 파일을 전송 받는 중 입니다.\n");
-//
-//                    fp = fopen(files.name, "wb");
-//
-//                    count = files.byte / BUF_SIZE;
-//                    printf("count : %d\n", count);
-//
-//                    while (count)
-//                    {
-//                        //받기
-//                        retval = recvn(socketArray[signaledEventIdx], msg, BUF_SIZE, 0);
-//                        printf("retval : %d", retval);
-//                        while (1);
-//                        if (retval == SOCKET_ERROR)
-//                        {
-//                            exit(1);
-//                        }
-//
-//                        //파일 작성 작업
-//                        fwrite(msg, 1, BUF_SIZE, fp);
-//                        count--;
-//                    }
-//
-//                    //남은 파일 크기만큼 나머지 받기
-//                    count = files.byte - ((files.byte / BUF_SIZE) * BUF_SIZE);
-//                    retval = recvn(socketArray[signaledEventIdx], msg, BUF_SIZE, 0);
-//                    if (retval == SOCKET_ERROR)
-//                    {
-//                        exit(1);
-//                    }
-//
-//                    fwrite(msg, 1, count, fp);
-//
-//                    //파일포인터 닫기
-//                    fclose(fp);
-//                    printf("\n파일 전송이 완료되었습니다.\n");
-//                }
-//
-//                if (netEvents.lNetworkEvents & FD_CLOSE) // 종료 요청
-//                {
-//                    if (netEvents.iErrorCode[FD_CLOSE_BIT] != 0)
-//                    {
-//                        puts("Close Error");
-//                        break;
-//                    }
-//                    WSACloseEvent(eventArray[signaledEventIdx]);
-//                    closesocket(socketArray[signaledEventIdx]);
-//                    printf("%d 클라 연결 종료\n", signaledEventIdx);
-//                    numOfClientSock--;
-//                    for (int i = signaledEventIdx; i < numOfClientSock; i++)
-//                    {
-//                        socketArray[i] = socketArray[i + 1];
-//                        eventArray[i] = eventArray[i + 1];
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    WSACleanup();
-//    return 0;
-//}
-//
-//void ErrorHandling(char* msg)
-//{
-//    fputs(msg, stderr);
-//    fputc('\n', stderr);
-//    exit(1);
-//}
-//
-//int recvn(SOCKET s, char* buf, int len, int flags)
-//{
-//    SOCKET sock = (SOCKET)s;
-//    int received;
-//    char* ptr = buf;
-//    int left = len;
-//
-//    while (left > 0)
-//    {
-//        received = recv(sock, ptr, left, flags);
-//        printf("received : %d\n", received);
-//        if (received == SOCKET_ERROR)
-//        {
-//            printf("에러\n");
-//            return SOCKET_ERROR;
-//        }
-//        else if (received == 0)
-//        {
-//            break;
-//        }
-//        left -= received;
-//        ptr += received;
-//    }
-//    closesocket(sock);
-//    return (len - left);
-//}
+﻿#include<stdio.h>
+#include<string.h>
+#include<winsock2.h>
+#include<queue>
+#include<thread>
+
+#pragma comment(lib,"ws2_32")
+#pragma warning(disable: 4996)
+
+#define PORT 9000
+#define ServerSize 1024
+#define MAX_MSG_LEN 256
+#define BUF_SIZE 8096
+
+SOCKET  socketArray[FD_SETSIZE];
+HANDLE eventArray[FD_SETSIZE];
+int numOfClient;
+
+// 대기 소켓 설정
+SOCKET SetServer(short pnum, int blog);
+
+void EventLoop(SOCKET sock);
+
+// 클라이언트 소켓 등록하는 함수
+void AddEvent(SOCKET sock, long net_event);
+
+unsigned WINAPI AcceptProc(void* param);
+
+unsigned WINAPI ReadProc(void* param);
+unsigned WINAPI CloseProc(void* param);
+int recvn(SOCKET s, char* buf, int len, int flags);
+
+//파일 기본 정보
+struct Files
+{
+    char name[MAX_MSG_LEN];
+    unsigned int size;
+};
+
+int main()
+{
+    WSADATA wsadata;
+    if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
+    {
+        exit(1);
+    }
+    SOCKET sock = SetServer(PORT, ServerSize); // 대기 소켓 설정
+    if (sock == -1)
+    {
+        perror("대기 소켓 오류");
+    }
+    else
+    {
+        printf("Create Main Thread...\n");
+        EventLoop(sock);
+    }
+    WSACleanup();
+    return 0;
+}
+
+SOCKET SetServer(short pnum, int size)
+{
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock == -1)
+    {
+        return -1;
+    }
+
+    // 서버 정보 설정
+    SOCKADDR_IN servaddr;
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(PORT);
+
+    // 소켓 주소와 네트워크 인터페이스 결합
+    if (bind(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
+    {
+        return -1;
+    }
+
+    //백 로그 큐 설정
+    if (listen(sock, size) == -1)
+    {
+        return -1;
+    }
+    return sock;
+}
+
+void EventLoop(SOCKET sock)
+{
+    AddEvent(sock, FD_ACCEPT | FD_CLOSE);
+    unsigned int acceptThreadId, readThreadId, closeThreadId;
+    HANDLE acceptThread, readThread, closeThread;
+    while (true)
+    {
+        // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
+        int index = WSAWaitForMultipleEvents(numOfClient, eventArray, false, INFINITE, false);
+        WSANETWORKEVENTS net_events;
+
+        // 이벤트 종류 알아내기
+        WSAEnumNetworkEvents(socketArray[index], eventArray[index], &net_events);
+        switch (net_events.lNetworkEvents)
+        {
+        case FD_ACCEPT:
+            acceptThread = (HANDLE)_beginthreadex(NULL, 0, AcceptProc, (void*)index, 0, (unsigned*)&acceptThreadId);
+            WaitForSingleObject(acceptThread, INFINITE);
+            CloseHandle(acceptThread);
+            break;
+        case FD_READ:
+            printf("인덱스 : %d\n", index);
+            readThread = (HANDLE)_beginthreadex(NULL, 0, ReadProc, (void*)index, 0, (unsigned*)&readThreadId);
+            WaitForSingleObject(readThread, INFINITE);
+            CloseHandle(readThread);
+            break;
+        case FD_CLOSE:
+            closeThread = (HANDLE)_beginthreadex(NULL, 0, CloseProc, (void*)index, 0, (unsigned*)&closeThreadId);
+            WaitForSingleObject(closeThread, INFINITE);
+            CloseHandle(closeThread);
+            break;
+        }
+    }
+    closesocket(sock);
+}
+
+void AddEvent(SOCKET sock, long eventType)
+{
+    HANDLE wsaEvent = WSACreateEvent();
+    socketArray[numOfClient] = sock;
+    eventArray[numOfClient] = wsaEvent;
+    numOfClient++;
+    WSAEventSelect(sock, wsaEvent, eventType);
+}
+
+unsigned WINAPI AcceptProc(void* param)
+{
+    SOCKADDR_IN clientAddress = { 0 };
+    int len = sizeof(clientAddress);
+    SOCKET sock = accept(socketArray[0], (SOCKADDR*)&clientAddress, &len);
+
+    if (numOfClient == FD_SETSIZE)
+    {
+        closesocket(sock);
+        return 0;
+    }
+    AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
+    printf("[%s:%d] 입장\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+    return 0;
+}
+
+unsigned WINAPI ReadProc(void* param)
+{
+    Files files;
+    int index = (int)param;
+
+    // 1. 파일 기본 정보를 수신
+    int retval = recv(socketArray[index], (char*)&files, sizeof(files), 0);
+    if (retval == SOCKET_ERROR)
+    {
+        return 0;
+    }
+    printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
+
+    // 기존 파일 여부 확인
+    FILE* fp = fopen(files.name, "rb");
+    if (fp == NULL) 
+    {
+        printf("파일명이 같은 파일이 존재하지 않습니다.\n");
+    }
+    else
+    {
+        printf("파일명이 같은 파일이 존재합니다.\n");
+    }
+
+    // 데이터 받아서 파일 쓰는 로직
+    fp = fopen(files.name, "wb");
+    int numtotal = 0;
+    char buf[BUF_SIZE];
+    int count = 1;
+
+    while (1)
+    {
+        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+        //printf("%d번째 받는중...%d \n", count++, retval);
+        if (retval == -1)
+        {
+            fclose(fp);
+            break;
+        }
+        else
+        {
+            fwrite(buf, 1, retval, fp);
+            numtotal += retval;
+        }
+    }
+
+    if (numtotal == files.size)
+    {
+        printf("파일 전송이 완료되었습니다.\n");
+    }
+    else
+    {
+        printf("파일 전송에 문제가 있습니다\n");
+    }
+    return 0;
+}
+
+unsigned WINAPI CloseProc(void* param)
+{
+    int index = (int)param;
+    SOCKADDR_IN cliaddr = { 0 };
+    int len = sizeof(cliaddr);
+    getpeername(socketArray[index], (SOCKADDR*)&cliaddr, &len);
+    printf("[%s:%d] 연결 종료\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+
+    closesocket(socketArray[index]);
+    WSACloseEvent(eventArray[index]);
+
+    numOfClient--;
+    socketArray[index] = socketArray[numOfClient];
+    eventArray[index] = eventArray[numOfClient];
+
+    return 0;
+}
+
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+    SOCKET sock = (SOCKET)s;
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0)
+    {
+        received = recv(sock, ptr, left, flags);
+        if (received == SOCKET_ERROR)
+        {
+            return SOCKET_ERROR;
+        }
+        else if (received == 0)
+        {
+            break;
+        }
+        left -= received;
+        ptr += received;
+    }
+    closesocket(sock);
+    return (len - left);
+}
