@@ -25,10 +25,11 @@ void EventLoop(SOCKET sock);
 // 클라이언트 소켓 등록하는 함수
 void AddEvent(SOCKET sock, long net_event);
 
-unsigned WINAPI AcceptProc(void* param);
+void AcceptProc();
 
-unsigned WINAPI ReadProc(void* param);
-unsigned WINAPI CloseProc(void* param);
+void ReadProc(int num);
+
+void CloseProc(int num);
 
 //파일 기본 정보
 struct Files
@@ -89,8 +90,6 @@ SOCKET SetServer(short pnum, int size)
 void EventLoop(SOCKET sock)
 {
     AddEvent(sock, FD_ACCEPT | FD_CLOSE);
-    unsigned int acceptThreadId, readThreadId, closeThreadId;
-    HANDLE acceptThread, readThread, closeThread;
     while (true)
     {
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
@@ -99,24 +98,20 @@ void EventLoop(SOCKET sock)
 
         // 이벤트 종류 알아내기
         WSAEnumNetworkEvents(socketArray[index], eventArray[index], &net_events);
-        switch (net_events.lNetworkEvents)
+        if (net_events.lNetworkEvents == FD_ACCEPT)
         {
-        case FD_ACCEPT:
-            acceptThread = (HANDLE)_beginthreadex(NULL, 0, AcceptProc, (void*)index, 0, (unsigned*)&acceptThreadId);
-            WaitForSingleObject(acceptThread, INFINITE);
-            CloseHandle(acceptThread);
-            break;
-        case FD_READ:
-            std::cout << "요청 클라이언트 인덱스 : " << index << std::endl;
-            readThread = (HANDLE)_beginthreadex(NULL, 0, ReadProc, (void*)index, 0, (unsigned*)&readThreadId);
-            WaitForSingleObject(readThread, INFINITE);
-            CloseHandle(readThread);
-            break;
-        case FD_CLOSE:
-            closeThread = (HANDLE)_beginthreadex(NULL, 0, CloseProc, (void*)index, 0, (unsigned*)&closeThreadId);
-            WaitForSingleObject(closeThread, INFINITE);
-            CloseHandle(closeThread);
-            break;
+            std::thread acceptThread(AcceptProc);
+            acceptThread.join();
+        }
+        else if (net_events.lNetworkEvents == FD_READ)
+        {
+            std::thread readThread(ReadProc, index);
+            readThread.join();
+        }
+        else if (net_events.lNetworkEvents == FD_CLOSE)
+        {
+            std::thread CloseThread(CloseProc, index);
+            CloseThread.join();
         }
     }
     closesocket(sock);
@@ -131,7 +126,7 @@ void AddEvent(SOCKET sock, long eventType)
     WSAEventSelect(sock, wsaEvent, eventType);
 }
 
-unsigned WINAPI AcceptProc(void* param)
+void AcceptProc()
 {
     SOCKADDR_IN clientAddress = { 0 };
     int len = sizeof(clientAddress);
@@ -140,23 +135,21 @@ unsigned WINAPI AcceptProc(void* param)
     if (numOfClient == FD_SETSIZE)
     {
         closesocket(sock);
-        return 0;
     }
     AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
     std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
-    return 0;
 }
 
-unsigned WINAPI ReadProc(void* param)
+void ReadProc(int num)
 {
     Files recvFile;
-    int index = (int)param;
+    int index = num;
 
     // 파일 기본 정보를 수신
     int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
     if (retval == SOCKET_ERROR)
     {
-        return 0;
+        return;
     }
     std::cout << "전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
 
@@ -200,12 +193,12 @@ unsigned WINAPI ReadProc(void* param)
     {
         std::cout << "파일 전송에 문제가 있습니다" << std::endl;
     }
-    return 0;
+    return;
 }
 
-unsigned WINAPI CloseProc(void* param)
+void CloseProc(int num)
 {
-    int index = (int)param;
+    int index = num;
     SOCKADDR_IN clientAddress = { 0 };
     int len = sizeof(clientAddress);
     getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
@@ -217,6 +210,4 @@ unsigned WINAPI CloseProc(void* param)
     numOfClient--;
     socketArray[index] = socketArray[numOfClient];
     eventArray[index] = eventArray[numOfClient];
-
-    return 0;
 }
