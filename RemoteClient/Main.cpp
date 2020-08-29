@@ -1,9 +1,11 @@
-﻿#pragma comment(lib, "ws2_32")
-#include <winsock2.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <thread>
+﻿#include<winsock2.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<thread>
+#include<string>
+#include<iostream>
+
+#pragma comment(lib, "ws2_32")
 
 #define PORT 9000
 #define MAX_MSG_LEN 256
@@ -60,25 +62,28 @@ int main()
 unsigned WINAPI SendProc(void* param)
 {
     SOCKET sock = (SOCKET)param;
-    //char msg[MAX_MSG_LEN] = "";
     FILE* fp;
-    Files files;
+    Files sendFile;
+    std::string fileName;
 
     while (true)
     {
-        gets_s(files.name, MAX_MSG_LEN);
-        
-        // 송신
-        if (strcmp(files.name, "exit") == 0)
+        fileName.clear();
+        std::cin >> fileName;
+        strcpy(sendFile.name, fileName.c_str());
+
+        // 종료라면 소켓 닫기
+        if (strcmp(sendFile.name, "exit") == 0)
         {
-            closesocket(sock); // 소켓 닫기
+            closesocket(sock);
             return 0;
         }
 
-        fp = fopen(files.name, "rb");
+        // 종료가 아니면 파일 전송
+        fp = fopen(sendFile.name, "rb");
         if (fp == NULL)
         {
-            printf("파일이 없습니다. 파일명을 확인해 주세요\n");
+            std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
             continue;
         };
 
@@ -86,25 +91,24 @@ unsigned WINAPI SendProc(void* param)
         fseek(fp, 0L, SEEK_END);
 
         // 파일 크기 얻음
-        files.size = ftell(fp);
+        sendFile.size = ftell(fp);
 
         // 다시 파일 처음으로 위치 옮김
         fseek(fp, 0L, SEEK_SET);
 
         // 1. 파일 기본 정보 전송
-        printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
-        send(sock, (char*)&files, sizeof(files), 0);
+        std::cout << "전송하는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
+        send(sock, (char*)&sendFile, sizeof(sendFile), 0);
 
         // 데이터 통신에 사용할 변수
         char buf[BUF_SIZE];
         int retval;
         int numread = 0;
         int numtotal = 0;
-        int count = 1;
+
+        // 파일 전송
         while (1)
         {
-            //printf("%d번째 보내는중...\n", count++);
-
             numread = fread(buf, 1, BUF_SIZE, fp);
 
             if (numread > 0)
@@ -112,14 +116,15 @@ unsigned WINAPI SendProc(void* param)
                 send(sock, buf, numread, 0);
                 numtotal += numread;
             }
-            else if (numread == 0 && numtotal == files.size)
+            else if (numread == 0 && numtotal == sendFile.size)
             {
-                printf("파일 전송 완료\n");
+                std::cout << "파일 전송 완료" << std::endl;
                 break;
             }
         }
         fclose(fp);
     }
+    return 0;
 }
 
 unsigned WINAPI ReceiveProc(void* param)
@@ -128,7 +133,7 @@ unsigned WINAPI ReceiveProc(void* param)
     char msg[MAX_MSG_LEN];
     while (recv(sock, msg, MAX_MSG_LEN, 0) > 0)
     {
-        printf("%s\n", msg);
+        //printf("%s\n", msg);
     }
     closesocket(sock);
     return 0;

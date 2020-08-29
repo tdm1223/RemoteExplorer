@@ -1,8 +1,9 @@
 ﻿#include<stdio.h>
-#include<string.h>
 #include<winsock2.h>
 #include<queue>
 #include<thread>
+#include<iostream>
+#include<string>
 
 #pragma comment(lib,"ws2_32")
 #pragma warning(disable: 4996)
@@ -28,7 +29,6 @@ unsigned WINAPI AcceptProc(void* param);
 
 unsigned WINAPI ReadProc(void* param);
 unsigned WINAPI CloseProc(void* param);
-int recvn(SOCKET s, char* buf, int len, int flags);
 
 //파일 기본 정보
 struct Files
@@ -51,7 +51,7 @@ int main()
     }
     else
     {
-        printf("Create Main Thread...\n");
+        std::cout << "Create Main Thread..." << std::endl;
         EventLoop(sock);
     }
     WSACleanup();
@@ -107,7 +107,7 @@ void EventLoop(SOCKET sock)
             CloseHandle(acceptThread);
             break;
         case FD_READ:
-            printf("인덱스 : %d\n", index);
+            std::cout << "요청 클라이언트 인덱스 : " << index << std::endl;
             readThread = (HANDLE)_beginthreadex(NULL, 0, ReadProc, (void*)index, 0, (unsigned*)&readThreadId);
             WaitForSingleObject(readThread, INFINITE);
             CloseHandle(readThread);
@@ -143,36 +143,36 @@ unsigned WINAPI AcceptProc(void* param)
         return 0;
     }
     AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
-    printf("[%s:%d] 입장\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
     return 0;
 }
 
 unsigned WINAPI ReadProc(void* param)
 {
-    Files files;
+    Files recvFile;
     int index = (int)param;
 
-    // 1. 파일 기본 정보를 수신
-    int retval = recv(socketArray[index], (char*)&files, sizeof(files), 0);
+    // 파일 기본 정보를 수신
+    int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
     if (retval == SOCKET_ERROR)
     {
         return 0;
     }
-    printf("전송하는 파일 : %s, 전송하는 파일 크기 : %d Byte\n", files.name, files.size);
+    std::cout << "전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
 
     // 기존 파일 여부 확인
-    FILE* fp = fopen(files.name, "rb");
-    if (fp == NULL) 
+    FILE* fp = fopen(recvFile.name, "rb");
+    if (fp == NULL)
     {
-        printf("파일명이 같은 파일이 존재하지 않습니다.\n");
+        std::cout << "파일명이 같은 파일이 존재하지 않습니다" << std::endl;
     }
     else
     {
-        printf("파일명이 같은 파일이 존재합니다.\n");
+        std::cout << "파일명이 같은 파일이 존재합니다" << std::endl;
     }
 
     // 데이터 받아서 파일 쓰는 로직
-    fp = fopen(files.name, "wb");
+    fp = fopen(recvFile.name, "wb");
     int numtotal = 0;
     char buf[BUF_SIZE];
     int count = 1;
@@ -180,7 +180,6 @@ unsigned WINAPI ReadProc(void* param)
     while (1)
     {
         retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-        //printf("%d번째 받는중...%d \n", count++, retval);
         if (retval == -1)
         {
             fclose(fp);
@@ -193,13 +192,13 @@ unsigned WINAPI ReadProc(void* param)
         }
     }
 
-    if (numtotal == files.size)
+    if (numtotal == recvFile.size)
     {
-        printf("파일 전송이 완료되었습니다.\n");
+        std::cout << "파일 전송이 완료되었습니다" << std::endl;
     }
     else
     {
-        printf("파일 전송에 문제가 있습니다\n");
+        std::cout << "파일 전송에 문제가 있습니다" << std::endl;
     }
     return 0;
 }
@@ -207,10 +206,10 @@ unsigned WINAPI ReadProc(void* param)
 unsigned WINAPI CloseProc(void* param)
 {
     int index = (int)param;
-    SOCKADDR_IN cliaddr = { 0 };
-    int len = sizeof(cliaddr);
-    getpeername(socketArray[index], (SOCKADDR*)&cliaddr, &len);
-    printf("[%s:%d] 연결 종료\n", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+    SOCKADDR_IN clientAddress = { 0 };
+    int len = sizeof(clientAddress);
+    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
 
     closesocket(socketArray[index]);
     WSACloseEvent(eventArray[index]);
@@ -220,29 +219,4 @@ unsigned WINAPI CloseProc(void* param)
     eventArray[index] = eventArray[numOfClient];
 
     return 0;
-}
-
-int recvn(SOCKET s, char* buf, int len, int flags)
-{
-    SOCKET sock = (SOCKET)s;
-    int received;
-    char* ptr = buf;
-    int left = len;
-
-    while (left > 0)
-    {
-        received = recv(sock, ptr, left, flags);
-        if (received == SOCKET_ERROR)
-        {
-            return SOCKET_ERROR;
-        }
-        else if (received == 0)
-        {
-            break;
-        }
-        left -= received;
-        ptr += received;
-    }
-    closesocket(sock);
-    return (len - left);
 }
