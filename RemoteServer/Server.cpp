@@ -187,12 +187,12 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
         }
         if (numtotal == recvFile.size)
         {
-            std::cout << "파일 전송이 완료되었습니다" << std::endl;
+            std::cout << "파일 수신이 완료되었습니다" << std::endl;
         }
     }
     else
     {
-        std::cout << "파일명이 같은 파일이 존재합니다 전송 진행하지 않습니다." << std::endl;
+        std::cout << "파일명이 같은 파일이 존재합니다 데이터만 받습니다." << std::endl;
         while (1)
         {
             retval = recv(socketArray[index], buf, BUF_SIZE, 0);
@@ -205,9 +205,12 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
                 numtotal += retval;
             }
         }
+        if (numtotal == recvFile.size)
+        {
+            std::cout << "데이터 수신이 완료되었습니다" << std::endl;
+        }
     }
     fclose(fp);
-
 }
 
 void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)

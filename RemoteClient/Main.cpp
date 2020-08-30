@@ -55,9 +55,6 @@ int main()
     std::thread sendThread(SendProc, sock);
     sendThread.join();
 
-    std::thread recvThread(RecvProc, sock);
-    recvThread.join();
-
     WSACleanup(); // 윈속 해제화
     return 0;
 }
@@ -99,7 +96,7 @@ void SendProc(SOCKET s)
         // 다시 파일 처음으로 위치 옮김
         fseek(fp, 0L, SEEK_SET);
 
-        // 1. 파일 기본 정보 전송
+        // 파일 기본 정보 전송
         std::cout << "전송하는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
         send(sock, (char*)&sendFile, sizeof(sendFile), 0);
 
@@ -127,15 +124,4 @@ void SendProc(SOCKET s)
         }
         fclose(fp);
     }
-}
-
-void RecvProc(SOCKET s)
-{
-    SOCKET sock = s;
-    char msg[MAX_MSG_LEN];
-    while (recv(sock, msg, MAX_MSG_LEN, 0) > 0)
-    {
-        //printf("%s\n", msg);
-    }
-    closesocket(sock);
 }
