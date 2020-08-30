@@ -79,6 +79,64 @@ void SendProc(SOCKET s)
             break;
         }
 
+        // 여러파일 전송 테스트용 코드
+        if (strcmp(sendFile.name, "test") == 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                std::string tmp = std::to_string(i);
+                tmp += ".zip";
+                char name[256];
+                strcpy(name, tmp.c_str());
+
+                // 종료가 아니면 파일 전송
+                fp = fopen(name, "rb");
+                if (fp == NULL)
+                {
+                    std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
+                    continue;
+                };
+
+                // 파일 끝으로 위치 옮김
+                fseek(fp, 0L, SEEK_END);
+
+                // 파일 크기 얻음
+                sendFile.size = ftell(fp);
+                strcpy(sendFile.name, name);
+                // 다시 파일 처음으로 위치 옮김
+                fseek(fp, 0L, SEEK_SET);
+
+                // 파일 기본 정보 전송
+                std::cout << "전송하는 파일명 : " << name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
+                send(sock, (char*)&sendFile, sizeof(sendFile), 0);
+
+                // 데이터 통신에 사용할 변수
+                char buf[BUF_SIZE];
+                int retval;
+                int numread = 0;
+                int numtotal = 0;
+
+                // 파일 전송
+                while (1)
+                {
+                    numread = fread(buf, 1, BUF_SIZE, fp);
+
+                    if (numread > 0)
+                    {
+                        send(sock, buf, numread, 0);
+                        numtotal += numread;
+                    }
+                    else if (numread == 0 && numtotal == sendFile.size)
+                    {
+                        std::cout << "파일 전송 완료" << std::endl;
+                        break;
+                    }
+                }
+                fclose(fp);
+            }
+            continue;
+        }
+
         // 종료가 아니면 파일 전송
         fp = fopen(sendFile.name, "rb");
         if (fp == NULL)

@@ -159,6 +159,8 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
 
     Files recvFile = queue->front();
     queue->pop();
+    fs::path p(recvFile.name);
+    remove(p);
     lock.unlock();
 
     int index = recvFile.index;
@@ -171,7 +173,6 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
     {
         // 데이터 받아서 파일 쓰는 로직
         fp = fopen(recvFile.name, "wb");
-        std::cout << "파일명이 같은 파일이 존재하지 않습니다" << std::endl;
         while (1)
         {
             retval = recv(socketArray[index], buf, BUF_SIZE, 0);
@@ -188,26 +189,6 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
         if (numtotal == recvFile.size)
         {
             std::cout << "파일 수신이 완료되었습니다" << std::endl;
-        }
-    }
-    else
-    {
-        std::cout << "파일명이 같은 파일이 존재합니다 데이터만 받습니다." << std::endl;
-        while (1)
-        {
-            retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-            if (retval == -1)
-            {
-                break;
-            }
-            else
-            {
-                numtotal += retval;
-            }
-        }
-        if (numtotal == recvFile.size)
-        {
-            std::cout << "데이터 수신이 완료되었습니다" << std::endl;
         }
     }
     fclose(fp);

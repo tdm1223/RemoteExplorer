@@ -7,6 +7,9 @@
 #include<string>
 #include<condition_variable>  // std::condition_variable
 #include<mutex>
+#include<filesystem>
+
+namespace fs = std::filesystem;
 
 #pragma comment(lib,"ws2_32")
 #pragma warning(disable: 4996)
