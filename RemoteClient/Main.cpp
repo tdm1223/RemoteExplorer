@@ -20,6 +20,7 @@ struct Files
 {
     char name[MAX_MSG_LEN];
     unsigned int size;
+    int index = 0;
 };
 
 int main()

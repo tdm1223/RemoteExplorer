@@ -1,4 +1,4 @@
-#include "Server.h"
+ï»¿#include "Server.h"
 
 Server::Server()
 {
@@ -8,10 +8,10 @@ Server::Server()
     {
         exit(1);
     }
-    SOCKET sock = SetServer(ServerSize); // ´ë±â ¼ÒÄÏ ¼³Á¤
+    SOCKET sock = SetServer(ServerSize); // ëŒ€ê¸° ì†Œì¼“ ì„¤ì •
     if (sock == -1)
     {
-        perror("´ë±â ¼ÒÄÏ ¿À·ù");
+        perror("ëŒ€ê¸° ì†Œì¼“ ì˜¤ë¥˜");
     }
     else
     {
@@ -33,19 +33,19 @@ SOCKET Server::SetServer(int size)
         return -1;
     }
 
-    // ¼­¹ö Á¤º¸ ¼³Á¤
+    // ì„œë²„ ì •ë³´ ì„¤ì •
     SOCKADDR_IN servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
 
-    // ¼ÒÄÏ ÁÖ¼Ò¿Í ³×Æ®¿öÅ© ÀÎÅÍÆäÀÌ½º °áÇÕ
+    // ì†Œì¼“ ì£¼ì†Œì™€ ë„¤íŠ¸ì›Œí¬ ì¸í„°í˜ì´ìŠ¤ ê²°í•©
     if (bind(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
     {
         return -1;
     }
 
-    //¹é ·Î±× Å¥ ¼³Á¤
+    //ë°± ë¡œê·¸ í ì„¤ì •
     if (listen(sock, size) == -1)
     {
         return -1;
@@ -58,11 +58,11 @@ void Server::EventLoop(SOCKET sock)
     AddEvent(sock, FD_ACCEPT | FD_CLOSE);
     while (true)
     {
-        // ÀÌº¥Æ® ¹ß»ıÀ» ±â´Ù¸®¸é¼­ °¡Àå Ã³À½ ¹ß»ıÇÑ index¸¦ ¹İÈ¯
+        // ì´ë²¤íŠ¸ ë°œìƒì„ ê¸°ë‹¤ë¦¬ë©´ì„œ ê°€ì¥ ì²˜ìŒ ë°œìƒí•œ indexë¥¼ ë°˜í™˜
         int index = WSAWaitForMultipleEvents(numOfClient, eventArray, false, INFINITE, false);
         WSANETWORKEVENTS net_events;
 
-        // ÀÌº¥Æ® Á¾·ù ¾Ë¾Æ³»±â
+        // ì´ë²¤íŠ¸ ì¢…ë¥˜ ì•Œì•„ë‚´ê¸°
         WSAEnumNetworkEvents(socketArray[index], eventArray[index], &net_events);
         if (net_events.lNetworkEvents == FD_ACCEPT)
         {
@@ -71,8 +71,13 @@ void Server::EventLoop(SOCKET sock)
         }
         else if (net_events.lNetworkEvents == FD_READ)
         {
-            std::thread readThread([=] {ReadProc(index); });
+            std::thread readThread([=] {ReadProc(index, &queue, &m, &cv); });
             readThread.join();
+
+            cv.notify_all();
+
+            std::thread recvThread([=] {RecvProc(&queue, &m, &cv); });
+            recvThread.join();
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
@@ -103,10 +108,10 @@ void Server::AcceptProc()
         closesocket(sock);
     }
     AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] ¿¬°á ¼º°ø" << std::endl;
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] ì—°ê²° ì„±ê³µ" << std::endl;
 }
 
-void Server::ReadProc(int num)
+void Server::ReadProc(int num, std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv)
 {
     Files recvFile;
     int index = num;
@@ -114,23 +119,59 @@ void Server::ReadProc(int num)
     SOCKADDR_IN clientAddress = { 0 };
     GetClientAddress(clientAddress, index);
 
-    // ÆÄÀÏ ±âº» Á¤º¸¸¦ ¼ö½Å
+    // íŒŒì¼ ê¸°ë³¸ ì •ë³´ë¥¼ ìˆ˜ì‹ 
     int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
+    recvFile.index = index;
     if (retval == SOCKET_ERROR)
     {
         return;
     }
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] Àü¼ÛÇÏ´Â ÆÄÀÏ : " << recvFile.name << " Àü¼ÛÇÏ´Â ÆÄÀÏ Å©±â : " << recvFile.size << "Byte" << std::endl;
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] ì „ì†¡í•˜ëŠ” íŒŒì¼ : " << recvFile.name << " ì „ì†¡í•˜ëŠ” íŒŒì¼ í¬ê¸° : " << recvFile.size << "Byte" << std::endl;
 
-    // ±âÁ¸ ÆÄÀÏ ¿©ºÎ È®ÀÎ
+    m->lock();
+    queue->push(recvFile);
+    m->unlock();
+
+    cv->notify_one();
+}
+
+void Server::CloseProc(int num)
+{
+    int index = num;
+    SOCKADDR_IN clientAddress = { 0 };
+    GetClientAddress(clientAddress, index);
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] ì—°ê²° ì¢…ë£Œ" << std::endl;
+
+    closesocket(socketArray[index]);
+    WSACloseEvent(eventArray[index]);
+
+    numOfClient--;
+    socketArray[index] = socketArray[numOfClient];
+    eventArray[index] = eventArray[numOfClient];
+}
+
+void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv)
+{
+    std::unique_lock<std::mutex> lock(*m);
+    cv->wait(lock, [&] {return !queue->empty(); });
+
+    int retval = 0;
+
+    Files recvFile = queue->front();
+    queue->pop();
+    lock.unlock();
+
+    int index = recvFile.index;
+
+    // ê¸°ì¡´ íŒŒì¼ ì—¬ë¶€ í™•ì¸
     FILE* fp = fopen(recvFile.name, "rb");
     int numtotal = 0;
     char buf[BUF_SIZE];
     if (fp == NULL)
     {
-        // µ¥ÀÌÅÍ ¹Ş¾Æ¼­ ÆÄÀÏ ¾²´Â ·ÎÁ÷
+        // ë°ì´í„° ë°›ì•„ì„œ íŒŒì¼ ì“°ëŠ” ë¡œì§
         fp = fopen(recvFile.name, "wb");
-        std::cout << "ÆÄÀÏ¸íÀÌ °°Àº ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù" << std::endl;
+        std::cout << "íŒŒì¼ëª…ì´ ê°™ì€ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤" << std::endl;
         while (1)
         {
             retval = recv(socketArray[index], buf, BUF_SIZE, 0);
@@ -146,12 +187,12 @@ void Server::ReadProc(int num)
         }
         if (numtotal == recvFile.size)
         {
-            std::cout << "ÆÄÀÏ Àü¼ÛÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù" << std::endl;
+            std::cout << "íŒŒì¼ ì „ì†¡ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤" << std::endl;
         }
     }
     else
     {
-        std::cout << "ÆÄÀÏ¸íÀÌ °°Àº ÆÄÀÏÀÌ Á¸ÀçÇÕ´Ï´Ù Àü¼Û ÁøÇàÇÏÁö ¾Ê½À´Ï´Ù." << std::endl;
+        std::cout << "íŒŒì¼ëª…ì´ ê°™ì€ íŒŒì¼ì´ ì¡´ì¬í•©ë‹ˆë‹¤ ì „ì†¡ ì§„í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤." << std::endl;
         while (1)
         {
             retval = recv(socketArray[index], buf, BUF_SIZE, 0);
@@ -165,24 +206,8 @@ void Server::ReadProc(int num)
             }
         }
     }
-
     fclose(fp);
-    return;
-}
 
-void Server::CloseProc(int num)
-{
-    int index = num;
-    SOCKADDR_IN clientAddress = { 0 };
-    GetClientAddress(clientAddress, index);
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] ¿¬°á Á¾·á" << std::endl;
-
-    closesocket(socketArray[index]);
-    WSACloseEvent(eventArray[index]);
-
-    numOfClient--;
-    socketArray[index] = socketArray[numOfClient];
-    eventArray[index] = eventArray[numOfClient];
 }
 
 void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
