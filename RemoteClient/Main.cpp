@@ -12,8 +12,8 @@
 #define SERVER_IP "127.0.0.1"
 #define BUF_SIZE 8096
 
-unsigned ReceiveProc(void* param);
-unsigned SendProc(void* param);
+void RecvProc(SOCKET sock);
+void SendProc(SOCKET sock);
 
 //파일 기본 정보
 struct Files
@@ -24,8 +24,13 @@ struct Files
 
 int main()
 {
+    // 윈속 초기화
     WSADATA wsadata;
-    WSAStartup(MAKEWORD(2, 2), &wsadata);//윈속 초기화
+    if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
+    {
+        std::cout << "윈속 초기화 에러" << std::endl;
+        return -1;
+    }
 
     // 서버와 통신용 소켓 생성
     SOCKET sock;
@@ -46,22 +51,19 @@ int main()
         return -1;
     }
 
-    unsigned sendThreadId, receiceThreadId;
-    HANDLE sendThread = (HANDLE)_beginthreadex(NULL, 0, SendProc, (void*)sock, 0, &sendThreadId);
-    HANDLE receiveThread = (HANDLE)_beginthreadex(NULL, 0, ReceiveProc, (void*)sock, 0, &receiceThreadId);
+    std::thread sendThread(SendProc, sock);
+    sendThread.join();
 
-    // 보내는 스레드가 종료할때까지 대기
-    WaitForSingleObject(sendThread, INFINITE);
+    std::thread recvThread(RecvProc, sock);
+    recvThread.join();
 
-    CloseHandle(sendThread);
-    CloseHandle(receiveThread);
     WSACleanup(); // 윈속 해제화
     return 0;
 }
 
-unsigned WINAPI SendProc(void* param)
+void SendProc(SOCKET s)
 {
-    SOCKET sock = (SOCKET)param;
+    SOCKET sock = s;
     FILE* fp;
     Files sendFile;
     std::string fileName;
@@ -76,7 +78,7 @@ unsigned WINAPI SendProc(void* param)
         if (strcmp(sendFile.name, "exit") == 0)
         {
             closesocket(sock);
-            return 0;
+            break;
         }
 
         // 종료가 아니면 파일 전송
@@ -124,17 +126,15 @@ unsigned WINAPI SendProc(void* param)
         }
         fclose(fp);
     }
-    return 0;
 }
 
-unsigned WINAPI ReceiveProc(void* param)
+void RecvProc(SOCKET s)
 {
-    SOCKET sock = (SOCKET)param;
+    SOCKET sock = s;
     char msg[MAX_MSG_LEN];
     while (recv(sock, msg, MAX_MSG_LEN, 0) > 0)
     {
         //printf("%s\n", msg);
     }
     closesocket(sock);
-    return 0;
 }
