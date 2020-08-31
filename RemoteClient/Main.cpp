@@ -4,13 +4,14 @@
 #include<thread>
 #include<string>
 #include<iostream>
+#include<queue>
 
 #pragma comment(lib, "ws2_32")
 
 #define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
-#define BUF_SIZE 8096
+#define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
 void SendProc(SOCKET sock);
@@ -82,44 +83,34 @@ void SendProc(SOCKET s)
             break;
         }
 
-        // 여러파일 전송 테스트용 코드
         if (strcmp(sendFile.name, "test") == 0)
         {
             for (int i = 0; i < 5; i++)
             {
-                std::string tmp = std::to_string(i);
-                tmp += ".zip";
-                strcpy(name, tmp.c_str());
+                std::string name = std::to_string(i);
+                name += ".txt";
+                std::cout << "name : " << name << std::endl;
+                ZeroMemory(sendFile.name, MAX_MSG_LEN);
+                strcpy(sendFile.name, name.c_str());
 
-                // 종료가 아니면 파일 전송
-                fp = fopen(name, "rb");
-                if (fp == NULL)
-                {
-                    std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
-                    continue;
-                };
-
+                fp = fopen(sendFile.name, "rb");
                 // 파일 끝으로 위치 옮김
                 fseek(fp, 0L, SEEK_END);
 
                 // 파일 크기 얻음
                 sendFile.size = ftell(fp);
-                strcpy(sendFile.name, name);
+
                 // 다시 파일 처음으로 위치 옮김
                 fseek(fp, 0L, SEEK_SET);
 
                 // 파일 기본 정보 전송
-                std::cout << "전송하는 파일명 : " << name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
+                std::cout << "전송하는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
                 send(sock, (char*)&sendFile, sizeof(sendFile), 0);
 
-                while (1)
+                recv(sock, endMessage, MESSAGE_SIZE, 0);
+                if (strcmp(endMessage, "start") == 0)
                 {
-                    recv(sock, endMessage, MESSAGE_SIZE, 0);
-                    if (strcmp(endMessage, "start") == 0)
-                    {
-                        std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
-                        break;
-                    }
+                    std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
                 }
 
                 // 데이터 통신에 사용할 변수
@@ -143,55 +134,44 @@ void SendProc(SOCKET s)
                         break;
                     }
                 }
-                fclose(fp);
 
                 recv(sock, endMessage, MESSAGE_SIZE, 0);
                 if (strcmp(endMessage, "end") == 0)
                 {
-                    std::cout << "서버가 온전한 파일을 받음" << std::endl;
+                    std::cout << "파일 전송 완료됨을 받음" << std::endl;
                 }
+                fclose(fp);
             }
-            continue;
         }
 
-        // 여러파일 전송 테스트용 코드
         if (strcmp(sendFile.name, "test2") == 0)
         {
             for (int i = 5; i < 10; i++)
             {
-                std::string tmp = std::to_string(i);
-                tmp += ".zip";
-                strcpy(name, tmp.c_str());
+                std::string name = std::to_string(i);
+                name += ".txt";
+                std::cout << "name : " << name << std::endl;
+                ZeroMemory(sendFile.name, MAX_MSG_LEN);
+                strcpy(sendFile.name, name.c_str());
 
-                // 종료가 아니면 파일 전송
-                fp = fopen(name, "rb");
-                if (fp == NULL)
-                {
-                    std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
-                    continue;
-                };
-
+                fp = fopen(sendFile.name, "rb");
                 // 파일 끝으로 위치 옮김
                 fseek(fp, 0L, SEEK_END);
 
                 // 파일 크기 얻음
                 sendFile.size = ftell(fp);
-                strcpy(sendFile.name, name);
+
                 // 다시 파일 처음으로 위치 옮김
                 fseek(fp, 0L, SEEK_SET);
 
                 // 파일 기본 정보 전송
-                std::cout << "전송하는 파일명 : " << name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
+                std::cout << "전송하는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
                 send(sock, (char*)&sendFile, sizeof(sendFile), 0);
 
-                while (true)
+                recv(sock, endMessage, MESSAGE_SIZE, 0);
+                if (strcmp(endMessage, "start") == 0)
                 {
-                    recv(sock, endMessage, MESSAGE_SIZE, 0);
-                    if (strcmp(endMessage, "start") == 0)
-                    {
-                        std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
-                        break;
-                    }
+                    std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
                 }
 
                 // 데이터 통신에 사용할 변수
@@ -215,19 +195,16 @@ void SendProc(SOCKET s)
                         break;
                     }
                 }
-                fclose(fp);
 
                 recv(sock, endMessage, MESSAGE_SIZE, 0);
                 if (strcmp(endMessage, "end") == 0)
                 {
-                    std::cout << "서버가 온전한 파일을 받음" << std::endl;
+                    std::cout << "파일 전송 완료됨을 받음" << std::endl;
                 }
+                fclose(fp);
             }
-            continue;
         }
 
-
-        // 종료가 아니면 파일 전송
         fp = fopen(sendFile.name, "rb");
         if (fp == NULL)
         {
@@ -247,6 +224,13 @@ void SendProc(SOCKET s)
         // 파일 기본 정보 전송
         std::cout << "전송하는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
         send(sock, (char*)&sendFile, sizeof(sendFile), 0);
+
+        // 서버로부터 파일을 보내도 된다는 메시지를 받을때까지 대기
+        recv(sock, endMessage, MESSAGE_SIZE, 0);
+        //if (strcmp(endMessage, "start") == 0)
+        //{
+        //    std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
+        //}
 
         // 데이터 통신에 사용할 변수
         int retval;
