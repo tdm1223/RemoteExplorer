@@ -161,9 +161,17 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
     queue->pop();
     fs::path p(recvFile.name);
     remove(p);
-    lock.unlock();
+    char endMessage[MESSAGE_SIZE];
+    std::string s = "start";
+
+    std::thread::id this_id = std::this_thread::get_id();
+    std::cout << "스레드 id : " << this_id << std::endl;
 
     int index = recvFile.index;
+
+    strcpy(endMessage, s.c_str());
+    send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
+    lock.unlock();
 
     // 기존 파일 여부 확인
     FILE* fp = fopen(recvFile.name, "rb");
@@ -192,6 +200,10 @@ void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_va
         }
     }
     fclose(fp);
+
+    s = "end";
+    strcpy(endMessage, s.c_str());
+    send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
 }
 
 void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
