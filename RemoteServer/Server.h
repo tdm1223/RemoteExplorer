@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 #define PORT 9000
 #define ServerSize 1024
 #define MAX_MSG_LEN 256
-#define BUF_SIZE 8096
+#define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
 //파일 기본 정보
@@ -38,16 +38,9 @@ public:
     HANDLE eventArray[FD_SETSIZE];
     int numOfClient;
 
-    void AcceptProc();
-    void ReadProc(int num, std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv);
-    void CloseProc(int num);
-    void RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv);
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
-    std::queue<Files> queue;
 
     std::mutex m;
-    std::condition_variable cv;
-
 private:
     // 대기 소켓 설정
     SOCKET SetServer(int size);

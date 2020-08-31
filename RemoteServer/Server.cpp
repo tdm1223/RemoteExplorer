@@ -61,28 +61,94 @@ void Server::EventLoop(SOCKET sock)
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
         int index = WSAWaitForMultipleEvents(numOfClient, eventArray, false, INFINITE, false);
         WSANETWORKEVENTS net_events;
-
         // 이벤트 종류 알아내기
         WSAEnumNetworkEvents(socketArray[index], eventArray[index], &net_events);
         if (net_events.lNetworkEvents == FD_ACCEPT)
         {
-            std::thread acceptThread([=] {AcceptProc(); });
-            acceptThread.join();
+            SOCKADDR_IN clientAddress = { 0 };
+            int len = sizeof(clientAddress);
+            SOCKET sock = accept(socketArray[0], (SOCKADDR*)&clientAddress, &len);
+
+            if (numOfClient == FD_SETSIZE)
+            {
+                closesocket(sock);
+            }
+            AddEvent(sock, FD_READ | FD_CLOSE);
+            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
         }
         else if (net_events.lNetworkEvents == FD_READ)
         {
-            std::thread readThread([=] {ReadProc(index, &queue, &m, &cv); });
-            readThread.join();
+            std::cout << "요청 들어옴" << std::endl;
+            Files recvFile;
 
-            cv.notify_all();
+            SOCKADDR_IN clientAddress = { 0 };
+            GetClientAddress(clientAddress, index);
 
-            std::thread recvThread([=] {RecvProc(&queue, &m, &cv); });
-            recvThread.join();
+            // 파일 기본 정보를 수신
+            int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
+            if (retval == SOCKET_ERROR)
+            {
+                return;
+            }
+            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
+
+            // 기존에 가지고 있던 파일 삭제
+            fs::path p(recvFile.name);
+            remove(p);
+
+            // 클라이언트에게 파일을 보내도록 함
+            char endMessage[MESSAGE_SIZE];
+            std::string s = "start";
+            strcpy(endMessage, s.c_str());
+            std::cout << "클라에게 데이터를 보내도 된다고 메시지 보냄" << std::endl;
+            send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
+
+            // 파일 받는 로직
+            FILE* fp = fopen(recvFile.name, "rb");
+            int numtotal = 0;
+            char buf[BUF_SIZE];
+            if (fp == NULL)
+            {
+                // 데이터 받아서 파일 쓰는 로직
+                fp = fopen(recvFile.name, "wb");
+                while (1)
+                {
+                    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+                    if (retval == -1)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        fwrite(buf, 1, retval, fp);
+                        numtotal += retval;
+                    }
+                }
+                if (numtotal == recvFile.size)
+                {
+                    std::cout << "파일 수신이 완료되었습니다" << std::endl;
+                }
+            }
+            fclose(fp);
+
+            // 클라이언트에게 파일을 다받았다고 알림
+            s = "end";
+            strcpy(endMessage, s.c_str());
+            send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
+            std::cout << "클라에게 파일 수신을 완료했다고 보냄" << std::endl;
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
-            std::thread closeThread([=] {CloseProc(index); });
-            closeThread.join();
+            SOCKADDR_IN clientAddress = { 0 };
+            GetClientAddress(clientAddress, index);
+            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
+
+            closesocket(socketArray[index]);
+            WSACloseEvent(eventArray[index]);
+
+            numOfClient--;
+            socketArray[index] = socketArray[numOfClient];
+            eventArray[index] = eventArray[numOfClient];
         }
     }
     closesocket(sock);
@@ -95,115 +161,6 @@ void Server::AddEvent(SOCKET sock, long eventType)
     eventArray[numOfClient] = wsaEvent;
     numOfClient++;
     WSAEventSelect(sock, wsaEvent, eventType);
-}
-
-void Server::AcceptProc()
-{
-    SOCKADDR_IN clientAddress = { 0 };
-    int len = sizeof(clientAddress);
-    SOCKET sock = accept(socketArray[0], (SOCKADDR*)&clientAddress, &len);
-
-    if (numOfClient == FD_SETSIZE)
-    {
-        closesocket(sock);
-    }
-    AddEvent(sock, FD_READ | FD_CLOSE | FD_WRITE);
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
-}
-
-void Server::ReadProc(int num, std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv)
-{
-    Files recvFile;
-    int index = num;
-
-    SOCKADDR_IN clientAddress = { 0 };
-    GetClientAddress(clientAddress, index);
-
-    // 파일 기본 정보를 수신
-    int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
-    recvFile.index = index;
-    if (retval == SOCKET_ERROR)
-    {
-        return;
-    }
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
-
-    m->lock();
-    queue->push(recvFile);
-    m->unlock();
-
-    cv->notify_one();
-}
-
-void Server::CloseProc(int num)
-{
-    int index = num;
-    SOCKADDR_IN clientAddress = { 0 };
-    GetClientAddress(clientAddress, index);
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
-
-    closesocket(socketArray[index]);
-    WSACloseEvent(eventArray[index]);
-
-    numOfClient--;
-    socketArray[index] = socketArray[numOfClient];
-    eventArray[index] = eventArray[numOfClient];
-}
-
-void Server::RecvProc(std::queue<Files>* queue, std::mutex* m, std::condition_variable* cv)
-{
-    std::unique_lock<std::mutex> lock(*m);
-    cv->wait(lock, [&] {return !queue->empty(); });
-
-    int retval = 0;
-
-    Files recvFile = queue->front();
-    queue->pop();
-    fs::path p(recvFile.name);
-    remove(p);
-    char endMessage[MESSAGE_SIZE];
-    std::string s = "start";
-
-    std::thread::id this_id = std::this_thread::get_id();
-    std::cout << "스레드 id : " << this_id << std::endl;
-
-    int index = recvFile.index;
-
-    strcpy(endMessage, s.c_str());
-    send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
-    lock.unlock();
-
-    // 기존 파일 여부 확인
-    FILE* fp = fopen(recvFile.name, "rb");
-    int numtotal = 0;
-    char buf[BUF_SIZE];
-    if (fp == NULL)
-    {
-        // 데이터 받아서 파일 쓰는 로직
-        fp = fopen(recvFile.name, "wb");
-        while (1)
-        {
-            retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-            if (retval == -1)
-            {
-                break;
-            }
-            else
-            {
-                fwrite(buf, 1, retval, fp);
-                numtotal += retval;
-            }
-        }
-        if (numtotal == recvFile.size)
-        {
-            std::cout << "파일 수신이 완료되었습니다" << std::endl;
-        }
-    }
-    fclose(fp);
-
-    s = "end";
-    strcpy(endMessage, s.c_str());
-    send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
 }
 
 void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
