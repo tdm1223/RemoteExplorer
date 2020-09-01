@@ -86,56 +86,40 @@ void Server::EventLoop(SOCKET sock)
 
             // 파일 기본 정보를 수신
             int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
+            std::cout << "retval : " << retval << std::endl;
             if (retval == SOCKET_ERROR)
             {
                 return;
             }
             std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
 
-            // 기존에 가지고 있던 파일 삭제
-            fs::path p(recvFile.name);
-            remove(p);
-
-            // 클라이언트에게 파일을 보내도록 함
-            char endMessage[MESSAGE_SIZE];
-            std::string s = "start";
-            strcpy(endMessage, s.c_str());
-            std::cout << "클라에게 데이터를 보내도 된다고 메시지 보냄" << std::endl;
-            send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
-
-            // 파일 받는 로직
-            FILE* fp = fopen(recvFile.name, "rb");
-            int numtotal = 0;
-            char buf[BUF_SIZE];
-            if (fp == NULL)
-            {
-                // 데이터 받아서 파일 쓰는 로직
-                fp = fopen(recvFile.name, "wb");
-                while (1)
-                {
-                    retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-                    if (retval == -1)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        fwrite(buf, 1, retval, fp);
-                        numtotal += retval;
-                    }
-                }
-                if (numtotal == recvFile.size)
-                {
-                    std::cout << "파일 수신이 완료되었습니다" << std::endl;
-                }
-            }
-            fclose(fp);
-
-            // 클라이언트에게 파일을 다받았다고 알림
-            s = "end";
-            strcpy(endMessage, s.c_str());
-            send(socketArray[index], endMessage, MESSAGE_SIZE, 0);
-            std::cout << "클라에게 파일 수신을 완료했다고 보냄" << std::endl;
+            //// 파일 받는 로직
+            //FILE* fp = fopen(recvFile.name, "rb");
+            //int numtotal = 0;
+            //char buf[BUF_SIZE];
+            //if (fp == NULL)
+            //{
+            //    // 데이터 받아서 파일 쓰는 로직
+            //    fp = fopen(recvFile.name, "wb");
+            //    while (1)
+            //    {
+            //        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
+            //        if (retval == -1)
+            //        {
+            //            break;
+            //        }
+            //        else
+            //        {
+            //            fwrite(buf, 1, retval, fp);
+            //            numtotal += retval;
+            //        }
+            //    }
+            //    if (numtotal == recvFile.size)
+            //    {
+            //        std::cout << "파일 수신이 완료되었습니다" << std::endl;
+            //    }
+            //}
+            //fclose(fp);
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {

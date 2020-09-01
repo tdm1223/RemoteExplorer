@@ -78,6 +78,52 @@ int main()
                 sendQueue.push(sendFile);
                 break;
             }
+            else if (strcmp(sendFile.name, "test") == 0)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    Files file;
+                    std::string name = std::to_string(i);
+                    name += ".txt";
+                    strcpy(file.name, name.c_str());
+                    FILE * f = fopen(file.name, "rb");
+
+                    // 파일 끝으로 위치 옮김
+                    fseek(f, 0L, SEEK_END);
+
+                    // 파일 크기 얻음
+                    file.size = ftell(f);
+
+                    // 다시 파일 처음으로 위치 옮김
+                    fseek(f, 0L, SEEK_SET);
+                    fclose(f);
+
+                    sendQueue.push(file);
+                }
+            }
+            else if (strcmp(sendFile.name, "test2") == 0)
+            {
+                for (int i = 5; i < 10; i++)
+                {
+                    Files file;
+                    std::string name = std::to_string(i);
+                    name += ".txt";
+                    strcpy(file.name, name.c_str());
+                    FILE* f = fopen(file.name, "rb");
+
+                    // 파일 끝으로 위치 옮김
+                    fseek(f, 0L, SEEK_END);
+
+                    // 파일 크기 얻음
+                    file.size = ftell(f);
+
+                    // 다시 파일 처음으로 위치 옮김
+                    fseek(f, 0L, SEEK_SET);
+                    fclose(f);
+
+                    sendQueue.push(file);
+                }
+            }
             else
             {
                 std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
@@ -116,11 +162,11 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
 
     while (1)
     {
-        m->lock();
+        //m->lock();
         if (q->empty())
         {
-            m->unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // 3초 의도적 지연
+            //m->unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
         }
 
@@ -129,51 +175,38 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
         q->pop();
         if (strcmp(sendFile.name, "exit") == 0 && sendFile.size == 0)
         {
-            std::cout << "exit" << std::endl;
-            m->unlock();
+            //m->unlock();
             break;
         }
 
         // 파일 기본 정보 전송
+        std::cout << "큐에서 꺼낸 파일 정보 : " << sendFile.name << " " << sendFile.size << std::endl;
         send(sock, (char*)&sendFile, sizeof(sendFile), 0);
 
-        // 서버로부터 파일을 보내도 된다는 메시지를 받을때까지 대기
-        recv(sock, endMessage, MESSAGE_SIZE, 0);
-        if (strcmp(endMessage, "start") == 0)
-        {
-            std::cout << "서버로 부터 파일 보내도 된다는 메시지를 받음" << std::endl;
-        }
+        //// 데이터 통신에 사용할 변수
+        //int retval;
+        //int numread = 0;
+        //int numtotal = 0;
+        //fp = fopen(sendFile.name, "rb");
 
-        // 데이터 통신에 사용할 변수
-        int retval;
-        int numread = 0;
-        int numtotal = 0;
-        fp = fopen(sendFile.name, "rb");
-
-        // 파일 전송
-        while (1)
-        {
-            numread = fread(buf, 1, BUF_SIZE, fp);
-
-            if (numread > 0)
-            {
-                send(sock, buf, numread, 0);
-                numtotal += numread;
-            }
-            else if (numread == 0 && numtotal == sendFile.size)
-            {
-                std::cout << "파일 전송 완료" << std::endl;
-                break;
-            }
-        }
-        fclose(fp);
-
-        recv(sock, endMessage, MESSAGE_SIZE, 0);
-        if (strcmp(endMessage, "end") == 0)
-        {
-            std::cout << "파일 전송 완료됨을 받음" << std::endl;
-        }
-        m->unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(80));
+        //// 파일 전송
+        //while (1)
+        //{
+        //    numread = fread(buf, 1, BUF_SIZE, fp);
+        //    //std::cout << numread << std::endl;
+        //    if (numread > 0)
+        //    {
+        //        send(sock, buf, numread, 0);
+        //        numtotal += numread;
+        //    }
+        //    else if (numread == 0 && numtotal == sendFile.size)
+        //    {
+        //        std::cout << "파일 전송 완료" << std::endl;
+        //        break;
+        //    }
+        //}
+        //fclose(fp);
+        //m->unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
