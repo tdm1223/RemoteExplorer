@@ -52,6 +52,10 @@ Remote Explorer C++
 - [ ] 파일 다운로드
 
 ## 1차 설계
+### Packet
+- Server - Client간 전송에 사용할 패킷을 설계한다.
+- 패킷에 대한 검증
+
 ### Client
 - Recv thread
 - Recv queue
@@ -64,5 +68,8 @@ Remote Explorer C++
 - 서버를 설계하는데 중요하게 생각할것
     1. 다수의 클라이언트가 동시 접속시 흐름 관리
     2. 스레드 사용
-    
+   
 ### 클래스 다이어그램 (주요 함수 위주로 작성 해보기)
+
+### 참고
+- msdn
