@@ -17,16 +17,8 @@ namespace fs = std::filesystem;
 #define PORT 9000
 #define ServerSize 1024
 #define MAX_MSG_LEN 256
-#define BUF_SIZE 4096
+#define BUF_SIZE 512
 #define MESSAGE_SIZE 20
-
-//파일 기본 정보
-struct Files
-{
-    char name[MAX_MSG_LEN];
-    unsigned int size;
-    int index;
-};
 
 class Server
 {

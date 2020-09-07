@@ -79,52 +79,42 @@ void Server::EventLoop(SOCKET sock)
         else if (net_events.lNetworkEvents == FD_READ)
         {
             std::cout << "요청 들어옴" << std::endl;
-            Files recvFile;
 
             SOCKADDR_IN clientAddress = { 0 };
             GetClientAddress(clientAddress, index);
 
-            // 파일 이름 크기 수신
-            int fileLength = 0;
-            recv(socketArray[index], (char*)&fileLength, sizeof(int), 0);
-            std::cout << "file length : " << fileLength << std::endl;
+            // 파일 크기 수신
+            int fileSize = 0;
+            recv(socketArray[index], (char*)&fileSize, sizeof(int), 0);
 
-            // 파일 기본 정보를 수신
-            //int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
-            //std::cout << "retval : " << retval << std::endl;
-            //if (retval == SOCKET_ERROR)
-            //{
-            //    return;
-            //}
-            //std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
+            // 파일명 수신
+            char name[MAX_MSG_LEN];
+            recv(socketArray[index], name, MAX_MSG_LEN, 0);
 
-            //// 파일 받는 로직
-            //FILE* fp = fopen(recvFile.name, "rb");
-            //int numtotal = 0;
-            //char buf[BUF_SIZE];
-            //if (fp == NULL)
-            //{
-            //    // 데이터 받아서 파일 쓰는 로직
-            //    fp = fopen(recvFile.name, "wb");
-            //    while (1)
-            //    {
-            //        retval = recv(socketArray[index], buf, BUF_SIZE, 0);
-            //        if (retval == -1)
-            //        {
-            //            break;
-            //        }
-            //        else
-            //        {
-            //            fwrite(buf, 1, retval, fp);
-            //            numtotal += retval;
-            //        }
-            //    }
-            //    if (numtotal == recvFile.size)
-            //    {
-            //        std::cout << "파일 수신이 완료되었습니다" << std::endl;
-            //    }
-            //}
-            //fclose(fp);
+            // 파일 정보 출력
+            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << name << " 전송하는 파일 크기 : " << fileSize << "Byte" << std::endl;
+
+            // 파일 받는 로직
+            FILE* fp = fopen(name, "wb+");
+            int readSize = 0;
+            int totalSize = 0;
+            char buf[BUF_SIZE];
+            while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
+            {
+                if (GetLastError() == WSAEWOULDBLOCK)
+                {
+                    Sleep(50); // 잠시 기다렸다가 재전송
+                    if (totalSize == fileSize)
+                    {
+                        std::cout << "파일 받기 완료" << std::endl;
+                        break;
+                    }
+                    continue;
+                }
+                totalSize += readSize;
+                fwrite(buf, 1, readSize, fp);
+            }
+            fclose(fp);
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
