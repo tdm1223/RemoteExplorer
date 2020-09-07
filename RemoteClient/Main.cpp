@@ -5,7 +5,6 @@
 #include<string>
 #include<iostream>
 #include<queue>
-#include<mutex>
 #include<chrono>
 
 #pragma comment(lib, "ws2_32")
@@ -13,7 +12,7 @@
 #define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
-#define BUF_SIZE 4096
+#define BUF_SIZE 512
 #define MESSAGE_SIZE 20
 
 //파일 기본 정보
@@ -24,12 +23,11 @@ struct Files
     unsigned int size;
 };
 
-void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m);
+void SendProc(SOCKET s, std::queue<Files>* q);
 
 int main()
 {
     std::queue<Files> sendQueue;
-    std::mutex m;
     // 윈속 초기화
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
@@ -60,7 +58,7 @@ int main()
     Files sendFile;
     FILE* fp;
 
-    std::thread sendThread(SendProc, sock, &sendQueue, &m);
+    std::thread sendThread(SendProc, sock, &sendQueue);
 
     while (true)
     {
@@ -86,7 +84,7 @@ int main()
                     std::string name = std::to_string(i);
                     name += ".txt";
                     strcpy(file.name, name.c_str());
-                    FILE * f = fopen(file.name, "rb");
+                    FILE* f = fopen(file.name, "rb");
 
                     // 파일 끝으로 위치 옮김
                     fseek(f, 0L, SEEK_END);
@@ -152,7 +150,7 @@ int main()
     return 0;
 }
 
-void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
+void SendProc(SOCKET s, std::queue<Files>* q)
 {
     FILE* fp;
     SOCKET sock = s;
@@ -162,10 +160,8 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
 
     while (1)
     {
-        //m->lock();
         if (q->empty())
         {
-            //m->unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
         }
@@ -175,44 +171,32 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
         q->pop();
         if (strcmp(sendFile.name, "exit") == 0 && sendFile.size == 0)
         {
-            //m->unlock();
             std::cout << "연결 종료" << std::endl;
             break;
         }
 
-        // 파일 기본 정보 전송
-        int retvalue;
+        // 파일 크기 보냄
+        send(sock, (char*)&sendFile.size, sizeof(int), 0);
 
-        int size = sendFile.nameLen;
-        send(sock, (char*)&size, sizeof(int), 0);
-
-        //std::cout << "큐에서 꺼낸 파일 정보 : " << sendFile.name << " " << sendFile.size << std::endl;
-        //send(sock, (char*)&sendFile, sizeof(sendFile), 0);
+        // 파일명을 보냄
+        send(sock, sendFile.name, MAX_MSG_LEN, 0);
 
         // 데이터 통신에 사용할 변수
-        //int retval;
-        //int numread = 0;
-        //int numtotal = 0;
-        //fp = fopen(sendFile.name, "rb");
+        int sendSize = 0;
+        fp = fopen(sendFile.name, "rb");
 
-        //// 파일 전송
-        //while (1)
-        //{
-        //    numread = fread(buf, 1, BUF_SIZE, fp);
-        //    //std::cout << numread << std::endl;
-        //    if (numread > 0)
-        //    {
-        //        send(sock, buf, numread, 0);
-        //        numtotal += numread;
-        //    }
-        //    else if (numread == 0 && numtotal == sendFile.size)
-        //    {
-        //        std::cout << "파일 전송 완료" << std::endl;
-        //        break;
-        //    }
-        //}
-        //fclose(fp);
-        //m->unlock();
+        // 파일 전송
+        while (1)
+        {
+            sendSize = fread(buf, 1, BUF_SIZE, fp);
+            if (sendSize < BUF_SIZE)
+            {
+                send(sock, buf, sendSize, 0);
+                break;
+            }
+            send(sock, buf, BUF_SIZE, 0);
+        }
+        fclose(fp);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
