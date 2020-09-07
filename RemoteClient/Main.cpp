@@ -20,8 +20,8 @@
 struct Files
 {
     char name[MAX_MSG_LEN];
+    int nameLen = 0;
     unsigned int size;
-    int index = 0;
 };
 
 void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m);
@@ -67,7 +67,7 @@ int main()
         fileName.clear();
         std::cin >> fileName;
         strcpy(sendFile.name, fileName.c_str());
-
+        sendFile.nameLen = strlen(sendFile.name);
         fp = fopen(sendFile.name, "rb");
         if (fp == NULL)
         {
@@ -176,14 +176,20 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
         if (strcmp(sendFile.name, "exit") == 0 && sendFile.size == 0)
         {
             //m->unlock();
+            std::cout << "연결 종료" << std::endl;
             break;
         }
 
         // 파일 기본 정보 전송
-        std::cout << "큐에서 꺼낸 파일 정보 : " << sendFile.name << " " << sendFile.size << std::endl;
-        send(sock, (char*)&sendFile, sizeof(sendFile), 0);
+        int retvalue;
 
-        //// 데이터 통신에 사용할 변수
+        int size = sendFile.nameLen;
+        send(sock, (char*)&size, sizeof(int), 0);
+
+        //std::cout << "큐에서 꺼낸 파일 정보 : " << sendFile.name << " " << sendFile.size << std::endl;
+        //send(sock, (char*)&sendFile, sizeof(sendFile), 0);
+
+        // 데이터 통신에 사용할 변수
         //int retval;
         //int numread = 0;
         //int numtotal = 0;
@@ -207,6 +213,6 @@ void SendProc(SOCKET s, std::queue<Files>* q, std::mutex* m)
         //}
         //fclose(fp);
         //m->unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }

@@ -84,14 +84,19 @@ void Server::EventLoop(SOCKET sock)
             SOCKADDR_IN clientAddress = { 0 };
             GetClientAddress(clientAddress, index);
 
+            // 파일 이름 크기 수신
+            int fileLength = 0;
+            recv(socketArray[index], (char*)&fileLength, sizeof(int), 0);
+            std::cout << "file length : " << fileLength << std::endl;
+
             // 파일 기본 정보를 수신
-            int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
-            std::cout << "retval : " << retval << std::endl;
-            if (retval == SOCKET_ERROR)
-            {
-                return;
-            }
-            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
+            //int retval = recv(socketArray[index], (char*)&recvFile, sizeof(recvFile), 0);
+            //std::cout << "retval : " << retval << std::endl;
+            //if (retval == SOCKET_ERROR)
+            //{
+            //    return;
+            //}
+            //std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << recvFile.name << " 전송하는 파일 크기 : " << recvFile.size << "Byte" << std::endl;
 
             //// 파일 받는 로직
             //FILE* fp = fopen(recvFile.name, "rb");
