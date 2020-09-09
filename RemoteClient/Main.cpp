@@ -6,6 +6,9 @@
 #include<iostream>
 #include<queue>
 #include<chrono>
+#include<filesystem>
+
+namespace fs = std::filesystem;
 
 #pragma comment(lib, "ws2_32")
 
@@ -62,6 +65,16 @@ int main()
 
     while (true)
     {
+        std::cout << "현재 폴더에 있는 파일" << std::endl;
+        std::cout << "======================" << std::endl;
+        std::string files;
+        for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
+        {
+            files = entry.path().string();
+            size_t pos = files.rfind("\\");
+            std::cout << files.substr(pos + 1) << std::endl;
+        }
+        std::cout << "======================" << std::endl;
         fileName.clear();
         std::cin >> fileName;
         strcpy(sendFile.name, fileName.c_str());
