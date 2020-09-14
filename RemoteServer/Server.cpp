@@ -76,9 +76,14 @@ void Server::EventLoop(SOCKET sock)
             AddEvent(sock, FD_READ | FD_CLOSE);
             std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
         }
+        else if (net_events.lNetworkEvents == FD_WRITE)
+        {
+            std::cout << "다운로드 요청" << std::endl;
+
+        }
         else if (net_events.lNetworkEvents == FD_READ)
         {
-            std::cout << "요청 들어옴" << std::endl;
+            std::cout << "업로드 요청" << std::endl;
 
             SOCKADDR_IN clientAddress = { 0 };
             GetClientAddress(clientAddress, index);
