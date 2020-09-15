@@ -76,85 +76,96 @@ int main()
         }
         std::cout << "======================" << std::endl;
         fileName.clear();
-        std::cin >> fileName;
-        strcpy(sendFile.name, fileName.c_str());
-        sendFile.nameLen = strlen(sendFile.name);
-        fp = fopen(sendFile.name, "rb");
-        if (fp == NULL)
+
+        int type;
+        std::cin >> type;
+        if (type == 1)
         {
-            // 종료일 경우
-            if (strcmp(sendFile.name, "exit") == 0)
+            std::cout << "업로드할 파일을 선택하세요" << std::endl;
+            std::cin >> fileName;
+            strcpy(sendFile.name, fileName.c_str());
+            sendFile.nameLen = strlen(sendFile.name);
+            fp = fopen(sendFile.name, "rb");
+            if (fp == NULL)
             {
-                sendFile.size = 0;
-                sendQueue.push(sendFile);
-                break;
-            }
-            else if (strcmp(sendFile.name, "test") == 0)
-            {
-                for (int i = 0; i < 5; i++)
+                // 종료일 경우
+                if (strcmp(sendFile.name, "exit") == 0)
                 {
-                    Files file;
-                    std::string name = std::to_string(i);
-                    name += ".txt";
-                    strcpy(file.name, name.c_str());
-                    FILE* f = fopen(file.name, "rb");
-
-                    // 파일 끝으로 위치 옮김
-                    fseek(f, 0L, SEEK_END);
-
-                    // 파일 크기 얻음
-                    file.size = ftell(f);
-
-                    // 다시 파일 처음으로 위치 옮김
-                    fseek(f, 0L, SEEK_SET);
-                    fclose(f);
-
-                    sendQueue.push(file);
+                    sendFile.size = 0;
+                    sendQueue.push(sendFile);
+                    break;
                 }
-            }
-            else if (strcmp(sendFile.name, "test2") == 0)
-            {
-                for (int i = 5; i < 10; i++)
+                else if (strcmp(sendFile.name, "test") == 0)
                 {
-                    Files file;
-                    std::string name = std::to_string(i);
-                    name += ".txt";
-                    strcpy(file.name, name.c_str());
-                    FILE* f = fopen(file.name, "rb");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        Files file;
+                        std::string name = std::to_string(i);
+                        name += ".txt";
+                        strcpy(file.name, name.c_str());
+                        FILE* f = fopen(file.name, "rb");
 
-                    // 파일 끝으로 위치 옮김
-                    fseek(f, 0L, SEEK_END);
+                        // 파일 끝으로 위치 옮김
+                        fseek(f, 0L, SEEK_END);
 
-                    // 파일 크기 얻음
-                    file.size = ftell(f);
+                        // 파일 크기 얻음
+                        file.size = ftell(f);
 
-                    // 다시 파일 처음으로 위치 옮김
-                    fseek(f, 0L, SEEK_SET);
-                    fclose(f);
+                        // 다시 파일 처음으로 위치 옮김
+                        fseek(f, 0L, SEEK_SET);
+                        fclose(f);
 
-                    sendQueue.push(file);
+                        sendQueue.push(file);
+                    }
+                }
+                else if (strcmp(sendFile.name, "test2") == 0)
+                {
+                    for (int i = 5; i < 10; i++)
+                    {
+                        Files file;
+                        std::string name = std::to_string(i);
+                        name += ".txt";
+                        strcpy(file.name, name.c_str());
+                        FILE* f = fopen(file.name, "rb");
+
+                        // 파일 끝으로 위치 옮김
+                        fseek(f, 0L, SEEK_END);
+
+                        // 파일 크기 얻음
+                        file.size = ftell(f);
+
+                        // 다시 파일 처음으로 위치 옮김
+                        fseek(f, 0L, SEEK_SET);
+                        fclose(f);
+
+                        sendQueue.push(file);
+                    }
+                }
+                else
+                {
+                    std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
+                    continue;
                 }
             }
             else
             {
-                std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
-                continue;
+                // 파일 끝으로 위치 옮김
+                fseek(fp, 0L, SEEK_END);
+
+                // 파일 크기 얻음
+                sendFile.size = ftell(fp);
+
+                // 다시 파일 처음으로 위치 옮김
+                fseek(fp, 0L, SEEK_SET);
+                fclose(fp);
+
+                std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
+                sendQueue.push(sendFile);
             }
         }
         else
         {
-            // 파일 끝으로 위치 옮김
-            fseek(fp, 0L, SEEK_END);
 
-            // 파일 크기 얻음
-            sendFile.size = ftell(fp);
-
-            // 다시 파일 처음으로 위치 옮김
-            fseek(fp, 0L, SEEK_SET);
-            fclose(fp);
-
-            std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
-            sendQueue.push(sendFile);
         }
     }
     sendThread.join();
