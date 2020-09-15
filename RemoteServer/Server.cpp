@@ -83,43 +83,52 @@ void Server::EventLoop(SOCKET sock)
         }
         else if (net_events.lNetworkEvents == FD_READ)
         {
-            std::cout << "업로드 요청" << std::endl;
-
-            SOCKADDR_IN clientAddress = { 0 };
-            GetClientAddress(clientAddress, index);
-
-            // 파일 크기 수신
-            int fileSize = 0;
-            recv(socketArray[index], (char*)&fileSize, sizeof(int), 0);
-
-            // 파일명 수신
-            char name[MAX_MSG_LEN];
-            recv(socketArray[index], name, MAX_MSG_LEN, 0);
-
-            // 파일 정보 출력
-            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << name << " 전송하는 파일 크기 : " << fileSize << "Byte" << std::endl;
-
-            // 파일 받는 로직
-            FILE* fp = fopen(name, "wb+");
-            int readSize = 0;
-            int totalSize = 0;
-            char buf[BUF_SIZE];
-            while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
+            int type = 0;
+            recv(socketArray[index], (char*)&type, sizeof(int), 0);
+            std::cout << "type" << type << std::endl;
+            if (type == 1)
             {
-                if (GetLastError() == WSAEWOULDBLOCK)
+                std::cout << "업로드 요청" << std::endl;
+                SOCKADDR_IN clientAddress = { 0 };
+                GetClientAddress(clientAddress, index);
+
+                // 파일 크기 수신
+                int fileSize = 0;
+                recv(socketArray[index], (char*)&fileSize, sizeof(int), 0);
+
+                // 파일명 수신
+                char name[MAX_MSG_LEN];
+                recv(socketArray[index], name, MAX_MSG_LEN, 0);
+
+                // 파일 정보 출력
+                std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << name << " 전송하는 파일 크기 : " << fileSize << "Byte" << std::endl;
+
+                // 파일 받는 로직
+                FILE* fp = fopen(name, "wb+");
+                int readSize = 0;
+                int totalSize = 0;
+                char buf[BUF_SIZE];
+                while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
                 {
-                    Sleep(50); // 잠시 기다렸다가 재전송
-                    if (totalSize == fileSize)
+                    if (GetLastError() == WSAEWOULDBLOCK)
                     {
-                        std::cout << "파일 받기 완료" << std::endl;
-                        break;
+                        Sleep(50); // 잠시 기다렸다가 재전송
+                        if (totalSize == fileSize)
+                        {
+                            std::cout << "파일 받기 완료" << std::endl;
+                            break;
+                        }
+                        continue;
                     }
-                    continue;
+                    totalSize += readSize;
+                    fwrite(buf, 1, readSize, fp);
                 }
-                totalSize += readSize;
-                fwrite(buf, 1, readSize, fp);
+                fclose(fp);
             }
-            fclose(fp);
+            else if (type == 2)
+            {
+                std::cout << "다운로드 요청" << std::endl;
+            }
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {

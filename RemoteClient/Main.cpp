@@ -65,23 +65,24 @@ int main()
 
     while (true)
     {
-        std::cout << "현재 폴더에 있는 파일" << std::endl;
-        std::cout << "======================" << std::endl;
-        std::string files;
-        for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
-        {
-            files = entry.path().string();
-            size_t pos = files.rfind("\\");
-            std::cout << files.substr(pos + 1) << std::endl;
-        }
-        std::cout << "======================" << std::endl;
-        fileName.clear();
-
+        std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl;
         int type;
         std::cin >> type;
         if (type == 1)
         {
-            std::cout << "업로드할 파일을 선택하세요" << std::endl;
+            std::cout << "현재 폴더에 있는 파일" << std::endl;
+            std::cout << "======================" << std::endl;
+            std::string files;
+            for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
+            {
+                files = entry.path().string();
+                size_t pos = files.rfind("\\");
+                std::cout << files.substr(pos + 1) << std::endl;
+            }
+            std::cout << "======================" << std::endl;
+            fileName.clear();
+
+            std::cout << "업로드할 파일을 입력하세요" << std::endl;
             std::cin >> fileName;
             strcpy(sendFile.name, fileName.c_str());
             sendFile.nameLen = strlen(sendFile.name);
@@ -163,9 +164,25 @@ int main()
                 sendQueue.push(sendFile);
             }
         }
+        else if (type == 2)
+        {
+            // 다운로드라는것을 알림
+            send(sock, (char*)&type, sizeof(int), 0);
+
+            std::cout << "업로드 요청" << std::endl;
+            std::cout << "원격 폴더에 있는 파일" << std::endl;
+            std::cout << "======================" << std::endl;
+            // 요청해서 파일 리스트 보여주는 코드
+
+            std::cout << "======================" << std::endl;
+            std::cout << "다운로드할 파일을 입력하세요" << std::endl;
+            std::cin >> fileName;
+
+        }
         else
         {
-
+            std::cout << "입력값이 유효하지 않습니다." << std::endl;
+            continue;
         }
     }
     sendThread.join();
@@ -198,6 +215,11 @@ void SendProc(SOCKET s, std::queue<Files>* q)
             std::cout << "연결 종료" << std::endl;
             break;
         }
+
+        // 업로드라는것을 알림
+        int type = 1;
+        send(sock, (char*)&type, sizeof(int), 0);
+        std::cout << "업로드 요청" << std::endl;
 
         // 파일 크기 보냄
         send(sock, (char*)&sendFile.size, sizeof(int), 0);
