@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 
 #pragma comment(lib, "ws2_32")
 
+#pragma warning (disable:4996)
+
 #define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
@@ -22,15 +24,17 @@ namespace fs = std::filesystem;
 struct Files
 {
     char name[MAX_MSG_LEN];
-    int nameLen = 0;
+    size_t nameLen = 0;
     unsigned int size;
 };
 
 void SendProc(SOCKET s, std::queue<Files>* q);
+void RecvProc(SOCKET s, std::queue<Files>* q);
 
 int main()
 {
     std::queue<Files> sendQueue;
+    std::queue<Files> recvQueue;
     // 윈속 초기화
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
@@ -62,6 +66,7 @@ int main()
     FILE* fp;
 
     std::thread sendThread(SendProc, sock, &sendQueue);
+    std::thread recvThread(RecvProc, sock, &recvQueue);
 
     while (true)
     {
@@ -186,6 +191,7 @@ int main()
         }
     }
     sendThread.join();
+    recvThread.join();
     closesocket(sock);
     WSACleanup(); // 윈속 해제화
     return 0;
@@ -195,9 +201,7 @@ void SendProc(SOCKET s, std::queue<Files>* q)
 {
     FILE* fp;
     SOCKET sock = s;
-    char endMessage[MESSAGE_SIZE];
     char buf[BUF_SIZE];
-    char name[256];
 
     while (1)
     {
@@ -245,4 +249,9 @@ void SendProc(SOCKET s, std::queue<Files>* q)
         fclose(fp);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+}
+
+void RecvProc(SOCKET s, std::queue<Files>* q)
+{
+    
 }
