@@ -132,16 +132,8 @@ void Server::EventLoop(SOCKET sock)
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
-            SOCKADDR_IN clientAddress = { 0 };
-            GetClientAddress(clientAddress, index);
-            std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
-
-            closesocket(socketArray[index]);
-            WSACloseEvent(eventArray[index]);
-
-            numOfClient--;
-            socketArray[index] = socketArray[numOfClient];
-            eventArray[index] = eventArray[numOfClient];
+            std::thread closeThread([=] {CloseProc(index); });
+            closeThread.join();
         }
     }
     closesocket(sock);
@@ -161,3 +153,18 @@ void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
     int len = sizeof(clientAddress);
     getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
 }
+
+void Server::CloseProc(int index)
+{
+    SOCKADDR_IN clientAddress = { 0 };
+    GetClientAddress(clientAddress, index);
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
+
+    closesocket(socketArray[index]);
+    WSACloseEvent(eventArray[index]);
+
+    numOfClient--;
+    socketArray[index] = socketArray[numOfClient];
+    eventArray[index] = eventArray[numOfClient];
+}
+
