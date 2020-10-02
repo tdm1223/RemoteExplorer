@@ -127,7 +127,32 @@ void Server::EventLoop(SOCKET sock)
             }
             else if (type == 2)
             {
+                int cnt = 0;
                 std::cout << "다운로드 요청" << std::endl;
+
+                std::vector<std::string> fileVector;
+
+                std::string files;
+                for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
+                {
+                    files = entry.path().string();
+                    size_t pos = files.rfind("\\");
+                    files = files.substr(pos + 1);
+                    fileVector.push_back(files);
+                    cnt++;
+                }
+
+                // 파일 개수를 보냄
+                send(socketArray[index], (char*)&cnt, sizeof(int), 0); 
+
+                // 개수만큼 파일명을 보냄
+                char sendBuf[MAX_MSG_LEN];
+                for (auto tmp = fileVector.begin(); tmp != fileVector.end(); tmp++)
+                {
+                    strcpy(sendBuf, tmp->c_str());
+                    std::cout << "보냄 " << tmp->c_str() << std::endl;
+                    send(socketArray[index], sendBuf, MAX_MSG_LEN, 0);
+                }
             }
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
