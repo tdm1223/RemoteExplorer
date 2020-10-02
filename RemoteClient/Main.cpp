@@ -177,12 +177,22 @@ int main()
             std::cout << "업로드 요청" << std::endl;
             std::cout << "원격 폴더에 있는 파일" << std::endl;
             std::cout << "======================" << std::endl;
-            // 요청해서 파일 리스트 보여주는 코드
+            int cnt = 0;
+            recv(sock, (char*)&cnt, sizeof(int), 0);
 
-            std::cout << "======================" << std::endl;
+            std::cout << "파일 개수 : " << cnt << std::endl;
             std::cout << "다운로드할 파일을 입력하세요" << std::endl;
-            std::cin >> fileName;
+            // 요청해서 파일 리스트 보여주는 코드
+            char recvBuf[256];
+            for (int i = 0; i < cnt; i++)
+            {
+                recv(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
+                std::cout << recvBuf << std::endl;
+            }
+            std::cout << "======================" << std::endl;
+            std::cout << "파일명을 입력하세요" << std::endl;
 
+            std::cin >> fileName;
         }
         else
         {
@@ -253,5 +263,5 @@ void SendProc(SOCKET s, std::queue<Files>* q)
 
 void RecvProc(SOCKET s, std::queue<Files>* q)
 {
-    
+
 }
