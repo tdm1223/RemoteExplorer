@@ -76,12 +76,7 @@ void Server::EventLoop(SOCKET sock)
             AddEvent(sock, FD_READ | FD_CLOSE);
             std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
         }
-        else if (net_events.lNetworkEvents == FD_WRITE)
-        {
-            std::cout << "다운로드 요청" << std::endl;
-
-        }
-        else if (net_events.lNetworkEvents == FD_READ)
+        else if (net_events.lNetworkEvents == FD_READ || net_events.lNetworkEvents == FD_WRITE)
         {
             int type = 0;
             recv(socketArray[index], (char*)&type, sizeof(int), 0);
@@ -143,16 +138,59 @@ void Server::EventLoop(SOCKET sock)
                 }
 
                 // 파일 개수를 보냄
-                send(socketArray[index], (char*)&cnt, sizeof(int), 0); 
+                send(socketArray[index], (char*)&cnt, sizeof(int), 0);
 
                 // 개수만큼 파일명을 보냄
                 char sendBuf[MAX_MSG_LEN];
                 for (auto tmp = fileVector.begin(); tmp != fileVector.end(); tmp++)
                 {
                     strcpy(sendBuf, tmp->c_str());
-                    std::cout << "보냄 " << tmp->c_str() << std::endl;
                     send(socketArray[index], sendBuf, MAX_MSG_LEN, 0);
                 }
+
+                // 입력 대기
+                while (1)
+                {
+                    if (recv(socketArray[index], sendBuf, MAX_MSG_LEN, 0) != SOCKET_ERROR)
+                    {
+                        break;
+                    }
+                }
+                std::string fileName = sendBuf;
+
+                std::cout << "다운로드 파일명  : " << fileName << std::endl;
+
+                // 파일 크기 전송
+                FILE* fp;
+                int fileSize = 0;
+                fp = fopen(fileName.c_str(), "rb");
+                // 파일 끝으로 위치 옮김
+                fseek(fp, 0L, SEEK_END);
+
+                // 파일 크기 얻음
+                fileSize = ftell(fp);
+
+                // 다시 파일 처음으로 위치 옮김
+                fseek(fp, 0L, SEEK_SET);
+                fclose(fp);
+                send(socketArray[index], (char*)&fileSize, sizeof(fileSize), 0);
+
+                // 파일 전송
+                int sendSize = 0;
+                fp = fopen(fileName.c_str(), "rb");
+                char buf[BUF_SIZE];
+                while (1)
+                {
+                    sendSize = fread(buf, 1, BUF_SIZE, fp);
+                    if (sendSize < BUF_SIZE)
+                    {
+                        send(socketArray[index], buf, sendSize, 0);
+                        break;
+                    }
+                    send(socketArray[index], buf, BUF_SIZE, 0);
+                }
+                fclose(fp);
+                std::cout << "파일 전송 완료" << std::endl;
             }
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
