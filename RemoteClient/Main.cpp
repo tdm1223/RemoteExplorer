@@ -192,7 +192,42 @@ int main()
             std::cout << "======================" << std::endl;
             std::cout << "파일명을 입력하세요" << std::endl;
 
+            // 다운 받으려는 파일명을 보냄
             std::cin >> fileName;
+            strcpy(recvBuf, fileName.c_str());
+            send(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
+
+            // 다운 받으려는 파일 크기를 받음
+            int fileSize = 0;
+            recv(sock, (char*)&fileSize, sizeof(fileSize), 0);
+            std::cout << "받으려는 파일 크기 : " << fileSize << std::endl;
+
+            // 파일 다운로드
+            FILE* fp = fopen(fileName.c_str(), "wb+");
+            int readSize = 0;
+            int totalSize = 0;
+            char buf[BUF_SIZE];
+            while ((readSize = recv(sock, buf, BUF_SIZE, 0)) != 0)
+            {
+                if (GetLastError() == WSAEWOULDBLOCK)
+                {
+                    Sleep(50); // 잠시 기다렸다가 재전송
+                    if (totalSize == fileSize)
+                    {
+                        std::cout << "파일 받기 완료" << std::endl;
+                        break;
+                    }
+                    continue;
+                }
+                totalSize += readSize;
+                fwrite(buf, 1, readSize, fp);
+                if (totalSize == fileSize)
+                {
+                    std::cout << "파일 받기 완료" << std::endl;
+                    break;
+                }
+            }
+            fclose(fp);
         }
         else
         {
