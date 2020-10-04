@@ -20,6 +20,12 @@ namespace fs = std::filesystem;
 #define BUF_SIZE 512
 #define MESSAGE_SIZE 20
 
+enum msgType
+{
+    UPLOAD = 1,
+    DOWNLOAD = 2,
+};
+
 class Server
 {
 public:

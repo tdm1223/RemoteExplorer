@@ -76,12 +76,11 @@ void Server::EventLoop(SOCKET sock)
             AddEvent(sock, FD_READ | FD_CLOSE);
             std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
         }
-        else if (net_events.lNetworkEvents == FD_READ || net_events.lNetworkEvents == FD_WRITE)
+        else if (net_events.lNetworkEvents == FD_READ)
         {
             int type = 0;
             recv(socketArray[index], (char*)&type, sizeof(int), 0);
-            std::cout << "type" << type << std::endl;
-            if (type == 1)
+            if (type == UPLOAD)
             {
                 std::cout << "업로드 요청" << std::endl;
                 SOCKADDR_IN clientAddress = { 0 };
@@ -120,11 +119,9 @@ void Server::EventLoop(SOCKET sock)
                 }
                 fclose(fp);
             }
-            else if (type == 2)
+            else if (type == DOWNLOAD)
             {
                 int cnt = 0;
-                std::cout << "다운로드 요청" << std::endl;
-
                 std::vector<std::string> fileVector;
 
                 std::string files;
@@ -158,7 +155,7 @@ void Server::EventLoop(SOCKET sock)
                 }
                 std::string fileName = sendBuf;
 
-                std::cout << "다운로드 파일명  : " << fileName << std::endl;
+                std::cout << "다운로드 요청 파일 : " << fileName << std::endl;
 
                 // 파일 크기 전송
                 FILE* fp;

@@ -20,6 +20,12 @@ namespace fs = std::filesystem;
 #define BUF_SIZE 512
 #define MESSAGE_SIZE 20
 
+enum msgType
+{
+    UPLOAD = 1,
+    DOWNLOAD = 2
+};
+
 //파일 기본 정보
 struct Files
 {
@@ -73,7 +79,7 @@ int main()
         std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl;
         int type;
         std::cin >> type;
-        if (type == 1)
+        if (type == UPLOAD)
         {
             std::cout << "현재 폴더에 있는 파일" << std::endl;
             std::cout << "======================" << std::endl;
@@ -169,7 +175,7 @@ int main()
                 sendQueue.push(sendFile);
             }
         }
-        else if (type == 2)
+        else if (type == DOWNLOAD)
         {
             // 다운로드라는것을 알림
             send(sock, (char*)&type, sizeof(int), 0);
@@ -203,6 +209,7 @@ int main()
             std::cout << "받으려는 파일 크기 : " << fileSize << std::endl;
 
             // 파일 다운로드
+            std::cout << "파일 다운로드 시작" << std::endl;
             FILE* fp = fopen(fileName.c_str(), "wb+");
             int readSize = 0;
             int totalSize = 0;
