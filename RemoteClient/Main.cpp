@@ -72,7 +72,6 @@ int main()
     FILE* fp;
 
     std::thread sendThread(SendProc, sock, &sendQueue);
-    std::thread recvThread(RecvProc, sock, &recvQueue);
 
     while (true)
     {
@@ -177,64 +176,8 @@ int main()
         }
         else if (type == DOWNLOAD)
         {
-            // 다운로드라는것을 알림
-            send(sock, (char*)&type, sizeof(int), 0);
-
-            std::cout << "업로드 요청" << std::endl;
-            std::cout << "원격 폴더에 있는 파일" << std::endl;
-            std::cout << "======================" << std::endl;
-            int cnt = 0;
-            recv(sock, (char*)&cnt, sizeof(int), 0);
-
-            std::cout << "파일 개수 : " << cnt << std::endl;
-            std::cout << "다운로드할 파일을 입력하세요" << std::endl;
-            // 요청해서 파일 리스트 보여주는 코드
-            char recvBuf[256];
-            for (int i = 0; i < cnt; i++)
-            {
-                recv(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
-                std::cout << recvBuf << std::endl;
-            }
-            std::cout << "======================" << std::endl;
-            std::cout << "파일명을 입력하세요" << std::endl;
-
-            // 다운 받으려는 파일명을 보냄
-            std::cin >> fileName;
-            strcpy(recvBuf, fileName.c_str());
-            send(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
-
-            // 다운 받으려는 파일 크기를 받음
-            int fileSize = 0;
-            recv(sock, (char*)&fileSize, sizeof(fileSize), 0);
-            std::cout << "받으려는 파일 크기 : " << fileSize << std::endl;
-
-            // 파일 다운로드
-            std::cout << "파일 다운로드 시작" << std::endl;
-            FILE* fp = fopen(fileName.c_str(), "wb+");
-            int readSize = 0;
-            int totalSize = 0;
-            char buf[BUF_SIZE];
-            while ((readSize = recv(sock, buf, BUF_SIZE, 0)) != 0)
-            {
-                if (GetLastError() == WSAEWOULDBLOCK)
-                {
-                    Sleep(50); // 잠시 기다렸다가 재전송
-                    if (totalSize == fileSize)
-                    {
-                        std::cout << "파일 받기 완료" << std::endl;
-                        break;
-                    }
-                    continue;
-                }
-                totalSize += readSize;
-                fwrite(buf, 1, readSize, fp);
-                if (totalSize == fileSize)
-                {
-                    std::cout << "파일 받기 완료" << std::endl;
-                    break;
-                }
-            }
-            fclose(fp);
+            std::thread recvThread(RecvProc, sock, &recvQueue);
+            recvThread.join();
         }
         else
         {
@@ -243,7 +186,6 @@ int main()
         }
     }
     sendThread.join();
-    recvThread.join();
     closesocket(sock);
     WSACleanup(); // 윈속 해제화
     return 0;
@@ -305,5 +247,66 @@ void SendProc(SOCKET s, std::queue<Files>* q)
 
 void RecvProc(SOCKET s, std::queue<Files>* q)
 {
+    SOCKET sock = s;
 
+    // 다운로드라는것을 알림
+    int type = 2;
+    send(sock, (char*)&type, sizeof(int), 0);
+
+    std::cout << "업로드 요청" << std::endl;
+    std::cout << "원격 폴더에 있는 파일" << std::endl;
+    std::cout << "======================" << std::endl;
+    int cnt = 0;
+    recv(sock, (char*)&cnt, sizeof(int), 0);
+
+    std::cout << "파일 개수 : " << cnt << std::endl;
+    std::cout << "다운로드할 파일을 입력하세요" << std::endl;
+    // 요청해서 파일 리스트 보여주는 코드
+    char recvBuf[256];
+    for (int i = 0; i < cnt; i++)
+    {
+        recv(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
+        std::cout << recvBuf << std::endl;
+    }
+    std::cout << "======================" << std::endl;
+    std::cout << "파일명을 입력하세요" << std::endl;
+
+    // 다운 받으려는 파일명을 보냄
+    std::string fileName;
+    std::cin >> fileName;
+    strcpy(recvBuf, fileName.c_str());
+    send(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
+
+    // 다운 받으려는 파일 크기를 받음
+    int fileSize = 0;
+    recv(sock, (char*)&fileSize, sizeof(fileSize), 0);
+    std::cout << "받으려는 파일 크기 : " << fileSize << std::endl;
+
+    // 파일 다운로드
+    std::cout << "파일 다운로드 시작" << std::endl;
+    FILE* fp = fopen(fileName.c_str(), "wb+");
+    int readSize = 0;
+    int totalSize = 0;
+    char buf[BUF_SIZE];
+    while ((readSize = recv(sock, buf, BUF_SIZE, 0)) != 0)
+    {
+        if (GetLastError() == WSAEWOULDBLOCK)
+        {
+            Sleep(50); // 잠시 기다렸다가 재전송
+            if (totalSize == fileSize)
+            {
+                std::cout << "파일 받기 완료" << std::endl;
+                break;
+            }
+            continue;
+        }
+        totalSize += readSize;
+        fwrite(buf, 1, readSize, fp);
+        if (totalSize == fileSize)
+        {
+            std::cout << "파일 받기 완료" << std::endl;
+            break;
+        }
+    }
+    fclose(fp);
 }
