@@ -125,6 +125,8 @@ int main()
                         // 다시 파일 처음으로 위치 옮김
                         fseek(f, 0L, SEEK_SET);
                         fclose(f);
+                        std::cout << "전송 파일 이름 : " << file.name << std::endl;
+                        std::cout << "전송 파일 크기 : " << file.size << std::endl;
 
                         sendQueue.push(file);
                     }
@@ -242,6 +244,7 @@ void SendProc(SOCKET s, std::queue<Files>* q)
         }
         fclose(fp);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::cout << "전송 완료 : " << sendFile.name << std::endl;
     }
 }
 
@@ -285,6 +288,11 @@ void RecvProc(SOCKET s, std::queue<Files>* q)
     // 파일 다운로드
     std::cout << "파일 다운로드 시작" << std::endl;
     FILE* fp = fopen(fileName.c_str(), "wb+");
+    if (fp == NULL)
+    {
+        fclose(fp);
+        return;
+    }
     int readSize = 0;
     int totalSize = 0;
     char buf[BUF_SIZE];

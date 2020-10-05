@@ -38,6 +38,7 @@ public:
 
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
+    void RecvProc(int index);
 
     std::mutex m;
 private:
