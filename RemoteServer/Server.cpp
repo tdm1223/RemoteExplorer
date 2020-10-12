@@ -236,13 +236,17 @@ void Server::SendProc(int index)
 
     // 파일 전송
     int sendSize = 0;
+    int totalSize = 0;
     fp = fopen(fileName.c_str(), "rb");
     char buf[BUF_SIZE];
+    cnt = 0;
     while (1)
     {
         sendSize = fread(buf, 1, BUF_SIZE, fp);
-        std::cout << "sendSize : " << sendSize << std::endl;
-        if (sendSize < BUF_SIZE)
+        totalSize += sendSize;
+        cnt++;
+        std::cout << "total : " << totalSize << std::endl;
+        if (sendSize < BUF_SIZE && totalSize == fileSize)
         {
             send(socketArray[index], buf, sendSize, 0);
             break;

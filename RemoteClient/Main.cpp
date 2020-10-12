@@ -71,7 +71,7 @@ int main()
 
     while (true)
     {
-        std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl;
+        std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl << "3: 종료" << std::endl;
         int type;
         std::cin >> type;
         if (type == UPLOAD)
@@ -192,7 +192,7 @@ void RecvProc(SOCKET s)
     std::cout << "파일 개수 : " << cnt << std::endl;
     std::cout << "다운로드할 파일을 입력하세요" << std::endl;
     // 요청해서 파일 리스트 보여주는 코드
-    char recvBuf[256];
+    char recvBuf[BUF_SIZE];
     for (int i = 0; i < cnt; i++)
     {
         recv(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
@@ -217,14 +217,16 @@ void RecvProc(SOCKET s)
     FILE* fp = fopen(fileName.c_str(), "wb+");
     if (fp == NULL)
     {
+        std::cout << "파일 쓰기 오류. 해당 파일 생략" << std::endl;
         return;
     }
+
+    memset(recvBuf, 0, sizeof(recvBuf));
     int readSize = 0;
     int totalSize = 0;
-    char buf[BUF_SIZE];
-    while ((readSize = recv(sock, buf, BUF_SIZE, 0)) != 0)
+    while ((readSize = recv(sock, recvBuf, BUF_SIZE, 0)) != 0)
     {
-        std::cout << "readSize : " << readSize << std::endl;
+        std::cout << "total : " << totalSize << std::endl;
         if (GetLastError() == WSAEWOULDBLOCK)
         {
             Sleep(50); // 잠시 기다렸다가 재전송
@@ -236,7 +238,7 @@ void RecvProc(SOCKET s)
             continue;
         }
         totalSize += readSize;
-        fwrite(buf, 1, readSize, fp);
+        fwrite(recvBuf, 1, readSize, fp);
         if (totalSize == fileSize)
         {
             std::cout << "파일 받기 완료" << std::endl;
