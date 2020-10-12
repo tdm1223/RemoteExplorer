@@ -24,7 +24,8 @@ namespace fs = std::filesystem;
 enum msgType
 {
     UPLOAD = 1,
-    DOWNLOAD = 2
+    DOWNLOAD = 2,
+    EXIT = 3,
 };
 
 //파일 기본 정보
@@ -35,8 +36,8 @@ struct Files
     int size;
 };
 
-void SendProc(SOCKET s, std::queue<Files>* q);
-void RecvProc(SOCKET s, std::queue<Files>* q);
+void SendProc(SOCKET s);
+void RecvProc(SOCKET s);
 
 int main()
 {
@@ -68,12 +69,6 @@ int main()
         return -1;
     }
 
-    std::string fileName;
-    Files sendFile;
-    FILE* fp;
-
-    std::thread sendThread(SendProc, sock, &sendQueue);
-
     while (true)
     {
         std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl;
@@ -81,106 +76,18 @@ int main()
         std::cin >> type;
         if (type == UPLOAD)
         {
-            std::cout << "현재 폴더에 있는 파일" << std::endl;
-            std::cout << "======================" << std::endl;
-            std::string files;
-            for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
-            {
-                files = entry.path().string();
-                size_t pos = files.rfind("\\");
-                std::cout << files.substr(pos + 1) << std::endl;
-            }
-            std::cout << "======================" << std::endl;
-            fileName.clear();
-
-            std::cout << "업로드할 파일을 입력하세요" << std::endl;
-            std::cin >> fileName;
-            strcpy(sendFile.name, fileName.c_str());
-            sendFile.nameLen = strlen(sendFile.name);
-            fp = fopen(sendFile.name, "rb");
-            if (fp == NULL)
-            {
-                // 종료일 경우
-                if (strcmp(sendFile.name, "exit") == 0)
-                {
-                    sendFile.size = 0;
-                    sendQueue.push(sendFile);
-                    break;
-                }
-                else if (strcmp(sendFile.name, "test") == 0)
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        Files file;
-                        std::string name = std::to_string(i);
-                        name += ".txt";
-                        strcpy(file.name, name.c_str());
-                        FILE* f = fopen(file.name, "rb");
-
-                        // 파일 끝으로 위치 옮김
-                        fseek(f, 0L, SEEK_END);
-
-                        // 파일 크기 얻음
-                        file.size = ftell(f);
-
-                        // 다시 파일 처음으로 위치 옮김
-                        fseek(f, 0L, SEEK_SET);
-                        fclose(f);
-                        std::cout << "전송 파일 이름 : " << file.name << std::endl;
-                        std::cout << "전송 파일 크기 : " << file.size << std::endl;
-
-                        sendQueue.push(file);
-                    }
-                }
-                else if (strcmp(sendFile.name, "test2") == 0)
-                {
-                    for (int i = 5; i < 10; i++)
-                    {
-                        Files file;
-                        std::string name = std::to_string(i);
-                        name += ".txt";
-                        strcpy(file.name, name.c_str());
-                        FILE* f = fopen(file.name, "rb");
-
-                        // 파일 끝으로 위치 옮김
-                        fseek(f, 0L, SEEK_END);
-
-                        // 파일 크기 얻음
-                        file.size = ftell(f);
-
-                        // 다시 파일 처음으로 위치 옮김
-                        fseek(f, 0L, SEEK_SET);
-                        fclose(f);
-
-                        sendQueue.push(file);
-                    }
-                }
-                else
-                {
-                    std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
-                    continue;
-                }
-            }
-            else
-            {
-                // 파일 끝으로 위치 옮김
-                fseek(fp, 0L, SEEK_END);
-
-                // 파일 크기 얻음
-                sendFile.size = ftell(fp);
-
-                // 다시 파일 처음으로 위치 옮김
-                fseek(fp, 0L, SEEK_SET);
-                fclose(fp);
-
-                std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
-                sendQueue.push(sendFile);
-            }
+            std::thread sendThread(SendProc, sock);
+            sendThread.join();
         }
         else if (type == DOWNLOAD)
         {
-            std::thread recvThread(RecvProc, sock, &recvQueue);
+            std::thread recvThread(RecvProc, sock);
             recvThread.join();
+        }
+        else if (type == EXIT)
+        {
+            std::cout << "연결 종료" << std::endl;
+            break;
         }
         else
         {
@@ -188,40 +95,60 @@ int main()
             continue;
         }
     }
-    sendThread.join();
     closesocket(sock);
     WSACleanup(); // 윈속 해제화
     return 0;
 }
 
-void SendProc(SOCKET s, std::queue<Files>* q)
+void SendProc(SOCKET s)
 {
-    FILE* fp;
     SOCKET sock = s;
-    char buf[BUF_SIZE];
 
-    while (1)
+    std::string fileName;
+    Files sendFile;
+    FILE* fp;
+
+    std::cout << "현재 폴더에 있는 파일" << std::endl;
+    std::cout << "======================" << std::endl;
+    std::string files;
+    for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
     {
-        if (q->empty())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            continue;
-        }
+        files = entry.path().string();
+        size_t pos = files.rfind("\\");
+        std::cout << files.substr(pos + 1) << std::endl;
+    }
+    std::cout << "======================" << std::endl;
+    fileName.clear();
 
-        // 큐에서 하나를 꺼냄
-        Files sendFile = q->front();
-        q->pop();
-        if (strcmp(sendFile.name, "exit") == 0 && sendFile.size == 0)
-        {
-            std::cout << "연결 종료" << std::endl;
-            break;
-        }
+    std::cout << "업로드할 파일을 입력하세요" << std::endl;
+    std::cin >> fileName;
+    strcpy(sendFile.name, fileName.c_str());
+    sendFile.nameLen = strlen(sendFile.name);
+    fp = fopen(sendFile.name, "rb");
+    if (fp == NULL)
+    {
+        std::cout << "파일이 없습니다. 파일명을 확인하세요" << std::endl;
+    }
+    else
+    {
+        // 파일 끝으로 위치 옮김
+        fseek(fp, 0L, SEEK_END);
+
+        // 파일 크기 얻음
+        sendFile.size = ftell(fp);
+
+        // 다시 파일 처음으로 위치 옮김
+        fseek(fp, 0L, SEEK_SET);
+        fclose(fp);
+
+        std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
 
         // 업로드라는것을 알림
         int type = 1;
         send(sock, (char*)&type, sizeof(int), 0);
         std::cout << "업로드 요청" << std::endl;
 
+        // 헤더 만듦
         char header[BUF_SIZE];
         memcpy(header, &sendFile.size, sizeof(sendFile.size));
         memcpy(header + sizeof(sendFile.size), &sendFile.name, sizeof(sendFile.name));
@@ -230,7 +157,7 @@ void SendProc(SOCKET s, std::queue<Files>* q)
         // 데이터 통신에 사용할 변수
         int sendSize = 0;
         fp = fopen(sendFile.name, "rb");
-
+        char buf[BUF_SIZE];
         // 파일 전송
         while (1)
         {
@@ -248,7 +175,7 @@ void SendProc(SOCKET s, std::queue<Files>* q)
     }
 }
 
-void RecvProc(SOCKET s, std::queue<Files>* q)
+void RecvProc(SOCKET s)
 {
     SOCKET sock = s;
 
@@ -297,6 +224,7 @@ void RecvProc(SOCKET s, std::queue<Files>* q)
     char buf[BUF_SIZE];
     while ((readSize = recv(sock, buf, BUF_SIZE, 0)) != 0)
     {
+        std::cout << "readSize : " << readSize << std::endl;
         if (GetLastError() == WSAEWOULDBLOCK)
         {
             Sleep(50); // 잠시 기다렸다가 재전송
