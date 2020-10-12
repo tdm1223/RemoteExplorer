@@ -87,73 +87,8 @@ void Server::EventLoop(SOCKET sock)
             }
             else if (type == DOWNLOAD)
             {
-                int cnt = 0;
-                std::vector<std::string> fileVector;
-
-                std::string files;
-                for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
-                {
-                    files = entry.path().string();
-                    size_t pos = files.rfind("\\");
-                    files = files.substr(pos + 1);
-                    fileVector.push_back(files);
-                    cnt++;
-                }
-
-                // 파일 개수를 보냄
-                send(socketArray[index], (char*)&cnt, sizeof(int), 0);
-
-                // 개수만큼 파일명을 보냄
-                char sendBuf[MAX_MSG_LEN];
-                for (auto tmp = fileVector.begin(); tmp != fileVector.end(); tmp++)
-                {
-                    strcpy(sendBuf, tmp->c_str());
-                    send(socketArray[index], sendBuf, MAX_MSG_LEN, 0);
-                }
-
-                // 입력 대기
-                while (1)
-                {
-                    if (recv(socketArray[index], sendBuf, MAX_MSG_LEN, 0) != SOCKET_ERROR)
-                    {
-                        break;
-                    }
-                }
-                std::string fileName = sendBuf;
-
-                std::cout << "다운로드 요청 파일 : " << fileName << std::endl;
-
-                // 파일 크기 전송
-                FILE* fp;
-                int fileSize = 0;
-                fp = fopen(fileName.c_str(), "rb");
-                // 파일 끝으로 위치 옮김
-                fseek(fp, 0L, SEEK_END);
-
-                // 파일 크기 얻음
-                fileSize = ftell(fp);
-
-                // 다시 파일 처음으로 위치 옮김
-                fseek(fp, 0L, SEEK_SET);
-                fclose(fp);
-                send(socketArray[index], (char*)&fileSize, sizeof(fileSize), 0);
-
-                // 파일 전송
-                int sendSize = 0;
-                fp = fopen(fileName.c_str(), "rb");
-                char buf[BUF_SIZE];
-                while (1)
-                {
-                    sendSize = fread(buf, 1, BUF_SIZE, fp);
-                    if (sendSize < BUF_SIZE)
-                    {
-                        send(socketArray[index], buf, sendSize, 0);
-                        break;
-                    }
-                    send(socketArray[index], buf, BUF_SIZE, 0);
-                }
-                fclose(fp);
-                std::cout << "파일 전송 완료" << std::endl;
+                std::thread sendThread([=] {SendProc(index); });
+                sendThread.join();
             }
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
@@ -201,6 +136,7 @@ void Server::RecvProc(int index)
 
     char buf[BUF_SIZE];
     recv(socketArray[index], buf, BUF_SIZE, 0);
+
     // 파일 크기 수신
     int fileSize = 0;
     memcpy(&fileSize, (int*)buf, sizeof(fileSize));
@@ -241,3 +177,78 @@ void Server::RecvProc(int index)
     fclose(fp);
 }
 
+void Server::SendProc(int index)
+{
+    int cnt = 0;
+    std::vector<std::string> fileVector;
+
+    std::string files;
+    for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
+    {
+        files = entry.path().string();
+        size_t pos = files.rfind("\\");
+        files = files.substr(pos + 1);
+        fileVector.push_back(files);
+        cnt++;
+    }
+
+    // 파일 개수를 보냄
+    send(socketArray[index], (char*)&cnt, sizeof(int), 0);
+
+    // 개수만큼 파일명을 보냄
+    char sendBuf[MAX_MSG_LEN];
+    for (auto tmp = fileVector.begin(); tmp != fileVector.end(); tmp++)
+    {
+        strcpy(sendBuf, tmp->c_str());
+        send(socketArray[index], sendBuf, MAX_MSG_LEN, 0);
+    }
+
+    // 입력 대기
+    while (1)
+    {
+        if (recv(socketArray[index], sendBuf, MAX_MSG_LEN, 0) != SOCKET_ERROR)
+        {
+            break;
+        }
+    }
+    std::string fileName = sendBuf;
+
+    std::cout << "다운로드 요청 파일 : " << fileName << std::endl;
+
+    // 파일 크기 전송
+    FILE* fp;
+    int fileSize = 0;
+    fp = fopen(fileName.c_str(), "rb");
+    if (fp == NULL)
+    {
+        return;
+    }
+    // 파일 끝으로 위치 옮김
+    fseek(fp, 0L, SEEK_END);
+
+    // 파일 크기 얻음
+    fileSize = ftell(fp);
+
+    // 다시 파일 처음으로 위치 옮김
+    fseek(fp, 0L, SEEK_SET);
+    fclose(fp);
+    send(socketArray[index], (char*)&fileSize, sizeof(fileSize), 0);
+
+    // 파일 전송
+    int sendSize = 0;
+    fp = fopen(fileName.c_str(), "rb");
+    char buf[BUF_SIZE];
+    while (1)
+    {
+        sendSize = fread(buf, 1, BUF_SIZE, fp);
+        std::cout << "sendSize : " << sendSize << std::endl;
+        if (sendSize < BUF_SIZE)
+        {
+            send(socketArray[index], buf, sendSize, 0);
+            break;
+        }
+        send(socketArray[index], buf, BUF_SIZE, 0);
+    }
+    fclose(fp);
+    std::cout << "파일 전송 완료" << std::endl;
+}
