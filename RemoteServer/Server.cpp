@@ -82,10 +82,8 @@ void Server::EventLoop(SOCKET sock)
             recv(socketArray[index], (char*)&type, sizeof(int), 0);
             if (type == UPLOAD)
             {
-                std::cout << "업로드 스레드 시작" << std::endl;
                 std::thread recvThread([=] {RecvProc(index); });
                 recvThread.join();
-                std::cout << "업로드 스레드 종료" << std::endl;
             }
             else if (type == DOWNLOAD)
             {
@@ -198,17 +196,18 @@ void Server::CloseProc(int index)
 
 void Server::RecvProc(int index)
 {
-    std::cout << "업로드 요청" << std::endl;
     SOCKADDR_IN clientAddress = { 0 };
     GetClientAddress(clientAddress, index);
 
+    char buf[BUF_SIZE];
+    recv(socketArray[index], buf, BUF_SIZE, 0);
     // 파일 크기 수신
     int fileSize = 0;
-    recv(socketArray[index], (char*)&fileSize, sizeof(int), 0);
+    memcpy(&fileSize, (int*)buf, sizeof(fileSize));
 
     // 파일명 수신
     char name[MAX_MSG_LEN];
-    recv(socketArray[index], name, MAX_MSG_LEN, 0);
+    memcpy(name, buf + sizeof(fileSize), sizeof(name));
 
     // 파일 정보 출력
     std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << name << " 전송하는 파일 크기 : " << fileSize << "Byte" << std::endl;
@@ -220,9 +219,10 @@ void Server::RecvProc(int index)
         std::cout << "파일 쓰기 오류. 해당 파일 생략" << std::endl;
         return;
     }
+
+    memset(buf, 0, sizeof(buf));
     int readSize = 0;
     int totalSize = 0;
-    char buf[BUF_SIZE];
     while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
     {
         if (GetLastError() == WSAEWOULDBLOCK)
@@ -239,6 +239,5 @@ void Server::RecvProc(int index)
         fwrite(buf, 1, readSize, fp);
     }
     fclose(fp);
-    std::cout << "업로드 완료" << std::endl;
 }
 

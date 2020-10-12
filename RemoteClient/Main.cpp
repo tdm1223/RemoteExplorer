@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 #pragma comment(lib, "ws2_32")
 
 #pragma warning (disable:4996)
+#pragma warning (disable:6385)
 
 #define PORT 9000
 #define MAX_MSG_LEN 256
@@ -31,7 +32,7 @@ struct Files
 {
     char name[MAX_MSG_LEN];
     size_t nameLen = 0;
-    unsigned int size;
+    int size;
 };
 
 void SendProc(SOCKET s, std::queue<Files>* q);
@@ -221,11 +222,10 @@ void SendProc(SOCKET s, std::queue<Files>* q)
         send(sock, (char*)&type, sizeof(int), 0);
         std::cout << "업로드 요청" << std::endl;
 
-        // 파일 크기 보냄
-        send(sock, (char*)&sendFile.size, sizeof(int), 0);
-
-        // 파일명을 보냄
-        send(sock, sendFile.name, MAX_MSG_LEN, 0);
+        char header[BUF_SIZE];
+        memcpy(header, &sendFile.size, sizeof(sendFile.size));
+        memcpy(header + sizeof(sendFile.size), &sendFile.name, sizeof(sendFile.name));
+        send(sock, header, BUF_SIZE, 0);
 
         // 데이터 통신에 사용할 변수
         int sendSize = 0;
@@ -290,7 +290,6 @@ void RecvProc(SOCKET s, std::queue<Files>* q)
     FILE* fp = fopen(fileName.c_str(), "wb+");
     if (fp == NULL)
     {
-        fclose(fp);
         return;
     }
     int readSize = 0;
