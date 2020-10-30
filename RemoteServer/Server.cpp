@@ -8,7 +8,7 @@ Server::Server()
     {
         exit(1);
     }
-    SOCKET sock = SetServer(ServerSize); // 대기 소켓 설정
+    SOCKET sock = SetServer(); // 대기 소켓 설정
     if (sock == -1)
     {
         perror("대기 소켓 오류");
@@ -25,7 +25,7 @@ Server::~Server()
     WSACleanup();
 }
 
-SOCKET Server::SetServer(int size)
+SOCKET Server::SetServer()
 {
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == -1)
@@ -40,13 +40,13 @@ SOCKET Server::SetServer(int size)
     servaddr.sin_port = htons(PORT);
 
     // 소켓 주소와 네트워크 인터페이스 결합
-    if (bind(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
+    if (bind(sock, (sockaddr*)&servaddr, sizeof(servaddr)) == -1)
     {
         return -1;
     }
 
     //백 로그 큐 설정
-    if (listen(sock, size) == -1)
+    if (listen(sock, SOMAXCONN) == -1)
     {
         return -1;
     }
@@ -78,18 +78,42 @@ void Server::EventLoop(SOCKET sock)
         }
         else if (net_events.lNetworkEvents == FD_READ)
         {
+            Parser parser;
+            Packet packet;
+
+            char buf[BUF_SIZE];
+            recv(socketArray[index], buf, BUF_SIZE, 0);
+
+            char* p = buf;
+            int plen = BUF_SIZE;
+            while (plen > 0)
+            {
+                int bytesRead = 0;
+                if (parser.parse(p, plen, bytesRead, packet))
+                {
+                    std::cout << packet.command << " " << packet.size << std::endl;
+                    for (auto tmp : packet.data)
+                    {
+                        std::cout << tmp;
+                    }
+                    std::cout<<std::endl;
+                }
+                p += bytesRead;
+                plen -= bytesRead;
+            }
             int type = 0;
-            recv(socketArray[index], (char*)&type, sizeof(int), 0);
-            if (type == UPLOAD)
-            {
-                std::thread recvThread([=] {RecvProc(index); });
-                recvThread.join();
-            }
-            else if (type == DOWNLOAD)
-            {
-                std::thread sendThread([=] {SendProc(index); });
-                sendThread.join();
-            }
+
+            //recv(socketArray[index], (char*)&type, sizeof(int), 0);
+            //if (type == UPLOAD)
+            //{
+            //    std::thread recvThread([=] {RecvProc(index); });
+            //    recvThread.join();
+            //}
+            //else if (type == DOWNLOAD)
+            //{
+            //    std::thread sendThread([=] {SendProc(index); });
+            //    sendThread.join();
+            //}
         }
         else if (net_events.lNetworkEvents == FD_CLOSE)
         {
@@ -131,6 +155,7 @@ void Server::CloseProc(int index)
 
 void Server::RecvProc(int index)
 {
+    std::cout << "Recv Proc Start" << std::endl;
     SOCKADDR_IN clientAddress = { 0 };
     GetClientAddress(clientAddress, index);
 
@@ -146,35 +171,35 @@ void Server::RecvProc(int index)
     memcpy(name, buf + sizeof(fileSize), sizeof(name));
 
     // 파일 정보 출력
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송하는 파일 : " << name << " 전송하는 파일 크기 : " << fileSize << "Byte" << std::endl;
+    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 전송받는 파일 : " << name << " 전송받는 파일 크기 : " << fileSize << "Byte" << std::endl;
 
-    // 파일 받는 로직
-    FILE* fp = fopen(name, "wb+");
-    if (fp == NULL)
-    {
-        std::cout << "파일 쓰기 오류. 해당 파일 생략" << std::endl;
-        return;
-    }
+    //// 파일 받는 로직
+    //FILE* fp = fopen(name, "wb+");
+    //if (fp == NULL)
+    //{
+    //    std::cout << "파일 쓰기 오류. 해당 파일 생략" << std::endl;
+    //    return;
+    //}
 
-    memset(buf, 0, sizeof(buf));
-    int readSize = 0;
-    int totalSize = 0;
-    while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
-    {
-        if (GetLastError() == WSAEWOULDBLOCK)
-        {
-            Sleep(50); // 잠시 기다렸다가 재전송
-            if (totalSize == fileSize)
-            {
-                std::cout << "파일 받기 완료" << std::endl;
-                break;
-            }
-            continue;
-        }
-        totalSize += readSize;
-        fwrite(buf, 1, readSize, fp);
-    }
-    fclose(fp);
+    //memset(buf, 0, sizeof(buf));
+    //int readSize = 0;
+    //int totalSize = 0;
+    //while ((readSize = recv(socketArray[index], buf, BUF_SIZE, 0)) != 0)
+    //{
+    //    if (GetLastError() == WSAEWOULDBLOCK)
+    //    {
+    //        Sleep(50); // 잠시 기다렸다가 재전송
+    //        if (totalSize == fileSize)
+    //        {
+    //            std::cout << "파일 받기 완료" << std::endl;
+    //            break;
+    //        }
+    //        continue;
+    //    }
+    //    totalSize += readSize;
+    //    fwrite(buf, 1, readSize, fp);
+    //}
+    //fclose(fp);
 }
 
 void Server::SendProc(int index)

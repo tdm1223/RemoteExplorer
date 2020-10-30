@@ -8,6 +8,8 @@
 #include<condition_variable>  // std::condition_variable
 #include<mutex>
 #include<filesystem>
+#include "Parser.h"
+#include "Packet.h"
 
 namespace fs = std::filesystem;
 
@@ -15,9 +17,8 @@ namespace fs = std::filesystem;
 #pragma warning(disable: 4996)
 
 #define PORT 9000
-#define ServerSize 1024
 #define MAX_MSG_LEN 256
-#define BUF_SIZE 512
+#define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
 enum msgType
@@ -44,7 +45,7 @@ public:
     std::mutex m;
 private:
     // 대기 소켓 설정
-    SOCKET SetServer(int size);
+    SOCKET SetServer();
 
     // 클라이언트 소켓 등록하는 함수
     void AddEvent(SOCKET sock, long eventType);

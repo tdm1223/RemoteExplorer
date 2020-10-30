@@ -7,6 +7,7 @@
 #include<queue>
 #include<chrono>
 #include<filesystem>
+#include"Packet.h"
 
 namespace fs = std::filesystem;
 
@@ -18,7 +19,7 @@ namespace fs = std::filesystem;
 #define PORT 9000
 #define MAX_MSG_LEN 256
 #define SERVER_IP "127.0.0.1"
-#define BUF_SIZE 512
+#define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
 enum msgType
@@ -102,6 +103,8 @@ int main()
 
 void SendProc(SOCKET s)
 {
+    std::cout << "send proc" << std::endl;
+    Packet test;
     SOCKET sock = s;
 
     std::string fileName;
@@ -143,35 +146,58 @@ void SendProc(SOCKET s)
 
         std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
 
+        std::vector<char> buffer;
+        int offset = 0;
+
+        Packet typePacket;
+        typePacket.prefix = 0x7F;
+        typePacket.command = '1';
+        typePacket.size = typePacket.data.size();
+        typePacket.serialize(buffer);
+
+        Packet fileInfoPacket;
+        fileInfoPacket.prefix = 0x7F;
+        fileInfoPacket.command = '1';
+        for (auto tmp : fileName)
+        {
+            fileInfoPacket.data.push_back(tmp);
+        }
+        fileInfoPacket.size = fileInfoPacket.data.size();
+        fileInfoPacket.serialize(buffer);
+
+        std::cout << buffer.size() << std::endl;
+        send(sock, &buffer[0], buffer.size(), 0);
+
         // 업로드라는것을 알림
         int type = 1;
-        send(sock, (char*)&type, sizeof(int), 0);
-        std::cout << "업로드 요청" << std::endl;
+        //send(sock, (char*)&type, sizeof(int), 0);
+        //std::cout << "업로드 요청" << std::endl;
 
+        
         // 헤더 만듦
-        char header[BUF_SIZE];
-        memcpy(header, &sendFile.size, sizeof(sendFile.size));
-        memcpy(header + sizeof(sendFile.size), &sendFile.name, sizeof(sendFile.name));
-        send(sock, header, BUF_SIZE, 0);
+        //char header[BUF_SIZE];
+        //memcpy(header, &sendFile.size, sizeof(sendFile.size));
+        //memcpy(header + sizeof(sendFile.size), &sendFile.name, sizeof(sendFile.name));
+        //send(sock, header, BUF_SIZE, 0);
 
-        // 데이터 통신에 사용할 변수
-        int sendSize = 0;
-        fp = fopen(sendFile.name, "rb");
-        char buf[BUF_SIZE];
-        // 파일 전송
-        while (1)
-        {
-            sendSize = fread(buf, 1, BUF_SIZE, fp);
-            if (sendSize < BUF_SIZE)
-            {
-                send(sock, buf, sendSize, 0);
-                break;
-            }
-            send(sock, buf, BUF_SIZE, 0);
-        }
-        fclose(fp);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        std::cout << "전송 완료 : " << sendFile.name << std::endl;
+        //// 데이터 통신에 사용할 변수
+        //int sendSize = 0;
+        //fp = fopen(sendFile.name, "rb");
+        //char buf[BUF_SIZE];
+        //// 파일 전송
+        //while (1)
+        //{
+        //    sendSize = fread(buf, 1, BUF_SIZE, fp);
+        //    if (sendSize < BUF_SIZE)
+        //    {
+        //        send(sock, buf, sendSize, 0);
+        //        break;
+        //    }
+        //    send(sock, buf, BUF_SIZE, 0);
+        //}
+        //fclose(fp);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        //std::cout << "전송 완료 : " << sendFile.name << std::endl;
     }
 }
 
