@@ -89,9 +89,13 @@ void Server::EventLoop(SOCKET sock)
             while (plen > 0)
             {
                 int bytesRead = 0;
-                if (parser.parse(p, plen, bytesRead, packet))
+                if (parser.Parse(p, plen, bytesRead, packet))
                 {
-                    std::cout << packet.command << " " << packet.size << std::endl;
+                    if (packet.command == UPLOAD)
+                    {
+                        std::cout << "업로드" << std::endl;
+                    }
+                    std::cout << "command : "<<packet.command << " size : " << packet.size << std::endl;
                     for (auto tmp : packet.data)
                     {
                         std::cout << tmp;

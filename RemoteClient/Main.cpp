@@ -72,7 +72,7 @@ int main()
 
     while (true)
     {
-        std::cout << "1 : 업로드" << std::endl << "2: 다운로드" << std::endl << "3: 종료" << std::endl;
+        std::cout << "1 : 업로드" << std::endl << "2 : 다운로드" << std::endl << "3 : 종료" << std::endl;
         int type;
         std::cin >> type;
         if (type == UPLOAD)
@@ -147,17 +147,10 @@ void SendProc(SOCKET s)
         std::cout << "큐에 넣는 파일명 : " << sendFile.name << " 전송하는 파일 크기 : " << sendFile.size << " Byte" << std::endl;
 
         std::vector<char> buffer;
-        int offset = 0;
-
-        Packet typePacket;
-        typePacket.prefix = 0x7F;
-        typePacket.command = '1';
-        typePacket.size = typePacket.data.size();
-        typePacket.serialize(buffer);
 
         Packet fileInfoPacket;
         fileInfoPacket.prefix = 0x7F;
-        fileInfoPacket.command = '1';
+        fileInfoPacket.command = UPLOAD;
         for (auto tmp : fileName)
         {
             fileInfoPacket.data.push_back(tmp);

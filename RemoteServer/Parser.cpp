@@ -1,6 +1,6 @@
 #include "parser.h"
 
-bool Parser::parse(char* data, int len, int& bytesRead, Packet& packet)
+bool Parser::Parse(char* data, int len, int& bytesRead, Packet& packet)
 {
     bytesRead = 0;
     for (int i = 0; i < len; ++i)
@@ -9,14 +9,13 @@ bool Parser::parse(char* data, int len, int& bytesRead, Packet& packet)
         bytesRead++;
         switch (_step)
         {
-            // prefix.
+            // prefix
         case 0:
             if (b != 0x7F)
             {
                 _step = 0;
                 continue;
             }
-            //std::cout << "prefix : " << packet.prefix << std::endl;
             packet.prefix = b;
             _step++;
             break;
@@ -24,11 +23,10 @@ bool Parser::parse(char* data, int len, int& bytesRead, Packet& packet)
             // command
         case 1:
             packet.command = char(b);
-            //std::cout << "command : " << packet.command << std::endl;
             _step++;
             break;
 
-            // Size (4 bytes).
+            // Size
         case 2:
             packet.size = int(b) << 24;
             _step++;
@@ -56,11 +54,11 @@ bool Parser::parse(char* data, int len, int& bytesRead, Packet& packet)
             }
             else
             {
-                _step++; // Skip data step.
+                _step++;
             }
             break;
 
-            // Data.
+            // Data
         case 6:
             packet.data.push_back(b);
 
@@ -69,6 +67,8 @@ bool Parser::parse(char* data, int len, int& bytesRead, Packet& packet)
                 _step++;
             }
             break;
+
+            // Suffix
         case 7:
             packet.suffix = b;
             _step = 0;
