@@ -21,11 +21,10 @@ namespace fs = std::filesystem;
 #define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
-enum msgType
-{
-    UPLOAD = 1,
-    DOWNLOAD = 2,
-};
+// 메세지 타입
+#define UPLOAD 1
+#define DOWNLOAD 2
+#define END 3
 
 class Server
 {
