@@ -286,7 +286,7 @@ namespace fs = std::filesystem;
 int main()
 {
     // 대기 버퍼에서 헤더를 분석할 순서 인지를 판별하기 위한 변수
-    bool isHeader = true;
+    bool isHeader = false;
 
     // client 종료
     bool isExit = false;
@@ -328,7 +328,7 @@ int main()
     char* dataSortIndex = 0;
 
     // 메세지 헤더 구조체 선언
-    Packet header;
+    Packet packet;
 
     // receive 헤더 구조체 포인터 선언
     Packet recvHeader;
@@ -376,9 +376,9 @@ int main()
         std::cout << "1 - UPLOAD" << std::endl;
         std::cout << "2 - DOWNLOAD" << std::endl;
         std::cout << "3 - END" << std::endl;
-        std::cin >> header.command;
+        std::cin >> packet.command;
 
-        if (header.command == UPLOAD)
+        if (packet.command == UPLOAD)
         {
             std::cout << "현재 폴더에 있는 파일" << std::endl;
             std::cout << "======================" << std::endl;
@@ -395,29 +395,30 @@ int main()
             std::string fileName = "";
             std::cout << "파일명 : ";
             std::cin >> fileName;
-            header.size = fileName.length();
+            packet.size = fileName.length();
             strcpy(msgBuffer, fileName.c_str());
 
             // 인덱스 초기화
             sendBufferOffset = sendBuffer;
 
             // 헤더 저장
-            memcpy(sendBufferOffset, &header, sizeof(header));
+            memcpy(sendBufferOffset, &packet, sizeof(packet));
 
             // 인덱스에 헤더 크기 추가
-            sendBufferOffset += sizeof(header);
+            sendBufferOffset += sizeof(packet);
 
             // 메시지 저장
-            memcpy(sendBufferOffset, msgBuffer, header.size);
+            memcpy(sendBufferOffset, msgBuffer, packet.size);
 
             // 메세지 전송
-            if (send(clientSock, sendBuffer, sizeof(header) + header.size, 0) < 0)
+            if (send(clientSock, sendBuffer, sizeof(packet) + packet.size, 0) < 0)
             {
                 std::cout << "send error!!" << std::endl;
                 return 0;
             }
 
-            if (header.command == UPLOAD)
+            // 메시지 전송 후 수신을 기다림
+            if (packet.command == UPLOAD)
             {
                 // 메세지 수신
                 while (true)
@@ -431,7 +432,7 @@ int main()
                     // 수신한 메시지가 존재
                     if (receivedMsgLen >= 0)
                     {
-                        // 받은 버퍼를 대기버퍼에 저장
+                        // 받은 메시지를 버퍼에 저장
                         memcpy(recvBufferIndex, recvBuffer, receivedMsgLen);
 
                         // 현재 위치, 받은 버퍼 인덱스는 받은 메시지의 길이만큼 증가
@@ -440,15 +441,15 @@ int main()
                         receivedMsgLen = 0;
 
                         // 헤더를 분석
-                        if (isHeader)
+                        if (!isHeader)
                         {
                             // 헤더 길이 이상의 data가 있는지 확인
-                            if (curLen >= sizeof(header))
+                            if (curLen >= sizeof(packet))
                             {
                                 // 대기 버퍼를 받아서 headerBuffer에 저장
                                 memset(headerBuffer, 0, sizeof(headerBuffer));
-                                memcpy(headerBuffer, waitBuffer, sizeof(header));
-                                headerBuffer[sizeof(header)] = '\0';
+                                memcpy(headerBuffer, waitBuffer, sizeof(packet));
+                                headerBuffer[sizeof(packet)] = '\0';
 
                                 // headerBuffer에 저장한것을 recvHeader에 저장
                                 memcpy(&recvHeader, headerBuffer, sizeof(recvHeader));
@@ -463,11 +464,11 @@ int main()
 
                                 curLen -= sizeof(recvHeader);
                                 recvBufferIndex -= sizeof(recvHeader);
-                                isHeader = false;
+                                isHeader = true;
                             }
                         }
 
-                        if (!isHeader)
+                        if (isHeader)
                         {
                             if (curLen >= recvHeader.size)
                             {
@@ -484,7 +485,7 @@ int main()
 
                                 curLen -= recvHeader.size;
                                 recvBufferIndex -= recvHeader.size;
-                                isHeader = true;
+                                isHeader = false;
 
                                 if (recvHeader.command == UPLOAD)
                                 {
@@ -506,11 +507,11 @@ int main()
                 }
             }
         }
-        else if (header.command == DOWNLOAD)
+        else if (packet.command == DOWNLOAD)
         {
 
         }
-        else if (header.command == END)
+        else if (packet.command == END)
         {
             break;
         }

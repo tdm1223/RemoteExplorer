@@ -79,7 +79,7 @@ void Server::EventLoop(SOCKET sock)
         else if (net_events.lNetworkEvents == FD_READ)
         {
             // 버퍼에서 헤더를 분석할 순서 인지를 판별하기위한 변수
-            bool isHeader = true;
+            bool isHeaderPacket = false;
 
             // 보낸 데이터 길이
             unsigned int sendByteLen;
@@ -101,7 +101,7 @@ void Server::EventLoop(SOCKET sock)
             char* sendBufferOffset = 0;
 
             // RECV용 버퍼 선언
-            char buf[BUF_SIZE];
+            char recvBuffer[BUF_SIZE];
 
             // SEND용 버퍼 선언 (헤더 + 메세지)
             char sendBuffer[BUF_SIZE];
@@ -113,7 +113,7 @@ void Server::EventLoop(SOCKET sock)
             char waitBuffer[BUF_SIZE];
 
             // 헤더 처리 버퍼
-            char bufHdr[BUF_SIZE];
+            char headerBuffer[BUF_SIZE];
 
             // 메세지 처리 버퍼
             char msgBuffer[BUF_SIZE];
@@ -122,7 +122,7 @@ void Server::EventLoop(SOCKET sock)
             char tmpBuffer[BUF_SIZE];
 
             // 메세지 헤더 구조체 포인터 선언
-            Packet* recvHeader;
+            Packet* recvHeaderPacket;
 
             // 송신용 메세지 헤더 구조체 선언
             Packet hdr;
@@ -138,13 +138,13 @@ void Server::EventLoop(SOCKET sock)
             recvBufferIndex = waitBuffer;
 
             // data 수신 처리 receive 버퍼 초기화
-            memset(buf, 0, BUF_SIZE);
+            memset(recvBuffer, 0, BUF_SIZE);
 
             // data를 가져옴
             // 최대 버퍼 사이즈 만큼의 데이터를 가져와서 buf에 저장
             // recv 함수는 가져온 byte의 길이를 return
-            byteLen = recv(socketArray[index], buf, BUF_SIZE, 0);
-            std::cout << "Server recv " << byteLen << "bytes." << std::endl;
+            byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
+            std::cout << "Server receive " << byteLen << "bytes from " << index << std::endl;
             if (byteLen > BUF_SIZE)
             {
                 break;
@@ -152,61 +152,63 @@ void Server::EventLoop(SOCKET sock)
 
             if (byteLen > 0)
             {
-                memcpy(recvBufferIndex, buf, byteLen);
+                // 길이만큼만 memcpy를 통해 저장
+                memcpy(recvBufferIndex, recvBuffer, byteLen);
                 curLen += byteLen;
                 recvBufferIndex += byteLen;
                 byteLen = 0;
 
                 // 헤더 분석
-                if (isHeader)
+                if (!isHeaderPacket)
                 {
                     // 헤더 길이 이상의 data가 있는지 확인
-                    if (curLen >= sizeof(recvHeader))
+                    if (curLen >= sizeof(recvHeaderPacket))
                     {
-                        memset(bufHdr, 0, sizeof(bufHdr));
-                        memcpy(bufHdr, waitBuffer, sizeof(recvHeader));
-                        bufHdr[sizeof(recvHeader)] = '\0';
-                        recvHeader = (Packet*)bufHdr;
+                        // 헤더 길이 이상 존재한다면 header buffer에 저장
+                        memset(headerBuffer, 0, sizeof(headerBuffer));
+                        memcpy(headerBuffer, waitBuffer, sizeof(recvHeaderPacket));
+                        headerBuffer[sizeof(recvHeaderPacket)] = '\0';
+                        recvHeaderPacket = (Packet*)headerBuffer;
 
                         // 버퍼의 data를 정리
-                        dataSortingIndex = waitBuffer + sizeof(recvHeader);
+                        dataSortingIndex = waitBuffer + sizeof(recvHeaderPacket);
                         memset(tmpBuffer, 0, sizeof(tmpBuffer));
-                        memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - sizeof(recvHeader));
+                        memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - sizeof(recvHeaderPacket));
 
                         memset(waitBuffer, 0, sizeof(waitBuffer));
                         memcpy(waitBuffer, tmpBuffer, sizeof(tmpBuffer));
 
-                        curLen -= sizeof(recvHeader);
-                        recvBufferIndex -= sizeof(recvHeader);
-                        isHeader = false;
+                        curLen -= sizeof(recvHeaderPacket);
+                        recvBufferIndex -= sizeof(recvHeaderPacket);
+                        isHeaderPacket = true;
                     }
                 }
 
-                if (!isHeader)
+                if (isHeaderPacket)
                 {
-                    // 분석된 헤더의 메세지 길이 정보를 통해 현재 버퍼에 메세지 길이 이상의 data가 있는지 확인
-                    if (curLen >= recvHeader->size)
+                    // 분석된 헤더에 존재했던 메시지 길이만큼의 데이터가 존재하는지 확인
+                    if (curLen >= recvHeaderPacket->size)
                     {
+                        // 데이터가 존재한다면 msgBuffer에 복사
                         memset(msgBuffer, 0, sizeof(msgBuffer));
-                        memcpy(msgBuffer, waitBuffer, recvHeader->size);
-                        msgBuffer[recvHeader->size] = '\0';
+                        memcpy(msgBuffer, waitBuffer, recvHeaderPacket->size);
+                        msgBuffer[recvHeaderPacket->size] = '\0';
 
                         // 버퍼의 data를 정리
-                        dataSortingIndex = waitBuffer + recvHeader->size;
+                        dataSortingIndex = waitBuffer + recvHeaderPacket->size;
                         memset(tmpBuffer, 0, sizeof(tmpBuffer));
-                        memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - recvHeader->size);
+                        memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - recvHeaderPacket->size);
 
                         memset(waitBuffer, 0, sizeof(waitBuffer));
                         memcpy(waitBuffer, tmpBuffer, sizeof(tmpBuffer));
 
-                        curLen -= recvHeader->size;
-                        recvBufferIndex -= recvHeader->size;
-                        isHeader = true;
+                        curLen -= recvHeaderPacket->size;
+                        recvBufferIndex -= recvHeaderPacket->size;
+                        isHeaderPacket = false;
 
-                        std::cout << "msgType : " << recvHeader->command << std::endl;
-                        if (recvHeader->command == UPLOAD)
+                        std::cout << "msgType : " << recvHeaderPacket->command << std::endl;
+                        if (recvHeaderPacket->command == UPLOAD)
                         {
-                            std::cout << msgBuffer << std::endl;
                             Msg = "received UPLOAD message";
                             std::cout << Msg << std::endl << std::endl;
                             strcpy(bufSendMsg, Msg.c_str());
@@ -226,16 +228,16 @@ void Server::EventLoop(SOCKET sock)
                             std::thread recvThread([=] {RecvProc(index); });
                             recvThread.join();
                         }
-                        else if (recvHeader->command == DOWNLOAD)
+                        else if (recvHeaderPacket->command == DOWNLOAD)
                         {
                             std::cout << std::endl << "received DOWNLOAD message" << std::endl;
-                            std::cout << "message length is " << recvHeader->size << "byte" << std::endl;
+                            std::cout << "message length is " << recvHeaderPacket->size << "byte" << std::endl;
                             std::cout << "receive message : " << msgBuffer << std::endl;
                         }
-                        else if (recvHeader->command == END)
+                        else if (recvHeaderPacket->command == END)
                         {
                             std::cout << std::endl << "received END message" << std::endl;
-                            std::cout << "message length is " << recvHeader->size << "byte" << std::endl;
+                            std::cout << "message length is " << recvHeaderPacket->size << "byte" << std::endl;
                             std::cout << "receive message : " << msgBuffer << std::endl;
                         }
                     }
