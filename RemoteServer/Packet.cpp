@@ -2,7 +2,6 @@
 
 Packet::Packet()
 {
-    prefix = 0x7F;
     command = 0;
     size = 0;
 }

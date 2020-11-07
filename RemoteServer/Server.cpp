@@ -92,41 +92,36 @@ void Server::EventLoop(SOCKET sock)
 
             if (byteLen > 0)
             {
+                int byteRead = 0;
                 Parser parser;
-                Packet result = parser.Parsing(recvBuffer, byteLen);
-                byteLen = 0;
+                Packet result;
+                parser.Parsing(recvBuffer, byteLen, result);
 
                 // 송신용 패킷 선언
                 Packet sendPacket;
+                sendPacket.prefix = 0x7F;
+                int offset = 0;
                 std::string Msg = "";
 
-                // SEND용 버퍼 선언 (헤더 + 메세지정보)
+                // SEND용 버퍼
                 char sendBuffer[BUF_SIZE];
+                memset(sendBuffer, 0, BUF_SIZE);
 
-                // SEND용 버퍼 인덱스 포인터
-                char* sendBufferOffset = 0;
-
-                // SEND용 버퍼 선언 (메시지)
-                char sendDataBuffer[BUF_SIZE];
-
+                char msgBuffer[BUF_SIZE];
                 std::cout << "클라로 부터 받은 메시지의 타입 : " << result.command << std::endl;
                 if (result.command == UPLOAD)
                 {
                     Msg = "received UPLOAD message";
                     std::cout << Msg << std::endl << std::endl;
-                    strcpy(sendDataBuffer, Msg.c_str());
+                    sendPacket.WriteWithoutData(UPLOAD, Msg.length(), offset);
 
-                    memset(&sendPacket, 0, sizeof(sendPacket));
-                    sendPacket.command = UPLOAD;
-                    sendPacket.size = Msg.length();
-
-                    sendBufferOffset = sendBuffer;
-                    memcpy(sendBufferOffset, &sendPacket, sizeof(sendPacket));
-                    sendBufferOffset = sendBufferOffset + sizeof(sendPacket);
-                    memcpy(sendBufferOffset, sendDataBuffer, sendPacket.size);
+                    strcpy(msgBuffer, Msg.c_str());
+                    sendPacket.WriteData(msgBuffer, Msg.length(), offset);
+                    sendPacket.Serialize(sendBuffer);
+                    std::cout << "클라로 보내는 메시지 크기 : " << offset << std::endl;
 
                     // 보낸 데이터 길이
-                    int sendByteLen = send(socketArray[index], sendBuffer, sizeof(sendPacket) + sendPacket.size, 0);
+                    int sendByteLen = send(socketArray[index], sendBuffer, offset, 0);
 
                     //std::thread recvThread([=] {RecvProc(index); });
                     //recvThread.join();
