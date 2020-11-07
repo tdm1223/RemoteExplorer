@@ -8,5 +8,5 @@ public:
     bool Parsing(char* recvBuffer, int byteLen, Packet& resultPacket);
 
 private:
-    int step = 0;
+    int cnt_ = 0;
 };
