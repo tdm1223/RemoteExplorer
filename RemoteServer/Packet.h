@@ -1,15 +1,21 @@
 #pragma once
 #include<vector>
 #include<winsock.h>
+#include<iostream>
 
+#define BUF_SIZE 4096
 class Packet
 {
 public:
     Packet();
     ~Packet();
 
-    void serialize(std::vector<char>& buf);
+    void WriteWithoutData(int command, int size, int& offset);
+    void WriteData(char* data, int size, int& offset);
+    void Serialize(char* data);
+    char prefix;
+    int command;
+    int size;
 
-    unsigned int command;
-    unsigned int size;
+    std::vector<char> buf;
 };
