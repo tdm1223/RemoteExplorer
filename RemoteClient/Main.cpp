@@ -68,7 +68,7 @@ int main()
         std::cin >> packet.command;
 
         // 보낼 데이터 버퍼
-        char dataBuffer[BUF_SIZE];
+        char data[BUF_SIZE];
 
         if (packet.command == UPLOAD)
         {
@@ -89,18 +89,11 @@ int main()
             std::cout << "파일명 : ";
             std::cin >> fileName;
             packet.size = fileName.length();
-            strcpy(dataBuffer, fileName.c_str());
+            strcpy(data, fileName.c_str());
 
-            // command, 데이터길이를 버퍼에씀
+            // 패킷 빌드
             int offset = 0;
-            packet.WriteWithoutData(UPLOAD, fileName.length(), offset);
-            std::cout << offset << std::endl;
-
-            // 데이터를 버퍼에씀
-            packet.WriteData(dataBuffer, fileName.length(), offset);
-
-            // buf에 담긴것을 sendBuffer로 memcpy함
-            packet.Serialize(buffer);
+            packet.Build(buffer, UPLOAD, fileName.length(), data, offset);
 
             // 메세지 전송
             std::cout << "전송하는 메시지 크기 : " << offset << std::endl;

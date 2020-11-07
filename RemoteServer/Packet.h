@@ -13,6 +13,7 @@ public:
     void WriteWithoutData(int command, int size, int& offset);
     void WriteData(char* data, int size, int& offset);
     void Serialize(char* data);
+    void Build(char* buffer, int command, int size, char* data, int& offset);
     char prefix = 0x7F;
     int command;
     int size;

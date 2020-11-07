@@ -101,7 +101,7 @@ void Server::EventLoop(SOCKET sock)
                 Packet sendPacket;
                 sendPacket.prefix = 0x7F;
                 int offset = 0;
-                std::string Msg = "";
+                std::string message = "";
 
                 // SEND용 버퍼
                 char sendBuffer[BUF_SIZE];
@@ -111,13 +111,11 @@ void Server::EventLoop(SOCKET sock)
                 std::cout << "클라로 부터 받은 메시지의 타입 : " << result.command << std::endl;
                 if (result.command == UPLOAD)
                 {
-                    Msg = "received UPLOAD message";
-                    std::cout << Msg << std::endl << std::endl;
-                    sendPacket.WriteWithoutData(UPLOAD, Msg.length(), offset);
+                    message = "received UPLOAD message";
+                    std::cout << message << std::endl << std::endl;
+                    strcpy(msgBuffer, message.c_str());
 
-                    strcpy(msgBuffer, Msg.c_str());
-                    sendPacket.WriteData(msgBuffer, Msg.length(), offset);
-                    sendPacket.Serialize(sendBuffer);
+                    sendPacket.Build(sendBuffer, UPLOAD, message.length(), msgBuffer, offset);
                     std::cout << "클라로 보내는 메시지 크기 : " << offset << std::endl;
 
                     // 보낸 데이터 길이

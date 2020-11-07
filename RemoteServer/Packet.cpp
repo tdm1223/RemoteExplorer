@@ -38,3 +38,18 @@ void Packet::Serialize(char* data)
 {
     memcpy(data, &buf[0], buf.size());
 }
+
+/// <summary>
+/// 패킷 생성하는 함수
+/// </summary>
+/// <param name="buffer">패킷 버퍼</param>
+/// <param name="data">데이터</param>
+/// <param name="command">명령 종류</param>
+/// <param name="size">데이터 길이</param>
+/// <param name="offset">패킷의 총 길이</param>
+void Packet::Build(char* buffer, int command, int size, char* data, int& offset)
+{
+    WriteWithoutData(command, size, offset);
+    WriteData(data, size, offset);
+    Serialize(buffer);
+}
