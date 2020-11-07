@@ -423,6 +423,7 @@ int main()
                 // 메세지 수신
                 while (true)
                 {
+                    // 받는 버퍼 초기화
                     memset(recvBuffer, 0, sizeof(recvBuffer));
 
                     // 메세지 수신

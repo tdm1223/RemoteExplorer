@@ -7,7 +7,7 @@
 class Parser
 {
 public:
-    Packet Parsing(char recvBuffer[BUF_SIZE], int byteLen, int curLen);
+    Packet Parsing(char recvBuffer[BUF_SIZE], int byteLen);
 
     // 버퍼에서 헤더를 분석할 순서 인지를 판별하기위한 변수
     bool isHeaderPacket = false;

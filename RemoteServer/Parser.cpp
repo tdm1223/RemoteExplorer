@@ -1,7 +1,18 @@
 #include "parser.h"
 
-Packet Parser::Parsing(char recvBuffer[BUF_SIZE], int byteLen, int curLen)
+/// <summary>
+/// 받은 데이터를 파싱하는 함수
+/// </summary>
+/// <param name="recvBuffer">recv 함수를 통해 받은 버퍼</param>
+/// <param name="byteLen">recv 함수를 통해 받은 버퍼의 크기</param>
+/// <returns>파싱결과 패킷</returns>
+Packet Parser::Parsing(char recvBuffer[BUF_SIZE], int byteLen)
 {
+    // 데이터를 처리할 수 있는 길이가 되었는지 확인용 변수
+    // 현재 대기 버퍼안에 있는 데이터의 길이를 저장
+    // 대기버퍼에 있는 데이터 길이 초기화
+    int curLen = 0;
+
     // 메세지 헤더 구조체 포인터 선언
     Packet* recvHeaderPacket = new Packet();
 
@@ -25,10 +36,10 @@ Packet Parser::Parsing(char recvBuffer[BUF_SIZE], int byteLen, int curLen)
         // 헤더 길이 이상의 data가 있는지 확인
         if (curLen >= sizeof(recvHeaderPacket))
         {
-            // 헤더 길이 이상 존재한다면 header buffer에 저장
+            // 헤더 길이 이상 존재한다면 헤더 버퍼에 저장
             memset(headerBuffer, 0, sizeof(headerBuffer));
             memcpy(headerBuffer, waitBuffer, sizeof(recvHeaderPacket));
-            headerBuffer[sizeof(recvHeaderPacket)] = '\0';
+            headerBuffer[sizeof(Packet)] = '\0';
             recvHeaderPacket = (Packet*)headerBuffer;
 
             // 버퍼의 data를 정리
@@ -72,6 +83,5 @@ Packet Parser::Parsing(char recvBuffer[BUF_SIZE], int byteLen, int curLen)
     std::cout << "recv message : " << msgBuffer << std::endl;
     resultPacket.command = recvHeaderPacket->command;
     resultPacket.size = recvHeaderPacket->size;
-    delete recvHeaderPacket;
     return resultPacket;
 }
