@@ -1,87 +1,74 @@
 #include "parser.h"
 
-/// <summary>
-/// 받은 데이터를 파싱하는 함수
-/// </summary>
-/// <param name="recvBuffer">recv 함수를 통해 받은 버퍼</param>
-/// <param name="byteLen">recv 함수를 통해 받은 버퍼의 크기</param>
-/// <returns>파싱결과 패킷</returns>
-Packet Parser::Parsing(char recvBuffer[BUF_SIZE], int byteLen)
+bool Parser::Parsing(char* recvBuffer, int byteLen, Packet& resultPacket)
 {
-    // 데이터를 처리할 수 있는 길이가 되었는지 확인용 변수
-    // 현재 대기 버퍼안에 있는 데이터의 길이를 저장
-    // 대기버퍼에 있는 데이터 길이 초기화
-    int curLen = 0;
-
-    // 메세지 헤더 구조체 포인터 선언
-    Packet* recvHeaderPacket = new Packet();
-
-    Packet resultPacket;
-
-    // 대기 버퍼 초기화
-    memset(waitBuffer, 0, BUF_SIZE);
-
-    // 버퍼 포인터 초기화 대기 버퍼의 시작 주소를 가진다.
-    recvBufferIndex = waitBuffer;
-
-    // 길이만큼만 memcpy를 통해 저장
-    memcpy(recvBufferIndex, recvBuffer, byteLen);
-
-    curLen += byteLen;
-    recvBufferIndex += byteLen;
-
-    // 헤더 분석
-    if (!isHeaderPacket)
+    for (int i = 0; i < byteLen; i++)
     {
-        // 헤더 길이 이상의 data가 있는지 확인
-        if (curLen >= sizeof(recvHeaderPacket))
+        const auto b = recvBuffer[i];
+
+        switch (step)
         {
-            // 헤더 길이 이상 존재한다면 헤더 버퍼에 저장
-            memset(headerBuffer, 0, sizeof(headerBuffer));
-            memcpy(headerBuffer, waitBuffer, sizeof(recvHeaderPacket));
-            headerBuffer[sizeof(Packet)] = '\0';
-            recvHeaderPacket = (Packet*)headerBuffer;
-
-            // 버퍼의 data를 정리
-            dataSortingIndex = waitBuffer + sizeof(recvHeaderPacket);
-            memset(tmpBuffer, 0, sizeof(tmpBuffer));
-            memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - sizeof(recvHeaderPacket));
-
-            memset(waitBuffer, 0, sizeof(waitBuffer));
-            memcpy(waitBuffer, tmpBuffer, sizeof(tmpBuffer));
-
-            curLen -= sizeof(recvHeaderPacket);
-            recvBufferIndex -= sizeof(recvHeaderPacket);
-            isHeaderPacket = true;
+        case 0:
+            if (b != 0x7F)
+            {
+                step = 0;
+                continue;
+            }
+            resultPacket.prefix = 0x7F;
+            step++;
+            break;
+        case 1:
+            resultPacket.command = int(b) << 24;
+            step++;
+            break;
+        case 2:
+            resultPacket.command |= int(b) << 16;
+            step++;
+            break;
+        case 3:
+            resultPacket.command |= int(b) << 8;
+            step++;
+            break;
+        case 4:
+            resultPacket.command |= int(b) << 0;
+            resultPacket.command = ntohl(resultPacket.command);
+            step++;
+            break;
+        case 5:
+            resultPacket.size = int(b) << 24;
+            step++;
+            break;
+        case 6:
+            resultPacket.size |= int(b) << 16;
+            step++;
+            break;
+        case 7:
+            resultPacket.size |= int(b) << 8;
+            step++;
+            break;
+        case 8:
+            resultPacket.size |= int(b) << 0;
+            resultPacket.size = ntohl(resultPacket.size);
+            step++;
+            resultPacket.buf.clear();
+            if (resultPacket.size > 0)
+            {
+                resultPacket.buf.reserve(resultPacket.size);
+            }
+            else
+            {
+                step++;
+            }
+            break;
+        case 9:
+            resultPacket.buf.push_back(b);
+            if (resultPacket.buf.size() == resultPacket.size)
+            {
+                step = 0;
+                return true;
+            }
+            break;
         }
     }
-
-    if (isHeaderPacket)
-    {
-        // 분석된 헤더에 존재했던 메시지 길이만큼의 데이터가 존재하는지 확인
-        if (curLen >= recvHeaderPacket->size)
-        {
-            // 데이터가 존재한다면 msgBuffer에 복사
-            memset(msgBuffer, 0, sizeof(msgBuffer));
-            memcpy(msgBuffer, waitBuffer, recvHeaderPacket->size);
-            msgBuffer[recvHeaderPacket->size] = '\0';
-
-            // 버퍼의 data를 정리
-            dataSortingIndex = waitBuffer + recvHeaderPacket->size;
-            memset(tmpBuffer, 0, sizeof(tmpBuffer));
-            memcpy(tmpBuffer, dataSortingIndex, sizeof(waitBuffer) - recvHeaderPacket->size);
-
-            memset(waitBuffer, 0, sizeof(waitBuffer));
-            memcpy(waitBuffer, tmpBuffer, sizeof(tmpBuffer));
-
-            curLen -= recvHeaderPacket->size;
-            recvBufferIndex -= recvHeaderPacket->size;
-            isHeaderPacket = false;
-        }
-    }
-
-    std::cout << "recv message : " << msgBuffer << std::endl;
-    resultPacket.command = recvHeaderPacket->command;
-    resultPacket.size = recvHeaderPacket->size;
-    return resultPacket;
+    return false;
 }
