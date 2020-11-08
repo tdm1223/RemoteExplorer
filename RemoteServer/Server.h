@@ -5,8 +5,6 @@
 #include<thread>
 #include<iostream>
 #include<string>
-#include<condition_variable>  // std::condition_variable
-#include<mutex>
 #include<filesystem>
 #include "Parser.h"
 #include "Packet.h"
@@ -39,13 +37,10 @@ public:
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
     void DownloadProc(int index, Packet result, char* recvBuffer, int byteLen);
-    void SendProc(int index);
-
-    std::mutex m;
 private:
     // 대기 소켓 설정
     SOCKET SetServer();
-
+    SOCKET clientSock;
     // 클라이언트 소켓 등록하는 함수
     void AddEvent(SOCKET sock, long eventType);
 
