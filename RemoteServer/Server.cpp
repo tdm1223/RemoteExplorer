@@ -61,6 +61,7 @@ void Server::EventLoop(SOCKET sock)
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
         int index = WSAWaitForMultipleEvents(numOfClient, eventArray, false, INFINITE, false);
         WSANETWORKEVENTS net_events;
+
         // 이벤트 종류 알아내기
         WSAEnumNetworkEvents(socketArray[index], eventArray[index], &net_events);
         if (net_events.lNetworkEvents == FD_ACCEPT)
@@ -85,56 +86,71 @@ void Server::EventLoop(SOCKET sock)
             // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
             int byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
             std::cout << "Server receive " << byteLen << "bytes from " << index << std::endl;
-            if (byteLen > BUF_SIZE)
-            {
-                break;
-            }
-
             if (byteLen > 0)
             {
-                int byteRead = 0;
                 Parser parser;
                 Packet result;
                 parser.Parsing(recvBuffer, byteLen, result);
 
-                // 송신용 패킷 선언
-                Packet sendPacket;
-                sendPacket.prefix = 0x7F;
-                int offset = 0;
-                std::string message = "";
-
-                // SEND용 버퍼
-                char sendBuffer[BUF_SIZE];
-                memset(sendBuffer, 0, BUF_SIZE);
-
-                char msgBuffer[BUF_SIZE];
                 std::cout << "클라로 부터 받은 메시지의 타입 : " << result.command << std::endl;
+                
                 if (result.command == UPLOAD)
                 {
-                    message = "received UPLOAD message";
-                    std::cout << message << std::endl << std::endl;
-                    strcpy(msgBuffer, message.c_str());
+                    std::string fileName(result.buf.begin(), result.buf.end());
 
-                    sendPacket.Build(sendBuffer, UPLOAD, message.length(), msgBuffer, offset);
-                    std::cout << "클라로 보내는 메시지 크기 : " << offset << std::endl;
+                    Packet fileSizePacket;
+                    memset(recvBuffer, 0, sizeof(recvBuffer));
 
-                    // 보낸 데이터 길이
-                    int sendByteLen = send(socketArray[index], sendBuffer, offset, 0);
+                    int s = 0;
+                    while(1)
+                    {
+                        byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
+                        if(byteLen == -1)
+                        {
+                            continue;
+                        }
+                        break;
+                    }
 
-                    //std::thread recvThread([=] {RecvProc(index); });
-                    //recvThread.join();
+                    parser.Parsing(recvBuffer, byteLen, fileSizePacket);
+                    std::cout << "파일크기 사이즈 : " << fileSizePacket.size << std::endl;
+                    std::string size(fileSizePacket.buf.begin(), fileSizePacket.buf.end());
+                    int fileSize = atoi(size.c_str());
+                    std::cout << "파일이름 : " << fileName << " 파일 크기 : " << fileSize << std::endl;
+
+                    // 파일 받음
+                    std::cout << "Recv Proc Start" << std::endl;
+
+                    // 파일 받는 로직
+                    FILE* fp = fopen(fileName.c_str(), "wb+");
+                    std::cout << "파일명 : " << fileName << std::endl;
+
+                    memset(recvBuffer, 0, sizeof(recvBuffer));
+                    byteLen = 0;
+                    int totalSize = 0;
+                    while ((byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
+                    {
+                        Packet test;
+                        parser.Parsing(recvBuffer, byteLen, test);
+                        if (GetLastError() == WSAEWOULDBLOCK)
+                        {
+                            Sleep(50); // 잠시 기다렸다가 재전송
+                            if (totalSize == fileSize)
+                            {
+                                std::cout << "파일 받기 완료" << std::endl;
+                                break;
+                            }
+                            continue;
+                        }
+                        totalSize += (byteLen - 2 * sizeof(int) - sizeof(char));
+                        //std::cout << "받은 크기 : " << (byteLen - 2 * sizeof(int) - sizeof(char)) << " 전체 크기 : " << totalSize << std::endl;
+                        fwrite(&test.buf[0], 1, (byteLen - 2 * sizeof(int) - sizeof(char)), fp);
+                    }
+                    fclose(fp);
+                    std::cout << "전송 완료" << std::endl;
                 }
                 else if (result.command == DOWNLOAD)
                 {
-                    std::cout << std::endl << "received DOWNLOAD message" << std::endl;
-                    //std::cout << "message length is " << recvHeaderPacket->size << "byte" << std::endl;
-                    //std::cout << "receive message : " << msgBuffer << std::endl;
-                }
-                else if (result.command == END)
-                {
-                    std::cout << std::endl << "received END message" << std::endl;
-                    //std::cout << "message length is " << recvHeaderPacket->size << "byte" << std::endl;
-                    //std::cout << "receive message : " << msgBuffer << std::endl;
                 }
             }
         }
