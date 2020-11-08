@@ -130,8 +130,8 @@ void Server::EventLoop(SOCKET sock)
                     int totalSize = 0;
                     while ((byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
                     {
-                        Packet test;
-                        parser.Parsing(recvBuffer, byteLen, test);
+                        Packet filePacket;
+                        parser.Parsing(recvBuffer, byteLen, filePacket);
                         if (GetLastError() == WSAEWOULDBLOCK)
                         {
                             Sleep(50); // 잠시 기다렸다가 재전송
@@ -142,9 +142,9 @@ void Server::EventLoop(SOCKET sock)
                             }
                             continue;
                         }
-                        totalSize += (byteLen - 2 * sizeof(int) - sizeof(char));
-                        //std::cout << "받은 크기 : " << (byteLen - 2 * sizeof(int) - sizeof(char)) << " 전체 크기 : " << totalSize << std::endl;
-                        fwrite(&test.buf[0], 1, (byteLen - 2 * sizeof(int) - sizeof(char)), fp);
+                        totalSize += (byteLen - filePacket.GetHeaderSize());
+                        //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
+                        fwrite(&filePacket.buf[0], 1, (byteLen - 2 * sizeof(int) - sizeof(char)), fp);
                     }
                     fclose(fp);
                     std::cout << "전송 완료" << std::endl;

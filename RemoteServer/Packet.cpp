@@ -53,3 +53,8 @@ void Packet::Build(char* buffer, int command, int size, char* data, int& offset)
     WriteData(data, size, offset);
     Serialize(buffer);
 }
+
+int Packet::GetHeaderSize()
+{
+    return 2 * sizeof(int) + sizeof(char);
+}

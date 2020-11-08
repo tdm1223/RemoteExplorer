@@ -146,13 +146,13 @@ int main()
                         // 파일 전송
                         while (1)
                         {
-                            Packet s;
+                            Packet filePacket;
                             offset = 0;
                             sendSize = fread(data, 1, BUF_SIZE - sizeof(char) - 2 * sizeof(int), fp);
-                            s.Build(buffer, UPLOAD, sendSize, data, offset);
+                            filePacket.Build(buffer, UPLOAD, sendSize, data, offset);
                             totalSize += sendSize;
                             //std::cout << "sendSize : " << sendSize << " totalSize : " << totalSize << std::endl;
-                            if (sendSize < BUF_SIZE - sizeof(char) - 2 * sizeof(int))
+                            if (sendSize < BUF_SIZE - filePacket.GetHeaderSize())
                             {
                                 send(clientSock, buffer, offset, 0);
                                 break;
