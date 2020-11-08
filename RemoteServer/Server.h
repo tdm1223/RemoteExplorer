@@ -38,7 +38,7 @@ public:
 
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
-    void RecvProc(int index);
+    void DownloadProc(int index, Packet result, char* recvBuffer, int byteLen);
     void SendProc(int index);
 
     std::mutex m;
