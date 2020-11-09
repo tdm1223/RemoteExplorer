@@ -19,17 +19,11 @@ namespace fs = std::filesystem;
 #define BUF_SIZE 4096
 #define MESSAGE_SIZE 20
 
-// 메세지 타입
-#define UPLOAD 1
-#define DOWNLOAD 2
-#define END 3
-
 class Server
 {
 public:
     Server();
     ~Server();
-
     SOCKET socketArray[FD_SETSIZE];
     HANDLE eventArray[FD_SETSIZE];
     int numOfClient;
@@ -38,6 +32,8 @@ public:
     void CloseProc(int index);
     void DownloadProc(int index, Packet result, char* recvBuffer, int byteLen);
 private:
+    enum { UPLOAD = 1 , DOWNLOAD = 2, END = 3};
+
     // 대기 소켓 설정
     SOCKET SetServer();
     SOCKET clientSock;
