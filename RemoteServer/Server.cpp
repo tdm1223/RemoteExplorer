@@ -161,7 +161,7 @@ void Server::CloseProc(int index)
     std::cout << "남아있는 클라이언트 수 :" << numOfClient << std::endl;
 }
 
-void Server::DownloadProc(int index, Packet result, char* recvBuffer, int byteLen)
+void Server::DownloadProc(int index, Packet result, char* recvBuffer, int recvLength)
 {
     Parser parser;
     std::string fileName(result.buf.begin(), result.buf.end());
@@ -169,18 +169,17 @@ void Server::DownloadProc(int index, Packet result, char* recvBuffer, int byteLe
     Packet fileSizePacket;
     memset(recvBuffer, 0, sizeof(recvBuffer));
 
-    int s = 0;
     while (1)
     {
-        byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
-        if (byteLen == -1)
+        recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
+        if (recvLength == -1)
         {
             continue;
         }
         break;
     }
 
-    parser.Parsing(recvBuffer, byteLen, fileSizePacket);
+    parser.Parsing(recvBuffer, recvLength, fileSizePacket);
     std::string size(fileSizePacket.buf.begin(), fileSizePacket.buf.end());
     int fileSize = atoi(size.c_str());
     std::cout << "파일이름 : " << fileName << " 파일 크기 : " << fileSize << std::endl;
@@ -190,12 +189,12 @@ void Server::DownloadProc(int index, Packet result, char* recvBuffer, int byteLe
     std::cout << "파일명 : " << fileName << std::endl;
 
     memset(recvBuffer, 0, sizeof(recvBuffer));
-    byteLen = 0;
+    recvLength = 0;
     int totalSize = 0;
-    while ((byteLen = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
+    while ((recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
     {
         Packet filePacket;
-        parser.Parsing(recvBuffer, byteLen, filePacket);
+        parser.Parsing(recvBuffer, recvLength, filePacket);
         if (GetLastError() == WSAEWOULDBLOCK)
         {
             Sleep(50); // 잠시 기다렸다가 재전송
@@ -206,9 +205,9 @@ void Server::DownloadProc(int index, Packet result, char* recvBuffer, int byteLe
             }
             continue;
         }
-        totalSize += (byteLen - filePacket.GetHeaderSize());
+        totalSize += (recvLength - filePacket.GetHeaderSize());
         //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
-        fwrite(&filePacket.buf[0], 1, (byteLen - 2 * sizeof(int) - sizeof(char)), fp);
+        fwrite(&filePacket.buf[0], 1, (recvLength - filePacket.GetHeaderSize()), fp);
     }
     fclose(fp);
     std::cout << "전송 완료" << std::endl;

@@ -10,12 +10,14 @@ namespace fs = std::filesystem;
 
 #pragma comment(lib, "ws2_32.lib")
 
-#define BUF_SIZE 4096
-
-// 메세지 타입
-#define UPLOAD 1
-#define DOWNLOAD 2
-#define END 3
+enum
+{
+    UPLOAD = 1,
+    DOWNLOAD = 2,
+    END = 3,
+    BUF_SIZE = 4096,
+    PORT = 9000
+};
 
 void FileUpload(SOCKET s);
 
@@ -48,7 +50,7 @@ int main()
     // 서버 주소 지정
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serverAddress.sin_port = htons(9000);
+    serverAddress.sin_port = htons(PORT);
 
     // 서버에 접속 요청 
     if (connect(clientSock, (LPSOCKADDR)&serverAddress, sizeof(serverAddress)) != 0)
@@ -173,7 +175,7 @@ void FileUpload(SOCKET s)
             {
                 Packet filePacket;
                 offset = 0;
-                sendSize = fread(data, 1, BUF_SIZE - sizeof(char) - 2 * sizeof(int), fp);
+                sendSize = fread(data, 1, BUF_SIZE - filePacket.GetHeaderSize(), fp);
                 filePacket.Build(buffer, UPLOAD, sendSize, data, offset);
                 totalSize += sendSize;
                 //std::cout << "sendSize : " << sendSize << " totalSize : " << totalSize << std::endl;
@@ -190,75 +192,3 @@ void FileUpload(SOCKET s)
     }
     return;
 }
-//void RecvProc(SOCKET s)
-//{
-//    SOCKET sock = s;
-//
-//    // 다운로드라는것을 알림
-//    int type = 2;
-//    send(sock, (char*)&type, sizeof(int), 0);
-//
-//    std::cout << "업로드 요청" << std::endl;
-//    std::cout << "원격 폴더에 있는 파일" << std::endl;
-//    std::cout << "======================" << std::endl;
-//    int cnt = 0;
-//    recv(sock, (char*)&cnt, sizeof(int), 0);
-//
-//    std::cout << "파일 개수 : " << cnt << std::endl;
-//    std::cout << "다운로드할 파일을 입력하세요" << std::endl;
-//    // 요청해서 파일 리스트 보여주는 코드
-//    char recvBuf[BUF_SIZE];
-//    for (int i = 0; i < cnt; i++)
-//    {
-//        recv(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
-//        std::cout << recvBuf << std::endl;
-//    }
-//    std::cout << "======================" << std::endl;
-//    std::cout << "파일명을 입력하세요" << std::endl;
-//
-//    // 다운 받으려는 파일명을 보냄
-//    std::string fileName;
-//    std::cin >> fileName;
-//    strcpy(recvBuf, fileName.c_str());
-//    send(sock, (char*)&recvBuf, MAX_MSG_LEN, 0);
-//
-//    // 다운 받으려는 파일 크기를 받음
-//    int fileSize = 0;
-//    recv(sock, (char*)&fileSize, sizeof(fileSize), 0);
-//    std::cout << "받으려는 파일 크기 : " << fileSize << std::endl;
-//
-//    // 파일 다운로드
-//    std::cout << "파일 다운로드 시작" << std::endl;
-//    FILE* fp = fopen(fileName.c_str(), "wb+");
-//    if (fp == NULL)
-//    {
-//        std::cout << "파일 쓰기 오류. 해당 파일 생략" << std::endl;
-//        return;
-//    }
-//
-//    memset(recvBuf, 0, sizeof(recvBuf));
-//    int readSize = 0;
-//    int totalSize = 0;
-//    while ((readSize = recv(sock, recvBuf, BUF_SIZE, 0)) != 0)
-//    {
-//        std::cout << "total : " << totalSize << std::endl;
-//        if (GetLastError() == WSAEWOULDBLOCK)
-//        {
-//            Sleep(50); // 잠시 기다렸다가 재전송
-//            if (totalSize == fileSize)
-//            {
-//                std::cout << "파일 받기 완료" << std::endl;
-//                break;
-//            }
-//            continue;
-//        }
-//        totalSize += readSize;
-//        fwrite(recvBuf, 1, readSize, fp);
-//        if (totalSize == fileSize)
-//        {
-//            std::cout << "파일 받기 완료" << std::endl;
-//            break;
-//        }
-//    }
-//    fclose(fp);
-//}

@@ -14,11 +14,6 @@ namespace fs = std::filesystem;
 #pragma comment(lib,"ws2_32")
 #pragma warning(disable: 4996)
 
-#define PORT 9000
-#define MAX_MSG_LEN 256
-#define BUF_SIZE 4096
-#define MESSAGE_SIZE 20
-
 class Server
 {
 public:
@@ -32,7 +27,7 @@ public:
     void CloseProc(int index);
     void DownloadProc(int index, Packet result, char* recvBuffer, int byteLen);
 private:
-    enum { UPLOAD = 1 , DOWNLOAD = 2, END = 3};
+    enum { UPLOAD = 1 , DOWNLOAD = 2, END = 3, PORT = 9000, BUF_SIZE = 4096};
 
     // 대기 소켓 설정
     SOCKET SetServer();

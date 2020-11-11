@@ -3,7 +3,6 @@
 #include<winsock.h>
 #include<iostream>
 
-#define BUF_SIZE 4096
 class Packet
 {
 public:
