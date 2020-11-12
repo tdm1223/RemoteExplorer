@@ -2,6 +2,20 @@
 
 bool Parser::Parsing(char* recvBuffer, int byteLen, Packet& resultPacket)
 {
+    // header + body
+    //------------------------
+    if (byteLen < packetParsingSize)
+    {
+        return false;
+    }
+
+    int offset = 0;
+    memcpy(&resultPacket.command, recvBuffer[0], 4);
+    offset += 4;
+
+    memcpy(&resultPacket.size, recvBuffer[offset], 4);
+    offset += 4;
+   
     for (int i = 0; i < byteLen; i++)
     {
         const auto b = recvBuffer[i];

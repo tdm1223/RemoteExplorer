@@ -9,8 +9,19 @@ Packet::Packet()
 Packet::~Packet()
 {}
 
-void Packet::WriteWithoutData(int command, int size, int& offset)
+void Packet::WriteWithoutData(const int command, const int size, int& offset)
 {
+    int dataSize = sizeof(command) + sizeof(size);
+
+    buf.resize(dataSize);
+
+    memcpy(&buf[offset], command, sizeof(command));
+    offset += sizeof(command);
+    
+    memcpy(&buf[offset], size, sizeof(size));
+    offset += sizeof(size);
+
+
     buf.push_back(prefix);
     buf.push_back(command & 0xFF);
     buf.push_back((command >> 8) & 0xFF);
