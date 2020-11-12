@@ -13,6 +13,7 @@ public:
 class MyPacket : public Packet
 {
 public:
+    enum {UPLOAD = 1, DOWNLOAD = 2, END = 3};
     void SetCommand(int command)
     {
         this->command = command;
