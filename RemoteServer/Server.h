@@ -22,12 +22,11 @@ public:
     SOCKET socketArray[FD_SETSIZE];
     HANDLE eventArray[FD_SETSIZE];
     int numOfClient;
-
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
-    void DownloadProc(int index, Packet result, char* recvBuffer, int byteLen);
+
 private:
-    enum { UPLOAD = 1 , DOWNLOAD = 2, END = 3, PORT = 9000, BUF_SIZE = 4096};
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, PORT = 9000, BUF_SIZE = 4096 };
 
     // 대기 소켓 설정
     SOCKET SetServer();

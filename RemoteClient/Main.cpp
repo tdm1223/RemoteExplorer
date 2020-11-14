@@ -10,17 +10,14 @@ namespace fs = std::filesystem;
 
 #pragma comment(lib, "ws2_32.lib")
 
-enum
-{
-    UPLOAD = 1,
-    DOWNLOAD = 2,
-    END = 3,
-    BUF_SIZE = 4096,
-    PORT = 9000
-};
-
 int main()
 {
+    int UPLOAD = 1;
+    int DOWNLOAD = 2;
+    int END = 3;
+    const int BUF_SIZE = 4096;
+    int PORT = 9000;
+
     // client 소켓 선언
     SOCKET clientSock;
 
@@ -112,7 +109,7 @@ int main()
                 packet.OnBuild(buffer, offset);
 
                 // 메세지 전송
-                std::cout << "전송하는 메시지 크기 : " << offset << std::endl;   
+                std::cout << "전송하는 메시지 크기 : " << offset << std::endl;
                 if (send(clientSock, buffer, offset, 0) < 0)
                 {
                     exit(1);
@@ -150,27 +147,41 @@ int main()
                     fp = fopen(fileName.c_str(), "rb");
 
                     int totalSize = 0;
+
+                    char sendData[4082];
+
+                    const int dataSize = BUF_SIZE - packet.GetHeaderSize();
                     // 파일 전송
-                    //while (1)
-                    //{
-                    //    offset = 0;
-                    //    sendSize = fread(data, 1, BUF_SIZE - filePacket.GetHeaderSize(), fp);
-                    //    totalSize += sendSize;
-                    //    //std::cout << "sendSize : " << sendSize << " totalSize : " << totalSize << std::endl;
-                    //    if (sendSize < BUF_SIZE - filePacket.GetHeaderSize())
-                    //    {
-                    //        send(clientSock, buffer, offset, 0);
-                    //        break;
-                    //    }
-                    //    send(clientSock, buffer, BUF_SIZE, 0);
-                    //}
+                    while (1)
+                    {
+                        offset = 0;
+                        packet.Clear();
+                        sendSize = fread(sendData, 1, dataSize, fp);
+
+                        packet.SetPrefix("ESTSOFT");
+                        packet.SetCommand(UPLOAD);
+                        packet.SetSize(sendSize);
+                        std::cout << sendSize << std::endl;
+
+                        data.clear();
+                        for (int i = 0; i < sendSize; i++)
+                        {
+                            data.push_back(sendData[i]);
+                        }
+                        packet.SetData(data);
+                        packet.OnBuild(buffer, offset);
+                        totalSize += sendSize;
+                        if (sendSize < BUF_SIZE - packet.GetHeaderSize())
+                        {
+                            send(clientSock, buffer, offset, 0);
+                            break;
+                        }
+                        send(clientSock, buffer, BUF_SIZE, 0);
+                    }
                     fclose(fp);
                     break;
                 }
             }
-
-            //std::thread uploadThread([=] {FileUpload(clientSock); });
-            //uploadThread.join();
         }
         else if (packet.GetCommand() == DOWNLOAD)
         {

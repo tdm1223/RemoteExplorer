@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<vector>
 #include<winsock.h>
 #include<iostream>
@@ -9,6 +9,7 @@ public:
     virtual const bool OnParse(const char* buffer, const unsigned int bufferSize) = 0;
     virtual const bool OnBuild(char* buffer, unsigned int& buildBufferSize) = 0;
     virtual const void Clear() = 0;
+    virtual const int GetHeaderSize() = 0;
 
     const std::string kPrefix = "ESTSOFT";
 };
@@ -71,7 +72,7 @@ public:
 
         if (strcmp(prefix, kPrefix.c_str()) != 0)
         {
-            std::cout << "´Ù¸£´Ù..." << std::endl;
+            std::cout << "prefix is " << prefix << std::endl;
             return false;
         }
 
@@ -123,50 +124,14 @@ public:
         data.clear();
     }
 
+    virtual const int GetHeaderSize() override
+    {
+        return 2 * sizeof(int) + 8 * sizeof(char);
+    }
+
 private:
     char prefix[8];
     int command;
     int size;
     std::vector<char> data;
 };
-
-//server code
-//{
-//    //case Send
-//    MyPacket packet;
-//   packet.command = 4;
-//    packet.size = 8;
-//
-//    char pakcetBuffer[MAX_PACKET] = { 0, };
-//    uint32_t buildBufferSize = 0;
-//    if (packet.OnBuild(packetBuffer, buildBufferSize) == true)
-//    {
-//        Send(socket, packetBuffer, buildBufferSize);
-//    }
-//
-//    //case Recv
-//    MyPacket packet;
-//    if (packet.OnParse(recvBuffer, 8) == true)
-//    {
-//        packet.GetCommand();
-//    }
-//
-//}
-//
-//class Packet
-//{
-//public:
-//    Packet();
-//    ~Packet();
-//
-//    void WriteWithoutData(int command, int size, int& offset);
-//    void WriteData(char* data, int size, int& offset);
-//    void Serialize(char* data);
-//    void Build(char* buffer, int command, int size, char* data, int& offset);
-//    int GetHeaderSize();
-//    char prefix = 0x7F;
-//    int command;
-//    int size;
-//
-//    std::vector<char> buf;
-//};
