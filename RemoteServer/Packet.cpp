@@ -42,7 +42,7 @@ const std::vector<char> MyPacket::GetData() const
 
 const bool MyPacket::OnParse(const char* buffer, const unsigned int bufferSize)
 {
-    if (buffer == nullptr || bufferSize < GetHeaderSize() + GetSize())
+    if (buffer == nullptr || bufferSize < GetHeaderSize())
     {
         return false;
     }

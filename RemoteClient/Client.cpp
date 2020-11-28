@@ -139,7 +139,7 @@ void Client::Start()
                         packet.SetPrefix("ESTSOFT");
                         packet.SetCommand(UPLOAD);
                         packet.SetSize(sendSize);
-                        std::cout << sendSize << std::endl;
+                        //std::cout << sendSize << std::endl;
 
                         data.clear();
                         for (int i = 0; i < sendSize; i++)
