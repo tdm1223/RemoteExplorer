@@ -25,6 +25,6 @@ public:
     SOCKADDR_IN serverAddress;
 
     // 헤더 구조체 선언
-    MyPacket packet;
+    CustomPacket packet;
 };
 

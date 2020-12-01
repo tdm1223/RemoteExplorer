@@ -101,7 +101,7 @@ void Server::EventLoop(SOCKET sock)
                     std::cout << "Server receive " << byteLen << " bytes from " << sigEventIdx << std::endl;
                     if (byteLen > 0)
                     {
-                        MyPacket result;
+                        CustomPacket result;
                         result.OnParse(recvBuffer, byteLen);
 
                         std::cout << "클라로 부터 받은 prefix : " << result.GetPrefix() << std::endl;

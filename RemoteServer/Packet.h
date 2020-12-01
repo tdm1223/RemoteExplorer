@@ -14,7 +14,7 @@ public:
     const std::string kPrefix = "ESTSOFT";
 };
 
-class MyPacket : public Packet
+class CustomPacket : public Packet
 {
 public:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3 };

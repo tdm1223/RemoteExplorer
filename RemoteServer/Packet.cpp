@@ -1,46 +1,46 @@
 ﻿#include "Packet.h"
 
-void MyPacket::SetCommand(int command)
+void CustomPacket::SetCommand(int command)
 {
     this->command = command;
 }
 
-void MyPacket::SetSize(int size)
+void CustomPacket::SetSize(int size)
 {
     this->size = size;
 }
 
-void MyPacket::SetPrefix(const char* prefix)
+void CustomPacket::SetPrefix(const char* prefix)
 {
     strcpy(this->prefix, prefix);
 }
 
-void MyPacket::SetData(std::vector<char> data)
+void CustomPacket::SetData(std::vector<char> data)
 {
     this->data = data;
 }
 
-const int MyPacket::GetCommand() const
+const int CustomPacket::GetCommand() const
 {
     return command;
 }
 
-const int MyPacket::GetSize() const
+const int CustomPacket::GetSize() const
 {
     return size;
 }
 
-const char* MyPacket::GetPrefix() const
+const char* CustomPacket::GetPrefix() const
 {
     return prefix;
 }
 
-const std::vector<char> MyPacket::GetData() const
+const std::vector<char> CustomPacket::GetData() const
 {
     return data;
 }
 
-const bool MyPacket::OnParse(const char* buffer, const unsigned int bufferSize)
+const bool CustomPacket::OnParse(const char* buffer, const unsigned int bufferSize)
 {
     if (buffer == nullptr || bufferSize < GetHeaderSize())
     {
@@ -74,7 +74,7 @@ const bool MyPacket::OnParse(const char* buffer, const unsigned int bufferSize)
     return true;
 }
 
-const bool MyPacket::OnBuild(char* buffer, unsigned int& buildBufferSize)
+const bool CustomPacket::OnBuild(char* buffer, unsigned int& buildBufferSize)
 {
     if ((command > END || command < UPLOAD) || size < 0)
     {
@@ -96,7 +96,7 @@ const bool MyPacket::OnBuild(char* buffer, unsigned int& buildBufferSize)
     return true;
 }
 
-const void MyPacket::Clear()
+const void CustomPacket::Clear()
 {
     memset(prefix, 0, 8);
     command = -1;
@@ -104,7 +104,7 @@ const void MyPacket::Clear()
     data.clear();
 }
 
-const int MyPacket::GetHeaderSize()
+const int CustomPacket::GetHeaderSize()
 {
     // prefix + command + size
     return 2 * sizeof(int) + 8 * sizeof(char);
