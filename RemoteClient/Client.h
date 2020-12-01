@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<WinSock2.h>
 #include<string>
 #include<iostream>
@@ -18,13 +18,15 @@ public:
 
     Client();
     void Start();
-    // client ¼ÒÄÏ ¼±¾ğ
+    // client ì†Œì¼“ ì„ ì–¸
     SOCKET clientSock;
 
-    // ¼­¹öÁÖ¼Ò ±¸Á¶Ã¼ º¯¼ö ¼±¾ğ
+    // ì„œë²„ì£¼ì†Œ êµ¬ì¡°ì²´ ë³€ìˆ˜ ì„ ì–¸
     SOCKADDR_IN serverAddress;
 
-    // Çì´õ ±¸Á¶Ã¼ ¼±¾ğ
+    // í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì‚¬ìš©í•  íŒ¨í‚· êµ¬ì¡°ì²´ ì„ ì–¸
     CustomPacket packet;
+
+    const int dataSize = BUF_SIZE - packet.GetHeaderSize();
 };
 

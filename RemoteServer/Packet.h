@@ -18,8 +18,8 @@ private:
 class Packet : private Uncopyable
 {
 public:
-    virtual const bool OnParse(const char* buffer, const unsigned int bufferSize) = 0;
-    virtual const bool OnBuild(char* buffer, unsigned int& buildBufferSize) = 0;
+    virtual const bool Parsing(const char* buffer, const unsigned int bufferSize) = 0;
+    virtual const bool Building(char* buffer, unsigned int& buildBufferSize) = 0;
     virtual const void Clear() = 0;
     virtual const int GetHeaderSize() = 0;
 
@@ -38,8 +38,8 @@ public:
     const int GetSize() const;
     const char* GetPrefix() const;
     const std::vector<char> GetData() const;
-    virtual const bool OnParse(const char* buffer, const unsigned int bufferSize) override;
-    virtual const bool OnBuild(char* buffer, unsigned int& buildBufferSize) override;
+    virtual const bool Parsing(const char* buffer, const unsigned int bufferSize) override;
+    virtual const bool Building(char* buffer, unsigned int& buildBufferSize) override;
     virtual const void Clear() override;
     virtual const int GetHeaderSize() override;
 

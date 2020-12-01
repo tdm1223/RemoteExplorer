@@ -101,22 +101,22 @@ void Server::EventLoop(SOCKET sock)
                     std::cout << "Server receive " << byteLen << " bytes from " << sigEventIdx << std::endl;
                     if (byteLen > 0)
                     {
-                        CustomPacket result;
-                        result.OnParse(recvBuffer, byteLen);
+                        CustomPacket packet;
+                        packet.Parsing(recvBuffer, byteLen);
 
-                        std::cout << "클라로 부터 받은 prefix : " << result.GetPrefix() << std::endl;
-                        std::cout << "클라로 부터 받은 메시지의 타입 : " << result.GetCommand() << std::endl;
-                        std::cout << "클라로 부터 받은 메시지의 크기 : " << result.GetSize() << std::endl;
+                        std::cout << "클라로 부터 받은 prefix : " << packet.GetPrefix() << std::endl;
+                        std::cout << "클라로 부터 받은 메시지의 타입 : " << packet.GetCommand() << std::endl;
+                        std::cout << "클라로 부터 받은 메시지의 크기 : " << packet.GetSize() << std::endl;
                         std::string name;
-                        for (int i = 0; i < result.GetSize(); i++)
+                        for (int i = 0; i < packet.GetSize(); i++)
                         {
-                            name.push_back(result.GetData()[i]);
+                            name.push_back(packet.GetData()[i]);
                         }
                         std::cout << "클라로 부터 받은 메시지의 데이터 : " << name << std::endl;
 
-                        if (result.GetCommand() == UPLOAD)
+                        if (packet.GetCommand() == UPLOAD)
                         {
-                            result.Clear();
+                            packet.Clear();
                             int recvLength = 0;
                             while (1)
                             {
@@ -128,11 +128,11 @@ void Server::EventLoop(SOCKET sock)
                                 break;
                             }
 
-                            result.OnParse(recvBuffer, recvLength);
+                            packet.Parsing(recvBuffer, recvLength);
                             std::string size;
-                            for (int i = 0; i < result.GetSize(); i++)
+                            for (int i = 0; i < packet.GetSize(); i++)
                             {
-                                size.push_back(result.GetData()[i]);
+                                size.push_back(packet.GetData()[i]);
                             }
                             int fileSize = atoi(size.c_str());
                             std::cout << "파일이름 : " << name << " 파일 크기 : " << fileSize << std::endl;
@@ -147,8 +147,8 @@ void Server::EventLoop(SOCKET sock)
 
                             while ((recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
                             {
-                                result.Clear();
-                                result.OnParse(recvBuffer, recvLength);
+                                packet.Clear();
+                                packet.Parsing(recvBuffer, recvLength);
                                 if (GetLastError() == WSAEWOULDBLOCK)
                                 {
                                     Sleep(50); // 잠시 기다렸다가 재전송
@@ -159,18 +159,15 @@ void Server::EventLoop(SOCKET sock)
                                     }
                                     continue;
                                 }
-                                totalSize += (recvLength - result.GetHeaderSize());
+                                totalSize += (recvLength - packet.GetHeaderSize());
                                 //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
-                                fwrite(&result.GetData()[0], 1, (recvLength - result.GetHeaderSize()), fp);
+                                fwrite(&packet.GetData()[0], 1, recvLength - packet.GetHeaderSize(), fp);
                             }
 
                             fclose(fp);
                             std::cout << "전송 완료" << std::endl;
-                            //char* recvBufferIndex = recvBuffer;
-                            //std::thread downloadThread([=] {DownloadProc(sigEventIdx, result, recvBufferIndex, byteLen); });
-                            //downloadThread.join();
                         }
-                        else if (result.GetCommand() == DOWNLOAD)
+                        else if (packet.GetCommand() == DOWNLOAD)
                         {
                         }
                     }
@@ -181,7 +178,6 @@ void Server::EventLoop(SOCKET sock)
                     closeThread.join();
                 }
             }
-
         }
     }
     closesocket(sock);

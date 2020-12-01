@@ -40,7 +40,7 @@ const std::vector<char> CustomPacket::GetData() const
     return data;
 }
 
-const bool CustomPacket::OnParse(const char* buffer, const unsigned int bufferSize)
+const bool CustomPacket::Parsing(const char* buffer, const unsigned int bufferSize)
 {
     if (buffer == nullptr || bufferSize < GetHeaderSize())
     {
@@ -74,7 +74,7 @@ const bool CustomPacket::OnParse(const char* buffer, const unsigned int bufferSi
     return true;
 }
 
-const bool CustomPacket::OnBuild(char* buffer, unsigned int& buildBufferSize)
+const bool CustomPacket::Building(char* buffer, unsigned int& buildBufferSize)
 {
     if ((command > END || command < UPLOAD) || size < 0)
     {

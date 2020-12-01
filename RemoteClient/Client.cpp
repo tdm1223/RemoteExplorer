@@ -1,15 +1,15 @@
-#include "Client.h"
+ï»¿#include "Client.h"
 
 Client::Client()
 {
-    // ¼ÒÄÏÀ» ÃÊ±âÈ­
+    // ì†Œì¼“ì„ ì´ˆê¸°í™”
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
         exit(1);
     }
 
-    // client ¼ÒÄÏ »ı¼º
+    // client ì†Œì¼“ ìƒì„±
     clientSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (clientSock == INVALID_SOCKET)
@@ -20,12 +20,12 @@ Client::Client()
 
     memset(&serverAddress, 0, sizeof(serverAddress));
 
-    // ¼­¹ö ÁÖ¼Ò ÁöÁ¤
+    // ì„œë²„ ì£¼ì†Œ ì§€ì •
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
     serverAddress.sin_port = htons(PORT);
 
-    // ¼­¹ö¿¡ Á¢¼Ó ¿äÃ» 
+    // ì„œë²„ì— ì ‘ì† ìš”ì²­ 
     if (connect(clientSock, (LPSOCKADDR)&serverAddress, sizeof(serverAddress)) != 0)
     {
         exit(1);
@@ -34,25 +34,31 @@ Client::Client()
 
 void Client::Start()
 {
+    // send ë²„í¼ ì„ ì–¸
+    char sendBuffer[BUF_SIZE];
+
     while (true)
     {
-        // message typeÀ» ÀÔ·Â ¹ŞÀ½
+        // message typeì„ ì…ë ¥ ë°›ìŒ
         int command;
         std::cout << "1 - UPLOAD" << std::endl;
         std::cout << "2 - DOWNLOAD" << std::endl;
         std::cout << "3 - END" << std::endl;
         std::cin >> command;
 
+        // ëª…ë ¹ì„ íŒ¨í‚·ì— ì €ì¥
         packet.SetCommand(command);
         const char* prefix = "ESTSOFT";
+
+        // prefixë¥¼ íŒ¨í‚·ì— ì €ì¥
         packet.SetPrefix(prefix);
         if (packet.GetCommand() == UPLOAD)
         {
-            // receive ¹öÆÛ
-            char buffer[BUF_SIZE];
+            // send ë²„í¼ ì´ˆê¸°í™”
+            memset(sendBuffer, 0, sizeof(sendBuffer));
 
-            // ÇöÀç Æú´õ¿¡ ÀÖ´Â ÆÄÀÏ Ãâ·Â
-            std::cout << "ÇöÀç Æú´õ¿¡ ÀÖ´Â ÆÄÀÏ" << std::endl;
+            // í˜„ì¬ í´ë”ì— ìˆëŠ” íŒŒì¼ ì¶œë ¥
+            std::cout << "í˜„ì¬ í´ë”ì— ìˆëŠ” íŒŒì¼" << std::endl;
             std::cout << "======================" << std::endl;
             std::string files;
             for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
@@ -63,11 +69,12 @@ void Client::Start()
             }
             std::cout << "======================" << std::endl;
 
-            // ÆÄÀÏ¸í ÀÔ·Â ¹ŞÀ½
+            // íŒŒì¼ëª… ì…ë ¥ ë°›ìŒ
             std::string fileName = "";
-            std::cout << "ÆÄÀÏ¸í : ";
+            std::cout << "íŒŒì¼ëª… : ";
             std::cin >> fileName;
 
+            // íŒŒì¼ëª…ì„ íŒ¨í‚·ì— ì €ì¥
             std::vector<char> data(fileName.begin(), fileName.end());
             packet.SetData(data);
 
@@ -75,102 +82,98 @@ void Client::Start()
             fp = fopen(fileName.c_str(), "rb");
             if (fp == NULL)
             {
-                std::cout << "¾ø´Â ÆÄÀÏÀÔ´Ï´Ù." << std::endl;
+                std::cout << "ì—†ëŠ” íŒŒì¼ì…ë‹ˆë‹¤." << std::endl;
             }
             else
             {
-                // ÆÄÀÏ¸íÀ» ¸ÕÀú Àü´Ş
+                // íŒŒì¼ í¬ê¸°ë¥¼ íŒ¨í‚·ì— ì €ì¥
                 packet.SetSize(fileName.length());
 
-                // ÆĞÅ¶ ºôµå
+                // íŒ¨í‚·ì„ ë¹Œë“œ í•˜ì—¬ ë²„í¼ì— ì €ì¥
                 unsigned int offset = 0;
-                packet.OnBuild(buffer, offset);
+                packet.Building(sendBuffer, offset);
 
-                // ¸Ş¼¼Áö Àü¼Û
-                std::cout << "Àü¼ÛÇÏ´Â ¸Ş½ÃÁö Å©±â : " << offset << std::endl;
-                if (send(clientSock, buffer, offset, 0) < 0)
+                // ë©”ì„¸ì§€ ì „ì†¡
+                std::cout << "ì „ì†¡í•˜ëŠ” ë©”ì‹œì§€ í¬ê¸° : " << offset << std::endl;
+                if (send(clientSock, sendBuffer, offset, 0) < 0)
                 {
                     exit(1);
                 }
 
-                while (true)
+                packet.Clear();
+                memset(sendBuffer, 0, sizeof(sendBuffer));
+
+                // íŒŒì¼ ëìœ¼ë¡œ ìœ„ì¹˜ ì˜®ê¹€
+                fseek(fp, 0L, SEEK_END);
+                // íŒŒì¼ í¬ê¸° ì–»ìŒ
+                int fileSize = ftell(fp);
+                std::string fileSizeString = std::to_string(fileSize);
+
+                packet.SetPrefix("ESTSOFT");
+                packet.SetCommand(UPLOAD);
+                packet.SetSize(fileSizeString.size());
+                std::vector<char> data(fileSizeString.begin(), fileSizeString.end());
+                packet.SetData(data);
+
+                // ë‹¤ì‹œ íŒŒì¼ ì²˜ìŒìœ¼ë¡œ ìœ„ì¹˜ ì˜®ê¹€
+                fseek(fp, 0L, SEEK_SET);
+                fclose(fp);
+                std::cout << "ì „ì†¡í•˜ëŠ” íŒŒì¼ëª… : " << fileName << " ì „ì†¡í•˜ëŠ” íŒŒì¼ í¬ê¸° : " << packet.GetSize() << " Byte" << std::endl;
+
+                // ì „ì†¡ ê´€ë ¨ ë³€ìˆ˜ ì´ˆê¸°í™”
+                offset = 0;
+
+                // íŒ¨í‚· ë¹Œë“œ
+                packet.Building(sendBuffer, offset);
+                send(clientSock, sendBuffer, offset, 0);
+
+                // ë°ì´í„° í†µì‹ ì— ì‚¬ìš©í•  ë³€ìˆ˜
+                int sendSize = 0;
+                fp = fopen(fileName.c_str(), "rb");
+                int totalSize = 0;
+                char sendData[4082];
+
+                // íŒŒì¼ ì „ì†¡
+                while (1)
                 {
+                    memset(sendData, 0, sizeof(sendData));
+                    offset = 0;
                     packet.Clear();
-                    memset(buffer, 0, sizeof(buffer));
+                    sendSize = fread(sendData, 1, dataSize, fp);
 
-                    // ÆÄÀÏ ³¡À¸·Î À§Ä¡ ¿Å±è
-                    fseek(fp, 0L, SEEK_END);
-                    // ÆÄÀÏ Å©±â ¾òÀ½
-                    int fileSize = ftell(fp);
-                    std::string fileSizeString = std::to_string(fileSize);
-
+                    // íŒŒì¼ì„ ë‹´ì€ íŒ¨í‚·ì„ ë³´ë‚¼ë•Œ ì‚¬ì „ ì‘ì—…
                     packet.SetPrefix("ESTSOFT");
                     packet.SetCommand(UPLOAD);
-                    packet.SetSize(fileSizeString.size());
-                    std::vector<char> data(fileSizeString.begin(), fileSizeString.end());
-                    packet.SetData(data);
+                    packet.SetSize(sendSize);
 
-                    // ´Ù½Ã ÆÄÀÏ Ã³À½À¸·Î À§Ä¡ ¿Å±è
-                    fseek(fp, 0L, SEEK_SET);
-                    fclose(fp);
-                    std::cout << "Àü¼ÛÇÏ´Â ÆÄÀÏ¸í : " << fileName << " Àü¼ÛÇÏ´Â ÆÄÀÏ Å©±â : " << packet.GetSize() << " Byte" << std::endl;
-
-                    offset = 0;
-
-                    packet.OnBuild(buffer, offset);
-                    send(clientSock, buffer, offset, 0);
-
-                    // µ¥ÀÌÅÍ Åë½Å¿¡ »ç¿ëÇÒ º¯¼ö
-                    int sendSize = 0;
-                    fp = fopen(fileName.c_str(), "rb");
-
-                    int totalSize = 0;
-
-                    char sendData[4082];
-
-                    const int dataSize = BUF_SIZE - packet.GetHeaderSize();
-                    // ÆÄÀÏ Àü¼Û
-                    while (1)
+                    data.clear();
+                    for (int i = 0; i < sendSize; i++)
                     {
-                        offset = 0;
-                        packet.Clear();
-                        sendSize = fread(sendData, 1, dataSize, fp);
-
-                        packet.SetPrefix("ESTSOFT");
-                        packet.SetCommand(UPLOAD);
-                        packet.SetSize(sendSize);
-                        //std::cout << sendSize << std::endl;
-
-                        data.clear();
-                        for (int i = 0; i < sendSize; i++)
-                        {
-                            data.push_back(sendData[i]);
-                        }
-                        packet.SetData(data);
-                        packet.OnBuild(buffer, offset);
-                        totalSize += sendSize;
-                        if (sendSize < BUF_SIZE - packet.GetHeaderSize())
-                        {
-                            send(clientSock, buffer, offset, 0);
-                            break;
-                        }
-                        send(clientSock, buffer, BUF_SIZE, 0);
+                        data.push_back(sendData[i]);
                     }
-                    fclose(fp);
-                    break;
+                    packet.SetData(data);
+                    packet.Building(sendBuffer, offset);
+                    totalSize += sendSize;
+                    if (sendSize < BUF_SIZE - packet.GetHeaderSize())
+                    {
+                        send(clientSock, sendBuffer, offset, 0);
+                        break;
+                    }
+                    send(clientSock, sendBuffer, BUF_SIZE, 0);
                 }
+                fclose(fp);
             }
         }
         else if (packet.GetCommand() == DOWNLOAD)
         {
-
+            break;
         }
         else if (packet.GetCommand() == END)
         {
             break;
         }
     }
-    // ¼ÒÄÏÀ» ´İÀ½
+    // ì†Œì¼“ì„ ë‹«ìŒ
     closesocket(clientSock);
 
     std::cout << "client exit" << std::endl;
