@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Action.h"
+#include"Action.h"
 #include<iostream>
 
 using namespace std;
 
-class Run : public Action
+class Send : public Action
 {
 public:
     void Execute()
     {
-        cout << "Run" << endl;
+        cout << "Send" << endl;
     }
 };

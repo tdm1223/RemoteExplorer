@@ -21,7 +21,10 @@
     <ClCompile Include="Action.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Stop.cpp">
+    <ClCompile Include="Send.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Receive.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +32,10 @@
     <ClInclude Include="Action.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Stop.h">
+    <ClInclude Include="Receive.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Run.h">
+    <ClInclude Include="Send.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

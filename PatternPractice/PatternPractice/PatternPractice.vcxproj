@@ -21,12 +21,13 @@
   <ItemGroup>
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Stop.cpp" />
+    <ClCompile Include="Receive.cpp" />
+    <ClCompile Include="Send.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h" />
-    <ClInclude Include="Run.h" />
-    <ClInclude Include="Stop.h" />
+    <ClInclude Include="Receive.h" />
+    <ClInclude Include="Send.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

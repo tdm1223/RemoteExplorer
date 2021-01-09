@@ -1,9 +1,9 @@
 #include "Action.h"
-#include "Run.h"
-#include "Stop.h"
+#include "Receive.h"
+#include "Send.h"
 
 Action* GetActionPtr(const std::string& action_str)
 {
-    if (action_str == "Run") return (Action*)new Run;
-    else if (action_str == "Stop") return (Action*) new Stop;
+    if (action_str == "Receive") return (Action*)new Receive;
+    else if (action_str == "Send") return (Action*) new Send;
 }
