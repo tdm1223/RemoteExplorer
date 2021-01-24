@@ -4,6 +4,12 @@ Server::Server()
 {
     numOfClient = 0;
     WSADATA wsadata;
+
+    // 팩토리 설정
+    actionFactory[UPLOAD] = GetActionPtr("UPLOAD");
+    actionFactory[DOWNLOAD] = GetActionPtr("DOWNLOAD");
+    actionFactory[TEST] = GetActionPtr("TEST");
+
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
         exit(1);
@@ -114,62 +120,68 @@ void Server::EventLoop(SOCKET sock)
                         }
                         std::cout << "클라로 부터 받은 메시지의 데이터 : " << name << std::endl;
 
-                        if (packet.GetCommand() == UPLOAD)
+                        if (actionFactory.count(packet.GetCommand()) > 0)
                         {
-                            packet.Clear();
-                            int recvLength = 0;
-                            while (1)
-                            {
-                                recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
-                                if (recvLength == -1)
-                                {
-                                    continue;
-                                }
-                                break;
-                            }
-
-                            packet.Parsing(recvBuffer, recvLength);
-                            std::string size;
-                            for (int i = 0; i < packet.GetSize(); i++)
-                            {
-                                size.push_back(packet.GetData()[i]);
-                            }
-                            int fileSize = atoi(size.c_str());
-                            std::cout << "파일이름 : " << name << " 파일 크기 : " << fileSize << std::endl;
-
-                            // 파일 받는 로직
-                            FILE* fp = fopen(name.c_str(), "wb+");
-                            std::cout << "파일명 : " << name << std::endl;
-
-                            memset(recvBuffer, 0, sizeof(recvBuffer));
-                            recvLength = 0;
-                            int totalSize = 0;
-
-                            while ((recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
-                            {
-                                packet.Clear();
-                                packet.Parsing(recvBuffer, recvLength);
-                                if (GetLastError() == WSAEWOULDBLOCK)
-                                {
-                                    Sleep(50); // 잠시 기다렸다가 재전송
-                                    if (totalSize == fileSize)
-                                    {
-                                        std::cout << "파일 받기 완료" << std::endl;
-                                        break;
-                                    }
-                                    continue;
-                                }
-                                totalSize += (recvLength - packet.GetHeaderSize());
-                                //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
-                                fwrite(&packet.GetData()[0], 1, recvLength - packet.GetHeaderSize(), fp);
-                            }
-
-                            fclose(fp);
-                            std::cout << "전송 완료" << std::endl;
+                            actionFactory[packet.GetCommand()]->Execute();
+                            break;
                         }
-                        else if (packet.GetCommand() == DOWNLOAD)
-                        {
-                        }
+
+                        //if (packet.GetCommand() == UPLOAD)
+                        //{
+                        //    packet.Clear();
+                        //    int recvLength = 0;
+                        //    while (1)
+                        //    {
+                        //        recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
+                        //        if (recvLength == -1)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        break;
+                        //    }
+
+                        //    packet.Parsing(recvBuffer, recvLength);
+                        //    std::string size;
+                        //    for (int i = 0; i < packet.GetSize(); i++)
+                        //    {
+                        //        size.push_back(packet.GetData()[i]);
+                        //    }
+                        //    int fileSize = atoi(size.c_str());
+                        //    std::cout << "파일이름 : " << name << " 파일 크기 : " << fileSize << std::endl;
+
+                        //    // 파일 받는 로직
+                        //    FILE* fp = fopen(name.c_str(), "wb+");
+                        //    std::cout << "파일명 : " << name << std::endl;
+
+                        //    memset(recvBuffer, 0, sizeof(recvBuffer));
+                        //    recvLength = 0;
+                        //    int totalSize = 0;
+
+                        //    while ((recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
+                        //    {
+                        //        packet.Clear();
+                        //        packet.Parsing(recvBuffer, recvLength);
+                        //        if (GetLastError() == WSAEWOULDBLOCK)
+                        //        {
+                        //            Sleep(50); // 잠시 기다렸다가 재전송
+                        //            if (totalSize == fileSize)
+                        //            {
+                        //                std::cout << "파일 받기 완료" << std::endl;
+                        //                break;
+                        //            }
+                        //            continue;
+                        //        }
+                        //        totalSize += (recvLength - packet.GetHeaderSize());
+                        //        //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
+                        //        fwrite(&packet.GetData()[0], 1, recvLength - packet.GetHeaderSize(), fp);
+                        //    }
+
+                        //    fclose(fp);
+                        //    std::cout << "전송 완료" << std::endl;
+                        //}
+                        //else if (packet.GetCommand() == DOWNLOAD)
+                        //{
+                        //}
                     }
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
@@ -211,5 +223,4 @@ void Server::CloseProc(int index)
     numOfClient--;
     socketArray[index] = socketArray[numOfClient];
     eventArray[index] = eventArray[numOfClient];
-    std::cout << "남아있는 클라이언트 수 :" << numOfClient << std::endl;
 }

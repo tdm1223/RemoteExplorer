@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 class Client
 {
 public:
-    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, BUF_SIZE = 4096, PORT = 9000 };
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, BUF_SIZE = 4096, PORT = 9000 };
 
     Client();
     void Start();

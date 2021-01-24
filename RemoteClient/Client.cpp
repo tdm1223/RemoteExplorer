@@ -172,6 +172,24 @@ void Client::Start()
         {
             break;
         }
+        else if (packet.GetCommand() == TEST)
+        {
+            std::cout << "TEST" << std::endl;
+            // send 버퍼 초기화
+            memset(sendBuffer, 0, sizeof(sendBuffer));
+
+            packet.SetPrefix("ESTSOFT");
+            packet.SetCommand(UPLOAD);
+            packet.SetSize(1);
+            std::vector<char> data{ '0' };
+            packet.SetData(data);
+
+            unsigned int offset = 0;
+            packet.Building(sendBuffer, offset);
+
+            send(clientSock, sendBuffer, BUF_SIZE, 0);
+            std::cout << "버퍼 보냄" << std::endl;
+        }
     }
     // 소켓을 닫음
     closesocket(clientSock);

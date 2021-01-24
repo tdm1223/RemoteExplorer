@@ -1,13 +1,14 @@
 ﻿#pragma once
-#include<stdio.h>
 #include<winsock2.h>
-#include<queue>
+//#include<queue>
 #include<thread>
 #include<iostream>
 #include<string>
 #include<filesystem>
 #include "Parser.h"
 #include "Packet.h"
+#include<map>
+#include"Action.h"
 
 namespace fs = std::filesystem;
 
@@ -25,8 +26,9 @@ public:
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
 
+    std::map<int, Action*> actionFactory;
 private:
-    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, PORT = 9000, BUF_SIZE = 4096 };
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 
     // 대기 소켓 설정
     SOCKET SetServer();
