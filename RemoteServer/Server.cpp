@@ -6,9 +6,9 @@ Server::Server()
     WSADATA wsadata;
 
     // 팩토리 설정
-    actionFactory[UPLOAD] = GetActionPtr("UPLOAD");
-    actionFactory[DOWNLOAD] = GetActionPtr("DOWNLOAD");
-    actionFactory[TEST] = GetActionPtr("TEST");
+    actionFactory[UPLOAD] = GetAction("UPLOAD");
+    actionFactory[DOWNLOAD] = GetAction("DOWNLOAD");
+    actionFactory[TEST] = GetAction("TEST");
 
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
@@ -122,7 +122,7 @@ void Server::EventLoop(SOCKET sock)
 
                         if (actionFactory.count(packet.GetCommand()) > 0)
                         {
-                            actionFactory[packet.GetCommand()]->Execute();
+                            actionFactory[packet.GetCommand()]->Execute(socketArray[index]);
                             break;
                         }
 

@@ -7,10 +7,7 @@
 class Test : public Action
 {
 public:
-    void Execute()
-    {
-        std::cout << "Test start" << std::endl;
-    }
+    void Execute(SOCKET& sock);
 };
 
 #endif TEST_COMMAND

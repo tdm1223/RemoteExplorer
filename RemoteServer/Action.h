@@ -6,9 +6,11 @@
 class Action
 {
 public:
-    virtual void Execute() = 0;
+    virtual void Execute(SOCKET& sock) = 0;
+    CustomPacket packet;
+    const int bufSize = 4096;
 };
 
-Action* GetActionPtr(const std::string& action_str); // factory pattern
+Action* GetAction(const std::string& action_str); // factory pattern
 
 #endif

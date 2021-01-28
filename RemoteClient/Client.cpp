@@ -44,6 +44,7 @@ void Client::Start()
         std::cout << "1 - UPLOAD" << std::endl;
         std::cout << "2 - DOWNLOAD" << std::endl;
         std::cout << "3 - END" << std::endl;
+        std::cout << "4 - TEST" << std::endl;
         std::cin >> command;
 
         // 명령을 패킷에 저장
@@ -174,12 +175,10 @@ void Client::Start()
         }
         else if (packet.GetCommand() == TEST)
         {
-            std::cout << "TEST" << std::endl;
             // send 버퍼 초기화
             memset(sendBuffer, 0, sizeof(sendBuffer));
 
-            packet.SetPrefix("ESTSOFT");
-            packet.SetCommand(UPLOAD);
+            packet.SetCommand(TEST);
             packet.SetSize(1);
             std::vector<char> data{ '0' };
             packet.SetData(data);

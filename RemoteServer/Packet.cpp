@@ -76,7 +76,7 @@ const bool CustomPacket::Parsing(const char* buffer, const unsigned int bufferSi
 
 const bool CustomPacket::Building(char* buffer, unsigned int& buildBufferSize)
 {
-    if ((command > END || command < UPLOAD) || size < 0)
+    if ((command > TEST || command < UPLOAD) || size < 0)
     {
         return false;
     }

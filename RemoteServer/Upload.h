@@ -7,7 +7,7 @@
 class Upload : public Action
 {
 public:
-    void Execute()
+    void Execute(SOCKET& sock)
     {
         std::cout << "Upload start" << std::endl;
     }

@@ -7,8 +7,7 @@
 class Download : public Action
 {
 public:
-    CustomPacket packet;
-    void Execute()
+    void Execute(SOCKET& sock)
     {
         std::cout << "Download start" << std::endl;
     }
