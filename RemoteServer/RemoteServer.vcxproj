@@ -148,18 +148,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Action.cpp" />
+    <ClCompile Include="Command.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="Test.cpp" />
     <ClCompile Include="Upload.cpp" />
     <ClCompile Include="Download.cpp" />
     <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Action.h" />
+    <ClInclude Include="Command.h" />
     <ClInclude Include="Packet.h" />
-    <ClInclude Include="Test.h" />
     <ClInclude Include="Upload.h" />
     <ClInclude Include="Download.h" />
     <ClInclude Include="Server.h" />

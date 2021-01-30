@@ -8,7 +8,7 @@
 #include "Parser.h"
 #include "Packet.h"
 #include<map>
-#include"Action.h"
+#include"Command.h"
 
 namespace fs = std::filesystem;
 
@@ -26,7 +26,7 @@ public:
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
 
-    std::map<int, Action*> actionFactory;
+    std::map<int, Command*> commandFactory;
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 

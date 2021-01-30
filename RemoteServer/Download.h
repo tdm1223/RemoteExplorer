@@ -1,13 +1,13 @@
 ﻿#ifndef DOWNLOAD_COMMAND
 #define DOWNLOAD_COMMAND
 
-#include"Action.h"
+#include"Command.h"
 #include<iostream>
 
-class Download : public Action
+class Download : public Command
 {
 public:
-    void Execute(SOCKET& sock)
+    void Execute(SOCKET& sock, std::string& name)
     {
         std::cout << "Download start" << std::endl;
     }

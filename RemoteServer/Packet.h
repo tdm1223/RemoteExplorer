@@ -29,7 +29,7 @@ public:
 class CustomPacket : public Packet
 {
 public:
-    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4 };
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3 };
     void SetCommand(int command);
     void SetSize(int size);
     void SetPrefix(const char* prefix);

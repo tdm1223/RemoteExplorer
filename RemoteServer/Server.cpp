@@ -6,9 +6,9 @@ Server::Server()
     WSADATA wsadata;
 
     // 팩토리 설정
-    actionFactory[UPLOAD] = GetAction("UPLOAD");
-    actionFactory[DOWNLOAD] = GetAction("DOWNLOAD");
-    actionFactory[TEST] = GetAction("TEST");
+    commandFactory[UPLOAD] = GetCommand("UPLOAD");
+    commandFactory[DOWNLOAD] = GetCommand("DOWNLOAD");
+    commandFactory[TEST] = GetCommand("TEST");
 
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
@@ -120,9 +120,9 @@ void Server::EventLoop(SOCKET sock)
                         }
                         std::cout << "클라로 부터 받은 메시지의 데이터 : " << name << std::endl;
 
-                        if (actionFactory.count(packet.GetCommand()) > 0)
+                        if (commandFactory.count(packet.GetCommand()) > 0)
                         {
-                            actionFactory[packet.GetCommand()]->Execute(socketArray[index]);
+                            commandFactory[packet.GetCommand()]->Execute(socketArray[index], name);
                             break;
                         }
 

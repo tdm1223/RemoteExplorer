@@ -24,16 +24,13 @@
     <ClCompile Include="Packet.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Action.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Upload.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Download.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Test.cpp">
+    <ClCompile Include="Command.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,16 +41,13 @@
     <ClInclude Include="Packet.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Action.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Upload.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Download.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Test.h">
+    <ClInclude Include="Command.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

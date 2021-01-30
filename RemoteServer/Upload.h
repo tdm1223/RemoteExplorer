@@ -1,16 +1,13 @@
 ﻿#ifndef UPLOAD_COMMAND
 #define UPLOAD_COMMAND
 
-#include"Action.h"
+#include"Command.h"
 #include<iostream>
 
-class Upload : public Action
+class Upload : public Command
 {
 public:
-    void Execute(SOCKET& sock)
-    {
-        std::cout << "Upload start" << std::endl;
-    }
+    void Execute(SOCKET& sock, std::string& name);
 };
 
 #endif UPLOAD_COMMAND
