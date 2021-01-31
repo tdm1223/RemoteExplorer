@@ -2,11 +2,15 @@
 
 void Upload::Execute(SOCKET& sock, std::string& name)
 {
-    char recvBuffer[4096];
+    std::thread uploadThread([=] {UploadProc(sock, name); });
+    uploadThread.join();
+}
+
+void Upload::UploadProc(SOCKET sock, std::string name)
+{
     std::cout << "Upload start" << std::endl;
 
     packet.Clear();
-    int recvLength = 0;
     while (1)
     {
         recvLength = recv(sock, recvBuffer, bufSize, 0);
@@ -17,7 +21,12 @@ void Upload::Execute(SOCKET& sock, std::string& name)
         break;
     }
 
-    packet.Parsing(recvBuffer, recvLength);
+    if (!packet.OnParse(recvBuffer, recvLength))
+    {
+        packet.Clear();
+        return;
+    }
+
     std::string size;
     for (int i = 0; i < packet.GetSize(); i++)
     {
@@ -37,7 +46,7 @@ void Upload::Execute(SOCKET& sock, std::string& name)
     while ((recvLength = recv(sock, recvBuffer, bufSize, 0)) != 0)
     {
         packet.Clear();
-        packet.Parsing(recvBuffer, recvLength);
+        packet.OnParse(recvBuffer, recvLength);
         if (GetLastError() == WSAEWOULDBLOCK)
         {
             Sleep(50); // 잠시 기다렸다가 재전송
@@ -49,8 +58,7 @@ void Upload::Execute(SOCKET& sock, std::string& name)
             continue;
         }
         totalSize += (recvLength - packet.GetHeaderSize());
-        //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
-        fwrite(&packet.GetData()[0], 1, recvLength - packet.GetHeaderSize(), fp);
+        fwrite(&packet.GetData()[0], 1, (size_t)recvLength - packet.GetHeaderSize(), fp);
     }
 
     fclose(fp);

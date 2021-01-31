@@ -5,24 +5,22 @@ Server::Server()
     numOfClient = 0;
     WSADATA wsadata;
 
-    // 팩토리 설정
-    commandFactory[UPLOAD] = GetCommand("UPLOAD");
-    commandFactory[DOWNLOAD] = GetCommand("DOWNLOAD");
-    commandFactory[TEST] = GetCommand("TEST");
+    commandInvoker.Initialize();
 
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
         exit(1);
     }
-    SOCKET sock = SetServer(); // 대기 소켓 설정
-    if (sock == -1)
+    listenSock = SetServer(); // 대기 소켓 설정
+
+    if (listenSock == -1)
     {
         perror("대기 소켓 오류");
     }
     else
     {
         std::cout << "Create Main Thread..." << std::endl;
-        EventLoop(sock);
+        EventLoop(listenSock);
     }
 }
 
@@ -108,80 +106,28 @@ void Server::EventLoop(SOCKET sock)
                     if (byteLen > 0)
                     {
                         CustomPacket packet;
-                        packet.Parsing(recvBuffer, byteLen);
+                        if (!packet.OnParse(recvBuffer, byteLen))
+                        {
+                            continue;
+                        }
 
                         std::cout << "클라로 부터 받은 prefix : " << packet.GetPrefix() << std::endl;
                         std::cout << "클라로 부터 받은 메시지의 타입 : " << packet.GetCommand() << std::endl;
                         std::cout << "클라로 부터 받은 메시지의 크기 : " << packet.GetSize() << std::endl;
                         std::string name;
+
+                        int command = packet.GetCommand();
                         for (int i = 0; i < packet.GetSize(); i++)
                         {
                             name.push_back(packet.GetData()[i]);
                         }
                         std::cout << "클라로 부터 받은 메시지의 데이터 : " << name << std::endl;
 
-                        if (commandFactory.count(packet.GetCommand()) > 0)
+                        if (commandInvoker.GetCommandFactory().count(command) > 0)
                         {
-                            commandFactory[packet.GetCommand()]->Execute(socketArray[index], name);
+                            commandInvoker.GetCommandFactory()[command]->Execute(socketArray[index], name);
                             break;
                         }
-
-                        //if (packet.GetCommand() == UPLOAD)
-                        //{
-                        //    packet.Clear();
-                        //    int recvLength = 0;
-                        //    while (1)
-                        //    {
-                        //        recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0);
-                        //        if (recvLength == -1)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        break;
-                        //    }
-
-                        //    packet.Parsing(recvBuffer, recvLength);
-                        //    std::string size;
-                        //    for (int i = 0; i < packet.GetSize(); i++)
-                        //    {
-                        //        size.push_back(packet.GetData()[i]);
-                        //    }
-                        //    int fileSize = atoi(size.c_str());
-                        //    std::cout << "파일이름 : " << name << " 파일 크기 : " << fileSize << std::endl;
-
-                        //    // 파일 받는 로직
-                        //    FILE* fp = fopen(name.c_str(), "wb+");
-                        //    std::cout << "파일명 : " << name << std::endl;
-
-                        //    memset(recvBuffer, 0, sizeof(recvBuffer));
-                        //    recvLength = 0;
-                        //    int totalSize = 0;
-
-                        //    while ((recvLength = recv(socketArray[index], recvBuffer, BUF_SIZE, 0)) != 0)
-                        //    {
-                        //        packet.Clear();
-                        //        packet.Parsing(recvBuffer, recvLength);
-                        //        if (GetLastError() == WSAEWOULDBLOCK)
-                        //        {
-                        //            Sleep(50); // 잠시 기다렸다가 재전송
-                        //            if (totalSize == fileSize)
-                        //            {
-                        //                std::cout << "파일 받기 완료" << std::endl;
-                        //                break;
-                        //            }
-                        //            continue;
-                        //        }
-                        //        totalSize += (recvLength - packet.GetHeaderSize());
-                        //        //std::cout << "받은 크기 : " << filePacket.GetHeaderSize() << " 전체 크기 : " << totalSize << std::endl;
-                        //        fwrite(&packet.GetData()[0], 1, recvLength - packet.GetHeaderSize(), fp);
-                        //    }
-
-                        //    fclose(fp);
-                        //    std::cout << "전송 완료" << std::endl;
-                        //}
-                        //else if (packet.GetCommand() == DOWNLOAD)
-                        //{
-                        //}
                     }
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
@@ -202,7 +148,6 @@ void Server::AddEvent(SOCKET sock, long eventType)
     eventArray[numOfClient] = newEvent;
     numOfClient++;
     WSAEventSelect(sock, newEvent, eventType);
-    std::cout << "접속한 클라이언트 수 : " << numOfClient << std::endl;
 }
 
 void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)

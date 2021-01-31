@@ -1,14 +1,13 @@
 ﻿#pragma once
 #include<winsock2.h>
-//#include<queue>
 #include<thread>
 #include<iostream>
 #include<string>
 #include<filesystem>
-#include "Parser.h"
-#include "Packet.h"
-#include<map>
+#include"Parser.h"
+#include"Packet.h"
 #include"Command.h"
+#include"Invoker.h"
 
 namespace fs = std::filesystem;
 
@@ -23,19 +22,18 @@ public:
     SOCKET socketArray[FD_SETSIZE];
     HANDLE eventArray[FD_SETSIZE];
     int numOfClient;
+
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
-
-    std::map<int, Command*> commandFactory;
+    SOCKET listenSock;
+    Invoker commandInvoker;
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 
-    // 대기 소켓 설정
-    SOCKET SetServer();
+    SOCKET SetServer(); // 대기 소켓 설정
     SOCKET clientSock;
-    // 클라이언트 소켓 등록하는 함수
-    void AddEvent(SOCKET sock, long eventType);
 
+    void AddEvent(SOCKET sock, long eventType); // 클라이언트 소켓 등록하는 함수
     void EventLoop(SOCKET sock);
 };
 
