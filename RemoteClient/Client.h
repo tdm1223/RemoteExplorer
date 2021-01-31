@@ -2,7 +2,7 @@
 #include<WinSock2.h>
 #include<string>
 #include<iostream>
-#include"Packet.h"
+#include"CustomPacket.h"
 #include<filesystem>
 #include"Parser.h"
 #include <thread>
@@ -17,7 +17,7 @@ public:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, BUF_SIZE = 4096, PORT = 9000 };
 
     Client();
-    void Start();
+    void Initialize();
     // client 소켓 선언
     SOCKET clientSock;
 

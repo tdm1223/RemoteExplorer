@@ -3,6 +3,6 @@
 int main()
 {
     Client* client = new Client();
-    client->Start();
+    client->Initialize();
     return 0;
 }

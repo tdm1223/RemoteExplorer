@@ -32,7 +32,7 @@ Client::Client()
     }
 }
 
-void Client::Start()
+void Client::Initialize()
 {
     // send 버퍼 선언
     char sendBuffer[BUF_SIZE];
@@ -91,7 +91,7 @@ void Client::Start()
 
                 // 패킷을 빌드 하여 버퍼에 저장
                 unsigned int offset = 0;
-                packet.Building(sendBuffer, offset);
+                packet.OnBuild(sendBuffer, offset);
 
                 // 메세지 전송
                 std::cout << "전송하는 메시지 크기 : " << offset << std::endl;
@@ -124,7 +124,7 @@ void Client::Start()
                 offset = 0;
 
                 // 패킷 빌드
-                packet.Building(sendBuffer, offset);
+                packet.OnBuild(sendBuffer, offset);
                 send(clientSock, sendBuffer, offset, 0);
 
                 // 데이터 통신에 사용할 변수
@@ -152,7 +152,7 @@ void Client::Start()
                         data.push_back(sendData[i]);
                     }
                     packet.SetData(data);
-                    packet.Building(sendBuffer, offset);
+                    packet.OnBuild(sendBuffer, offset);
                     totalSize += sendSize;
                     if (sendSize < BUF_SIZE - packet.GetHeaderSize())
                     {
@@ -175,6 +175,5 @@ void Client::Start()
     }
     // 소켓을 닫음
     closesocket(clientSock);
-
     std::cout << "client exit" << std::endl;
 }

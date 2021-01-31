@@ -149,11 +149,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\RemoteServer\CustomPacket.cpp" />
     <ClCompile Include="..\RemoteServer\Packet.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RemoteServer\CustomPacket.h" />
     <ClInclude Include="..\RemoteServer\Packet.h" />
     <ClInclude Include="Client.h" />
   </ItemGroup>
