@@ -5,7 +5,6 @@
 #include"CustomPacket.h"
 #include<filesystem>
 #include"Parser.h"
-#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -18,15 +17,21 @@ public:
 
     Client();
     void Initialize();
+    void Upload();
+
+    // 클라이언트에서 사용할 패킷 구조체 선언
+    CustomPacket packet;
+
+    const unsigned int dataSize = BUF_SIZE - packet.GetHeaderSize();
+
+    // send 버퍼 선언
+    char sendBuffer[BUF_SIZE];
+
+private:
     // client 소켓 선언
     SOCKET clientSock;
 
     // 서버주소 구조체 변수 선언
     SOCKADDR_IN serverAddress;
-
-    // 클라이언트에서 사용할 패킷 구조체 선언
-    CustomPacket packet;
-
-    const int dataSize = BUF_SIZE - packet.GetHeaderSize();
 };
 
