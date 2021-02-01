@@ -1,8 +1,8 @@
 ﻿#ifndef COMMAND
 #define COMMAND
 #include<string>
-#include "CustomPacket.h"
-#include <thread>
+#include"CustomPacket.h"
+#include<thread>
 class Command
 {
 public:

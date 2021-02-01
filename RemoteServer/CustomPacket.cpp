@@ -1,4 +1,4 @@
-#include "CustomPacket.h"
+#include"CustomPacket.h"
 
 void CustomPacket::SetCommand(int command)
 {
@@ -104,7 +104,7 @@ const void CustomPacket::Clear()
     data.clear();
 }
 
-const int CustomPacket::GetHeaderSize()
+const unsigned int CustomPacket::GetHeaderSize()
 {
     // prefix + command + size
     return 2 * sizeof(int) + 8 * sizeof(char);

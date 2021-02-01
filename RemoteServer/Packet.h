@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef PACKET
+#define PACKET
 #include<vector>
 #include<winsock.h>
 #include<iostream>
@@ -21,7 +22,9 @@ public:
     virtual const bool OnParse(const char* buffer, const unsigned int bufferSize) = 0;
     virtual const bool OnBuild(char* buffer, unsigned int& buildBufferSize) = 0;
     virtual const void Clear() = 0;
-    virtual const int GetHeaderSize() = 0;
+    virtual const unsigned int GetHeaderSize() = 0;
 
     const std::string kPrefix = "ESTSOFT";
 };
+
+#endif // PACKET

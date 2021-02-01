@@ -1,5 +1,6 @@
-#pragma once
-#include "Packet.h"
+#ifndef CUSTOM_PACKET
+#define CUSTOM_PACKET
+#include"Packet.h"
 
 class CustomPacket : public Packet
 {
@@ -16,11 +17,13 @@ public:
     virtual const bool OnParse(const char* buffer, const unsigned int bufferSize) override;
     virtual const bool OnBuild(char* buffer, unsigned int& buildBufferSize) override;
     virtual const void Clear() override;
-    virtual const int GetHeaderSize() override;
+    virtual const unsigned int GetHeaderSize() override;
 
 private:
     char prefix[8];
-    int command;
-    int size;
+    int command = 0;
+    int size = 0;
     std::vector<char> data;
 };
+
+#endif

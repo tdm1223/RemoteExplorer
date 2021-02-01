@@ -1,9 +1,4 @@
-#include "Invoker.h"
-
-Invoker::Invoker()
-{
-
-}
+#include"Invoker.h"
 
 void Invoker::Initialize()
 {

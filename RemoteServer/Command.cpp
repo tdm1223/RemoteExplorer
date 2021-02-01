@@ -1,6 +1,6 @@
-﻿#include "Command.h"
-#include "Upload.h"
-#include "Download.h"
+﻿#include"Command.h"
+#include"Upload.h"
+#include"Download.h"
 
 Command* GetCommand(const std::string& command)
 {
@@ -11,5 +11,10 @@ Command* GetCommand(const std::string& command)
     else if (command == "DOWNLOAD")
     {
         return (Command*) new Download;
+    }
+    else
+    {
+        OutputDebugString(L"Unknown command");
+        return NULL;
     }
 }
