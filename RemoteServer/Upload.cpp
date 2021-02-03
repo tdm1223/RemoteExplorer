@@ -8,8 +8,6 @@ void Upload::Execute(SOCKET& sock, std::string& name)
 
 void Upload::UploadProc(SOCKET sock, std::string name)
 {
-    std::cout << "Upload start" << std::endl;
-
     packet.Clear();
     while (1)
     {
