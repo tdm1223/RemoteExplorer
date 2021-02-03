@@ -34,6 +34,15 @@ Client::Client()
 
 void Client::Initialize()
 {
+    EventLoop();
+
+    // 소켓을 닫음
+    closesocket(clientSock);
+    std::cout << "client exit" << std::endl;
+}
+
+void Client::EventLoop()
+{
     while (true)
     {
         // message type을 입력 받음
@@ -59,12 +68,9 @@ void Client::Initialize()
         }
         else if (packet.GetCommand() == END)
         {
-            break;
+            return;
         }
     }
-    // 소켓을 닫음
-    closesocket(clientSock);
-    std::cout << "client exit" << std::endl;
 }
 
 void Client::Upload()

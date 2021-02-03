@@ -1,10 +1,8 @@
 ﻿#pragma once
 #include<WinSock2.h>
 #include<string>
-#include<iostream>
 #include"CustomPacket.h"
 #include<filesystem>
-#include"Parser.h"
 
 namespace fs = std::filesystem;
 
@@ -17,6 +15,7 @@ public:
 
     Client();
     void Initialize();
+    void EventLoop();
     void Upload();
 
     // 클라이언트에서 사용할 패킷 구조체 선언
