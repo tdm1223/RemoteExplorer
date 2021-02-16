@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteClient", "RemoteClient\RemoteClient.vcxproj", "{C53F7EA5-7204-4EC6-91A9-797A83EF0BDF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteServer", "RemoteServer\RemoteServer.vcxproj", "{C45B1350-4549-4352-9A13-B400EDC707AF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{5A6E89DE-300F-4531-AD2C-FE675D3D0940}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,8 +33,19 @@ Global
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x64.Build.0 = Release|x64
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x86.ActiveCfg = Release|Win32
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x86.Build.0 = Release|Win32
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Debug|x64.ActiveCfg = Debug|x64
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Debug|x64.Build.0 = Debug|x64
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Debug|x86.ActiveCfg = Debug|Win32
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Debug|x86.Build.0 = Debug|Win32
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Release|x64.ActiveCfg = Release|x64
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Release|x64.Build.0 = Release|x64
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Release|x86.ActiveCfg = Release|Win32
+		{5A6E89DE-300F-4531-AD2C-FE675D3D0940}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {15E2C53E-05B6-4E1D-8F9D-AD5D906FE10D}
 	EndGlobalSection
 EndGlobal
