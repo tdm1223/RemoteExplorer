@@ -3,6 +3,8 @@
 #include<string>
 #include"CustomPacket.h"
 #include<filesystem>
+#include"Receiver.h"
+#include"PacketCommand.h";
 
 namespace fs = std::filesystem;
 
@@ -15,7 +17,6 @@ public:
 
     Client();
     void Initialize();
-    void EventLoop();
     void Upload();
 
     // 클라이언트에서 사용할 패킷 구조체 선언
@@ -32,5 +33,8 @@ private:
 
     // 서버주소 구조체 변수 선언
     SOCKADDR_IN serverAddress;
-};
 
+    std::vector<std::unique_ptr<PacketCommand>> commands;
+
+    void AddPacketCommand(PacketCommand* command);
+};

@@ -1,7 +1,13 @@
 ﻿#include "Client.h"
+#include<thread>
+#include"UploadCommand.h"
+#include"DownloadCommand.h"
 
 Client::Client()
 {
+    AddPacketCommand(nullptr);
+    AddPacketCommand(new UploadCommand);
+    AddPacketCommand(new DownloadCommand);
     // 소켓을 초기화
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
@@ -34,43 +40,18 @@ Client::Client()
 
 void Client::Initialize()
 {
-    EventLoop();
+    Receiver receiver;
+    std::thread commandThread(receiver, &commands);
+    commandThread.join();
 
     // 소켓을 닫음
     closesocket(clientSock);
     std::cout << "client exit" << std::endl;
 }
 
-void Client::EventLoop()
+void Client::AddPacketCommand(PacketCommand* command)
 {
-    while (true)
-    {
-        // message type을 입력 받음
-        int command;
-        std::cout << "1 - UPLOAD" << std::endl;
-        std::cout << "2 - DOWNLOAD" << std::endl;
-        std::cout << "3 - END" << std::endl;
-        std::cin >> command;
-
-        // 명령을 패킷에 저장
-        packet.SetCommand(command);
-        const char* prefix = "ESTSOFT";
-
-        // prefix를 패킷에 저장
-        packet.SetPrefix(prefix);
-        if (packet.GetCommand() == UPLOAD)
-        {
-            Upload();
-        }
-        else if (packet.GetCommand() == DOWNLOAD)
-        {
-            break;
-        }
-        else if (packet.GetCommand() == END)
-        {
-            return;
-        }
-    }
+    commands.push_back(std::unique_ptr<PacketCommand>(command));
 }
 
 void Client::Upload()

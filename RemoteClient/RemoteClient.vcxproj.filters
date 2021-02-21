@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Command">
+      <UniqueIdentifier>{c50dab46-1506-4266-b476-361e561f4032}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -27,6 +30,18 @@
     <ClCompile Include="..\RemoteServer\CustomPacket.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Receiver.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="UploadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="DownloadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RemoteServer\Packet.h">
@@ -37,6 +52,18 @@
     </ClInclude>
     <ClInclude Include="..\RemoteServer\CustomPacket.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Receiver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketCommand.h">
+      <Filter>소스 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadCommand.h">
+      <Filter>소스 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="DownloadCommand.h">
+      <Filter>소스 파일\Command</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

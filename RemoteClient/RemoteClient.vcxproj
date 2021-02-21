@@ -152,12 +152,20 @@
     <ClCompile Include="..\RemoteServer\CustomPacket.cpp" />
     <ClCompile Include="..\RemoteServer\Packet.cpp" />
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="DownloadCommand.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PacketCommand.cpp" />
+    <ClCompile Include="Receiver.cpp" />
+    <ClCompile Include="UploadCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RemoteServer\CustomPacket.h" />
     <ClInclude Include="..\RemoteServer\Packet.h" />
     <ClInclude Include="Client.h" />
+    <ClInclude Include="DownloadCommand.h" />
+    <ClInclude Include="PacketCommand.h" />
+    <ClInclude Include="Receiver.h" />
+    <ClInclude Include="UploadCommand.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

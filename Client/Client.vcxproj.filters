@@ -13,10 +13,48 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Thread">
+      <UniqueIdentifier>{9b135a8d-256b-4a96-b2fc-0baf9c536f1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Command">
+      <UniqueIdentifier>{760d9a53-f64d-409a-93ce-97938688d0f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Receiver.cpp">
+      <Filter>소스 파일\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="DownloadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="UploadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Receiver.h">
+      <Filter>소스 파일\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="DownloadCommand.h">
+      <Filter>소스 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketCommand.h">
+      <Filter>소스 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadCommand.h">
+      <Filter>소스 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
