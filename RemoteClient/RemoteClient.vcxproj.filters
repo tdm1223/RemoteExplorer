@@ -16,54 +16,57 @@
     <Filter Include="소스 파일\Command">
       <UniqueIdentifier>{c50dab46-1506-4266-b476-361e561f4032}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Thread">
+      <UniqueIdentifier>{e0acdc84-c586-4216-83b4-e5b6f42a2800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Command\Header">
+      <UniqueIdentifier>{0f624483-1e0e-4fe9-ab2d-acb6478fce34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Command\Source">
+      <UniqueIdentifier>{4fc1302f-c3ce-4e7d-9717-a0b397f05551}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\RemoteServer\Packet.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Client.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\RemoteServer\CustomPacket.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Receiver.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketCommand.cpp">
-      <Filter>소스 파일\Command</Filter>
-    </ClCompile>
-    <ClCompile Include="UploadCommand.cpp">
-      <Filter>소스 파일\Command</Filter>
+      <Filter>소스 파일\Thread</Filter>
     </ClCompile>
     <ClCompile Include="DownloadCommand.cpp">
-      <Filter>소스 파일\Command</Filter>
+      <Filter>소스 파일\Command\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveCommand.cpp">
+      <Filter>소스 파일\Command\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketCommand.cpp">
+      <Filter>소스 파일\Command\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UploadCommand.cpp">
+      <Filter>소스 파일\Command\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\RemoteServer\Packet.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Client.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\RemoteServer\CustomPacket.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Receiver.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketCommand.h">
-      <Filter>소스 파일\Command</Filter>
-    </ClInclude>
-    <ClInclude Include="UploadCommand.h">
-      <Filter>소스 파일\Command</Filter>
+      <Filter>소스 파일\Thread</Filter>
     </ClInclude>
     <ClInclude Include="DownloadCommand.h">
-      <Filter>소스 파일\Command</Filter>
+      <Filter>소스 파일\Command\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveCommand.h">
+      <Filter>소스 파일\Command\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketCommand.h">
+      <Filter>소스 파일\Command\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadCommand.h">
+      <Filter>소스 파일\Command\Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
