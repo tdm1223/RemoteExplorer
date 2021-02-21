@@ -2,12 +2,14 @@
 #include<thread>
 #include"UploadCommand.h"
 #include"DownloadCommand.h"
+#include"MoveCommand.h"
 
 Client::Client()
 {
     AddPacketCommand(nullptr);
     AddPacketCommand(new UploadCommand);
     AddPacketCommand(new DownloadCommand);
+    AddPacketCommand(new MoveCommand);
     // 소켓을 초기화
     WSADATA wsadata;
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
@@ -52,117 +54,4 @@ void Client::Initialize()
 void Client::AddPacketCommand(PacketCommand* command)
 {
     commands.push_back(std::unique_ptr<PacketCommand>(command));
-}
-
-void Client::Upload()
-{
-    // send 버퍼 초기화
-    memset(sendBuffer, 0, sizeof(sendBuffer));
-
-    // 현재 폴더에 있는 파일 출력
-    std::cout << "현재 폴더에 있는 파일" << std::endl;
-    std::cout << "======================" << std::endl;
-    std::string files;
-    for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
-    {
-        files = entry.path().string();
-        size_t pos = files.rfind("\\");
-        std::cout << files.substr(pos + 1) << std::endl;
-    }
-    std::cout << "======================" << std::endl;
-
-    // 파일명 입력 받음
-    std::string fileName = "";
-    std::cout << "파일명 : ";
-    std::cin >> fileName;
-
-    // 파일명을 패킷에 저장
-    std::vector<char> data(fileName.begin(), fileName.end());
-    packet.SetData(data);
-
-    FILE* fp;
-    fp = fopen(fileName.c_str(), "rb");
-    if (fp == NULL)
-    {
-        std::cout << "없는 파일입니다." << std::endl;
-    }
-    else
-    {
-        // 파일 크기를 패킷에 저장
-        packet.SetSize(fileName.length());
-
-        // 패킷을 빌드 하여 버퍼에 저장
-        unsigned int offset = 0;
-        packet.OnBuild(sendBuffer, offset);
-
-        // 메세지 전송
-        std::cout << "전송하는 메시지 크기 : " << offset << std::endl;
-        if (send(clientSock, sendBuffer, offset, 0) < 0)
-        {
-            exit(1);
-        }
-
-        packet.Clear();
-        memset(sendBuffer, 0, sizeof(sendBuffer));
-
-        // 파일 끝으로 위치 옮김
-        fseek(fp, 0L, SEEK_END);
-        // 파일 크기 얻음
-        int fileSize = ftell(fp);
-        std::string fileSizeString = std::to_string(fileSize);
-
-        packet.SetPrefix("ESTSOFT");
-        packet.SetCommand(UPLOAD);
-        packet.SetSize(fileSizeString.size());
-        std::vector<char> data(fileSizeString.begin(), fileSizeString.end());
-        packet.SetData(data);
-
-        // 다시 파일 처음으로 위치 옮김
-        fseek(fp, 0L, SEEK_SET);
-        fclose(fp);
-        std::cout << "전송하는 파일명 : " << fileName << " 전송하는 파일 크기 : " << packet.GetSize() << " Byte" << std::endl;
-
-        // 전송 관련 변수 초기화
-        offset = 0;
-
-        // 패킷 빌드
-        packet.OnBuild(sendBuffer, offset);
-        send(clientSock, sendBuffer, offset, 0);
-
-        // 데이터 통신에 사용할 변수
-        int sendSize = 0;
-        fp = fopen(fileName.c_str(), "rb");
-        int totalSize = 0;
-        char sendData[4082];
-
-        // 파일 전송
-        while (1)
-        {
-            memset(sendData, 0, sizeof(sendData));
-            offset = 0;
-            packet.Clear();
-            sendSize = fread(sendData, 1, dataSize, fp);
-
-            // 파일을 담은 패킷을 보낼때 사전 작업
-            packet.SetPrefix("ESTSOFT");
-            packet.SetCommand(UPLOAD);
-            packet.SetSize(sendSize);
-
-            data.clear();
-            for (int i = 0; i < sendSize; i++)
-            {
-                data.push_back(sendData[i]);
-            }
-            packet.SetData(data);
-            packet.OnBuild(sendBuffer, offset);
-            totalSize += sendSize;
-            if (sendSize < BUF_SIZE - packet.GetHeaderSize())
-            {
-                send(clientSock, sendBuffer, offset, 0);
-                break;
-            }
-            send(clientSock, sendBuffer, BUF_SIZE, 0);
-        }
-        fclose(fp);
-    }
 }
