@@ -1,5 +1,5 @@
-#include "Receiver.h"
-#include "PacketCommand.h"
+#include"Receiver.h"
+#include"PacketCommand.h"
 #include<iostream>
 
 Receiver::Receiver()
@@ -26,6 +26,7 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
         else
         {
             std::cout << "범위 오류" << std::endl;
+            return;
         }
     }
 }
