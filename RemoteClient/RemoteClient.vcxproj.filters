@@ -25,6 +25,9 @@
     <Filter Include="소스 파일\Command\Source">
       <UniqueIdentifier>{4fc1302f-c3ce-4e7d-9717-a0b397f05551}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Socket">
+      <UniqueIdentifier>{9e4948c6-6f69-45b3-9d59-c01042d0a4b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -48,6 +51,9 @@
     <ClCompile Include="UploadCommand.cpp">
       <Filter>소스 파일\Command\Source</Filter>
     </ClCompile>
+    <ClCompile Include="ClientSocket.cpp">
+      <Filter>소스 파일\Socket</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -67,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="UploadCommand.h">
       <Filter>소스 파일\Command\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket.h">
+      <Filter>소스 파일\Socket</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ClientSocket.cpp" />
     <ClCompile Include="DownloadCommand.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MoveCommand.cpp" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientSocket.h" />
     <ClInclude Include="DownloadCommand.h" />
     <ClInclude Include="MoveCommand.h" />
     <ClInclude Include="PacketCommand.h" />
