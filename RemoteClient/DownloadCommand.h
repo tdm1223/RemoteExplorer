@@ -5,6 +5,6 @@
 
 class DownloadCommand : public PacketCommand
 {
-    bool Execute();
+    bool Execute(SOCKET sock);
 };
 #endif

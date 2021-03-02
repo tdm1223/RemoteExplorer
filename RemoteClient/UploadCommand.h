@@ -5,6 +5,6 @@
 #include "PacketCommand.h"
 class UploadCommand : public PacketCommand
 {
-    bool Execute();
+    bool Execute(SOCKET sock);
 };
 #endif

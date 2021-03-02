@@ -1,6 +1,7 @@
 #include"Receiver.h"
 #include"PacketCommand.h"
 #include<iostream>
+#include"ClientSocket.h"
 
 Receiver::Receiver()
 {
@@ -9,6 +10,9 @@ Receiver::Receiver()
 
 void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 {
+    // clientSock 얻어와서 사용
+    ClientSocket* clientSock;
+
     while (TRUE)
     {
         // message type을 입력 받음
@@ -21,7 +25,7 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 
         if (command < commands->size())
         {
-            commands->at(command)->Execute();
+            commands->at(command)->Execute(clientSock->sock);
         }
         else
         {
