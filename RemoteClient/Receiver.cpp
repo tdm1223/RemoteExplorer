@@ -10,12 +10,12 @@ Receiver::Receiver()
 
 void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 {
-    // clientSock ¾ò¾î¿Í¼­ »ç¿ë
+    // clientSock Â¾Ã²Â¾Ã®Â¿ÃÂ¼Â­ Â»Ã§Â¿Ã«
     ClientSocket* clientSock;
 
     while (TRUE)
     {
-        // message typeÀ» ÀÔ·Â ¹ŞÀ½
+        // message typeÃ€Â» Ã€Ã”Â·Ã‚ Â¹ÃÃ€Â½
         int command;
         std::cout << "1 - UPLOAD" << std::endl;
         std::cout << "2 - DOWNLOAD" << std::endl;
@@ -29,7 +29,7 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
         }
         else
         {
-            std::cout << "¹üÀ§ ¿À·ù" << std::endl;
+            std::cout << "Â¹Ã¼Ã€Â§ Â¿Ã€Â·Ã¹" << std::endl;
             return;
         }
     }
