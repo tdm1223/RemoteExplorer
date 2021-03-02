@@ -3,6 +3,7 @@
 
 #include<string>
 #include<vector>
+#include <WinSock2.h>
 
 enum protocolType
 {
@@ -16,7 +17,7 @@ class PacketCommand
 public:
     PacketCommand();
     virtual ~PacketCommand();
-    virtual bool Execute() = 0;
+    virtual bool Execute(SOCKET sock) = 0;
     const bool OnParse(const char* buffer, const unsigned int bufferSize);
     const bool OnBuild(char* buffer, unsigned int& buildBufferSize);
     const void Clear();

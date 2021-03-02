@@ -17,18 +17,15 @@ public:
     SOCKET& GetSocket();
     void CloseSocket();
     void Connect(int port);
+    SOCKET sock;
 
 private:
     ClientSocket();
     void AddPacketCommand(PacketCommand* packetCommand);
     static ClientSocket* clientSocket;
-    SOCKET sock;
     WSADATA wsaData;
     SOCKADDR_IN serverAddress;
     bool cleanSocket;
-
-    DWORD flags;
-    DWORD recvBytes;
 
     std::vector<std::unique_ptr<PacketCommand>> packetCommands;
 };

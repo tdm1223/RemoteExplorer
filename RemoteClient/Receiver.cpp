@@ -1,6 +1,7 @@
 #include"Receiver.h"
 #include"PacketCommand.h"
 #include<iostream>
+#include"ClientSocket.h"
 
 Receiver::Receiver()
 {
@@ -9,9 +10,12 @@ Receiver::Receiver()
 
 void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 {
+    // clientSock Â¾Ã²Â¾Ã®Â¿ÃÂ¼Â­ Â»Ã§Â¿Ã«
+    ClientSocket* clientSock;
+
     while (TRUE)
     {
-        // message typeÀ» ÀÔ·Â ¹ŞÀ½
+        // message typeÃ€Â» Ã€Ã”Â·Ã‚ Â¹ÃÃ€Â½
         int command;
         std::cout << "1 - UPLOAD" << std::endl;
         std::cout << "2 - DOWNLOAD" << std::endl;
@@ -21,11 +25,11 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 
         if (command < commands->size())
         {
-            commands->at(command)->Execute();
+            commands->at(command)->Execute(clientSock->sock);
         }
         else
         {
-            std::cout << "¹üÀ§ ¿À·ù" << std::endl;
+            std::cout << "Â¹Ã¼Ã€Â§ Â¿Ã€Â·Ã¹" << std::endl;
             return;
         }
     }

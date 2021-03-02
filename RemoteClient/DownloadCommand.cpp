@@ -1,6 +1,6 @@
 #include "DownloadCommand.h"
 
-bool DownloadCommand::Execute()
+bool DownloadCommand::Execute(SOCKET sock)
 {
     std::cout << "DownloadCommand" << std::endl;
     return true;
