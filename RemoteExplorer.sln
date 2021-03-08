@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteClient", "RemoteClien
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteServer", "RemoteServer\RemoteServer.vcxproj", "{C45B1350-4549-4352-9A13-B400EDC707AF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ThreadPool", "ThreadPool\ThreadPool.vcxproj", "{68A6FE3A-7E92-408F-A341-078950A9979B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x64.Build.0 = Release|x64
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x86.ActiveCfg = Release|Win32
 		{C45B1350-4549-4352-9A13-B400EDC707AF}.Release|x86.Build.0 = Release|Win32
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Debug|x64.ActiveCfg = Debug|x64
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Debug|x64.Build.0 = Debug|x64
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Debug|x86.ActiveCfg = Debug|Win32
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Debug|x86.Build.0 = Debug|Win32
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Release|x64.ActiveCfg = Release|x64
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Release|x64.Build.0 = Release|x64
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Release|x86.ActiveCfg = Release|Win32
+		{68A6FE3A-7E92-408F-A341-078950A9979B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
