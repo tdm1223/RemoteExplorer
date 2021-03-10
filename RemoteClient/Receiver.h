@@ -9,7 +9,9 @@
 class Receiver {
 public:
     Receiver();
+
     void operator()(std::vector<std::unique_ptr<PacketCommand>>* commands);
+
 };
 
 #endif

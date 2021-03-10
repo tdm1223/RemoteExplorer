@@ -5,12 +5,11 @@
 
 Receiver::Receiver()
 {
-
 }
 
 void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 {
-    ClientSocket* clientSock;
+    ClientSocket* clientSocket = ClientSocket::GetInstance();
 
     while (TRUE)
     {
@@ -23,11 +22,11 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 
         if (command < commands->size())
         {
-            commands->at(command)->Execute(clientSock->sock);
+            void* recvBuffer = nullptr;
+            commands->at(command)->Execute(clientSocket->GetSocket(), recvBuffer);
         }
         else
         {
-            std::cout << "¹üÀ§ ¿À·ù" << std::endl;
             return;
         }
     }

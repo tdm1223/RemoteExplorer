@@ -5,6 +5,6 @@
 
 class MoveCommand : public PacketCommand
 {
-    bool Execute(SOCKET sock);
+    bool Execute(SOCKET s, void* buffer);
 };
 #endif

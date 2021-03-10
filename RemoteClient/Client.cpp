@@ -3,13 +3,15 @@
 
 Client::Client()
 {
-    clientSock = ClientSocket::GetInstance();
-    clientSock->Connect(kPort);
+
 }
 
 #include<iostream>
 void Client::Initialize()
 {
+    clientSock = ClientSocket::GetInstance();
+    clientSock->Connect(kPort);
+
     // 소켓을 닫음
     clientSock->CloseSocket();
 }
