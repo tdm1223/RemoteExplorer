@@ -4,9 +4,6 @@
 #include<iostream>
 #include<string>
 #include<filesystem>
-#include"Packet.h"
-#include"Command.h"
-#include"Invoker.h"
 
 namespace fs = std::filesystem;
 
@@ -25,7 +22,6 @@ public:
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index);
     SOCKET listenSock;
-    Invoker commandInvoker;
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 

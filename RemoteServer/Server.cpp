@@ -5,8 +5,6 @@ Server::Server()
     numOfClient = 0;
     WSADATA wsadata;
 
-    commandInvoker.Initialize();
-
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
         exit(1);
@@ -96,39 +94,7 @@ void Server::EventLoop(SOCKET sock)
                 }
                 else if (net_events.lNetworkEvents == FD_READ)
                 {
-                    // RECV용 버퍼 선언 및 초기화
-                    char recvBuffer[BUF_SIZE];
-                    memset(recvBuffer, 0, BUF_SIZE);
-
-                    // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
-                    int byteLen = recv(socketArray[sigEventIdx], recvBuffer, BUF_SIZE, 0);
-                    std::cout << "Server receive " << byteLen << " bytes from " << sigEventIdx << std::endl;
-                    if (byteLen > 0)
-                    {
-                        CustomPacket packet;
-                        if (!packet.OnParse(recvBuffer, byteLen))
-                        {
-                            continue;
-                        }
-
-                        std::cout << "클라로 부터 받은 prefix : " << packet.GetPrefix() << std::endl;
-                        std::cout << "클라로 부터 받은 메시지의 타입 : " << packet.GetCommand() << std::endl;
-                        std::cout << "클라로 부터 받은 메시지의 크기 : " << packet.GetSize() << std::endl;
-                        std::string name;
-
-                        int command = packet.GetCommand();
-                        for (int i = 0; i < packet.GetSize(); i++)
-                        {
-                            name.push_back(packet.GetData()[i]);
-                        }
-                        std::cout << "클라로 부터 받은 메시지의 데이터 : " << name << std::endl;
-
-                        if (commandInvoker.GetCommandFactory().count(command) > 0)
-                        {
-                            commandInvoker.GetCommandFactory()[command]->Execute(socketArray[index], name);
-                            break;
-                        }
-                    }
+                    
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
                 {
