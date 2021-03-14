@@ -94,16 +94,18 @@ void Server::EventLoop(SOCKET sock)
                 }
                 else if (net_events.lNetworkEvents == FD_READ)
                 {
-                    
+                    // 스레드 풀에 해당 작업을 추가함
+
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
                 {
-                    std::thread closeThread([=] {CloseProc(sigEventIdx); });
-                    closeThread.join();
+                    threadPool->EnqueueJob([&]() {CloseProc(sigEventIdx, numOfClient); });
                 }
             }
         }
     }
+
+    // 서버 소켓 종료
     closesocket(sock);
 }
 
@@ -122,10 +124,14 @@ void Server::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
     getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
 }
 
-void Server::CloseProc(int index)
+void Server::CloseProc(int index, int& numOfClient)
 {
     SOCKADDR_IN clientAddress = { 0 };
+
     GetClientAddress(clientAddress, index);
+    int len = sizeof(clientAddress);
+    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
+
     std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
 
     closesocket(socketArray[index]);

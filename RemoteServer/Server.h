@@ -4,6 +4,7 @@
 #include<iostream>
 #include<string>
 #include<filesystem>
+#include"ThreadPool.h"
 
 namespace fs = std::filesystem;
 
@@ -20,8 +21,8 @@ public:
     int numOfClient;
 
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
-    void CloseProc(int index);
     SOCKET listenSock;
+    std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(3);
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 
@@ -30,5 +31,7 @@ private:
 
     void AddEvent(SOCKET sock, long eventType); // 클라이언트 소켓 등록하는 함수
     void EventLoop(SOCKET sock);
+
+    void CloseProc(int index, int& numOfClient);
 };
 

@@ -10,12 +10,11 @@
 class ThreadPool
 {
 public:
-    ThreadPool(size_t num_threads);
+    ThreadPool(size_t numOfThread_);
     ~ThreadPool();
 
     // job 을 추가한다.
     void EnqueueJob(std::function<void()> job);
-
 private:
     // 총 Worker 쓰레드의 개수.
     size_t numOfThread_;
