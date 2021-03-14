@@ -57,7 +57,12 @@ SOCKET Server::SetServer()
 
 void Server::EventLoop(SOCKET sock)
 {
-    AddEvent(sock, FD_ACCEPT | FD_CLOSE);
+    HANDLE newEvent = WSACreateEvent();
+    socketArray[numOfClient] = sock;
+    eventArray[numOfClient] = newEvent;
+    numOfClient++;
+    WSAEventSelect(sock, newEvent, FD_ACCEPT | FD_CLOSE);
+
     while (true)
     {
         // 이벤트 발생을 기다리면서 가장 처음 발생한 index를 반환
@@ -89,7 +94,8 @@ void Server::EventLoop(SOCKET sock)
                     {
                         closesocket(clientSock);
                     }
-                    AddEvent(clientSock, FD_READ | FD_CLOSE);
+
+                    threadPool->EnqueueJob([&]() {AddEvent(clientSock, FD_READ | FD_CLOSE); });
                     std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 성공" << std::endl;
                 }
                 else if (net_events.lNetworkEvents == FD_READ)

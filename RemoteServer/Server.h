@@ -22,7 +22,7 @@ public:
 
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     SOCKET listenSock;
-    std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(3);
+    std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(8);
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
 
