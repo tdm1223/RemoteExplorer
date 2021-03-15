@@ -22,7 +22,7 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 
         if (command < commands->size())
         {
-            void* recvBuffer = nullptr;
+            char* recvBuffer = new char[4096];
             commands->at(command)->Execute(clientSocket->GetSocket(), recvBuffer);
         }
         else
