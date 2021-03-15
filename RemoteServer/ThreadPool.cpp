@@ -48,7 +48,6 @@ void ThreadPool::EnqueueJob(std::function<void()> job)
     {
         throw std::runtime_error("ThreadPool 사용 중지됨");
     }
-
     std::lock_guard<std::mutex> lock(mutex_);
     jobQueue_.push(std::move(job));
     conditionVariable_.notify_one();

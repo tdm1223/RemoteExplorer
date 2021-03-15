@@ -1,9 +1,11 @@
 ﻿#include"Server.h"
+#include<iostream>
 
 Server::Server()
 {
     numOfClient = 0;
     WSADATA wsadata;
+    commandInvoker.Initialize();
 
     if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
@@ -101,7 +103,30 @@ void Server::EventLoop(SOCKET sock)
                 else if (net_events.lNetworkEvents == FD_READ)
                 {
                     // 스레드 풀에 해당 작업을 추가함
+                    // RECV용 버퍼 선언 및 초기화
+                    char recvBuffer[kBufSize];
+                    memset(recvBuffer, 0, kBufSize);
+                    // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
+                    int byteLen = recv(socketArray[sigEventIdx], recvBuffer, kBufSize, 0);
+                    std::cout << "byteLen : " << byteLen << std::endl;
+                    if (byteLen > 0)
+                    {
+                        // prefix와 command를 읽음
+                        int command = 0;
+                        char prefix[8] = "";
 
+                        int readLength = 0;
+                        // prefix check
+                        memcpy(prefix, recvBuffer, sizeof(char) * 8);
+                        readLength += 8;
+
+                        memcpy(&command, recvBuffer + readLength, sizeof(int));
+                        readLength += 4;
+
+                        std::cout << "prefix : " << prefix << " command : " << command << " readLength : " << readLength << std::endl;
+                        // 스레드풀에 실행명령을 넣음
+                        //threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[index]); });
+                    }
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
                 {

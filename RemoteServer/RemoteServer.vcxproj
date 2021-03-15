@@ -148,13 +148,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Invoker.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Move.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="Upload.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Invoker.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="Move.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Server.h" />
+    <ClInclude Include="Upload.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

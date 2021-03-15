@@ -5,6 +5,7 @@
 #include<string>
 #include<filesystem>
 #include"ThreadPool.h"
+#include"Invoker.h"
 
 namespace fs = std::filesystem;
 
@@ -23,8 +24,10 @@ public:
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     SOCKET listenSock;
     std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(8);
+
+    Invoker commandInvoker;
 private:
-    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, BUF_SIZE = 4096 };
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, kBufSize = 4096 };
 
     SOCKET SetServer(); // 대기 소켓 설정
     SOCKET clientSock;
