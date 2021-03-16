@@ -107,25 +107,36 @@ void Server::EventLoop(SOCKET sock)
                     char recvBuffer[kBufSize];
                     memset(recvBuffer, 0, kBufSize);
                     // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
-                    int byteLen = recv(socketArray[sigEventIdx], recvBuffer, kBufSize, 0);
-                    std::cout << "byteLen : " << byteLen << std::endl;
-                    if (byteLen > 0)
+                    if (recv(socketArray[sigEventIdx], recvBuffer, kBufSize, 0) > 0)
                     {
                         // prefix와 command를 읽음
-                        int command = 0;
-                        char prefix[8] = "";
+                        int offset = 0;
 
-                        int readLength = 0;
                         // prefix check
+                        char prefix[8] = "";
                         memcpy(prefix, recvBuffer, sizeof(char) * 8);
-                        readLength += 8;
+                        offset += sizeof(char) * 8;
+                        std::cout << prefix << std::endl;
 
-                        memcpy(&command, recvBuffer + readLength, sizeof(int));
-                        readLength += 4;
+                        int command = 0;
+                        memcpy(&command, recvBuffer + offset, sizeof(int));
+                        offset += sizeof(int);
+                        std::cout << command << std::endl;
 
-                        std::cout << "prefix : " << prefix << " command : " << command << " readLength : " << readLength << std::endl;
+                        int length = 0;
+                        memcpy(&length, recvBuffer + offset, sizeof(int));
+                        offset += sizeof(int);
+                        std::cout << length << std::endl;
+
+                        if (length > 0)
+                        {
+                            memset(message, 0, 4096);
+                            memcpy(message, recvBuffer + offset, length);
+                            printf("%s\n", message);
+                        }
+
                         // 스레드풀에 실행명령을 넣음
-                        //threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[index]); });
+                        threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx]); });
                     }
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)

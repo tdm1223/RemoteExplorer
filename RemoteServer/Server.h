@@ -26,6 +26,7 @@ public:
     std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(8);
 
     Invoker commandInvoker;
+    char message[4096];
 private:
     enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, kBufSize = 4096 };
 
