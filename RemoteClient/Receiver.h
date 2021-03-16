@@ -6,12 +6,13 @@
 #include<memory>
 #include<Windows.h>
 
-class Receiver {
+class Receiver
+{
 public:
     Receiver();
 
     void operator()(std::vector<std::unique_ptr<PacketCommand>>* commands);
-
+    char sendBuffer[4096];
 };
 
 #endif

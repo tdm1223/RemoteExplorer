@@ -1,25 +1,38 @@
 #include "MoveCommand.h"
 
-bool MoveCommand::Execute(SOCKET s, void* buffer)
+bool MoveCommand::Execute(SOCKET sock, void* buffer)
 {
     std::cout << "MoveCommand" << std::endl;
-    char buf[4096];
-    memset(buf, 0, 4096);
+    std::string message;
+    std::cout << "ют╥б : ";
+    std::cin >> message;
+
+    memset((char*)buffer, 0, 4096);
+
+    char* msg = (char*)buffer;
 
     command = 3;
     int buildBufferSize = 0;
 
-    memcpy(buf + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
+    memcpy(msg + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
     buildBufferSize += 8;
 
-    memcpy(buf + buildBufferSize, &command, 4);
-    buildBufferSize += 4;
+    memcpy(msg + buildBufferSize, &command, 4);
+    buildBufferSize += sizeof(int);
+
+    int length = message.length();
+    memcpy(msg + buildBufferSize, &length, sizeof(int));
+    buildBufferSize += sizeof(int);
+    std::cout << length << std::endl;
+
+    memcpy(msg + buildBufferSize, message.c_str(), message.length());
+    buildBufferSize += message.length();
 
     std::cout << buildBufferSize << std::endl;
-    if (send(s, buf, buildBufferSize, false))
+    if (send(sock, msg, buildBufferSize, false))
     {
         std::cout << "send success" << std::endl;
     }
 
-    return true;
+    return false;
 }
