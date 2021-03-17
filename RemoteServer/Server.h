@@ -28,7 +28,7 @@ public:
     Invoker commandInvoker;
     char message[4096];
 private:
-    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, kBufSize = 4096 };
+    enum { UPLOAD = 1, DOWNLOAD = 2, END = 3, TEST = 4, PORT = 9000, kBufferSize = 4096 };
 
     SOCKET SetServer(); // 대기 소켓 설정
     SOCKET clientSock;

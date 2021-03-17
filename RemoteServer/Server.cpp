@@ -104,10 +104,10 @@ void Server::EventLoop(SOCKET sock)
                 {
                     // 스레드 풀에 해당 작업을 추가함
                     // RECV용 버퍼 선언 및 초기화
-                    char recvBuffer[kBufSize];
-                    memset(recvBuffer, 0, kBufSize);
+                    char recvBuffer[kBufferSize];
+                    memset(recvBuffer, 0, kBufferSize);
                     // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
-                    if (recv(socketArray[sigEventIdx], recvBuffer, kBufSize, 0) > 0)
+                    if (recv(socketArray[sigEventIdx], recvBuffer, kBufferSize, 0) > 0)
                     {
                         // prefix와 command를 읽음
                         int offset = 0;
@@ -123,6 +123,10 @@ void Server::EventLoop(SOCKET sock)
                         offset += sizeof(int);
                         std::cout << command << std::endl;
 
+                        // 아마 length는 받지 않고 command만 받아서 Execute 인자에 버퍼의 나머지 부분을 넘겨주도록 구현해야 할 것 같다.
+                        // Execute(sock, msg, msgLen); 이런식으로?
+                        // Execute 함수에서는 msg, msgLen 만큼 다시 읽어서 처리한다.
+                        // 모든 패킷은 prefix, command (length, data) 이런식으로 만들어진다.
                         int length = 0;
                         memcpy(&length, recvBuffer + offset, sizeof(int));
                         offset += sizeof(int);

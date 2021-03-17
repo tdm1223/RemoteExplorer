@@ -152,7 +152,7 @@
     <ClCompile Include="Invoker.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Command.cpp" />
-    <ClCompile Include="Move.cpp" />
+    <ClCompile Include="ListCommand.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="Upload.cpp" />
@@ -161,7 +161,7 @@
     <ClInclude Include="Download.h" />
     <ClInclude Include="Invoker.h" />
     <ClInclude Include="Command.h" />
-    <ClInclude Include="Move.h" />
+    <ClInclude Include="ListCommand.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Upload.h" />

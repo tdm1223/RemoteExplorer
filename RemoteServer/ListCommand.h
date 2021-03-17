@@ -3,7 +3,7 @@
 #include"Command.h"
 #include<iostream>
 
-class Move : public Command
+class ListCommand : public Command
 {
 public:
     void Execute(SOCKET& sock);

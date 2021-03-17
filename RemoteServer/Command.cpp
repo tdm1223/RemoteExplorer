@@ -1,7 +1,7 @@
 ﻿#include"Command.h"
 #include"Upload.h"
 #include"Download.h"
-#include"Move.h"
+#include"ListCommand.h"
 
 Command* GetCommand(const std::string& command)
 {
@@ -13,13 +13,20 @@ Command* GetCommand(const std::string& command)
     {
         return (Command*)new Download;
     }
-    else if (command == "MOVE")
+    else if (command == "LIST")
     {
-        return (Command*)new Move;
+        return (Command*)new ListCommand;
     }
     else
     {
         OutputDebugString(L"Unknown command");
         return NULL;
     }
+}
+
+void Command::SerializeInt(const int input, char* output)
+{
+    SecureZeroMemory(output, 4);
+    int* intPointer = reinterpret_cast<int*>(output);
+    *intPointer = input;
 }
