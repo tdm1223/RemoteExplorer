@@ -42,9 +42,6 @@
     <ClCompile Include="DownloadCommand.cpp">
       <Filter>소스 파일\Command\Source</Filter>
     </ClCompile>
-    <ClCompile Include="MoveCommand.cpp">
-      <Filter>소스 파일\Command\Source</Filter>
-    </ClCompile>
     <ClCompile Include="PacketCommand.cpp">
       <Filter>소스 파일\Command\Source</Filter>
     </ClCompile>
@@ -53,6 +50,9 @@
     </ClCompile>
     <ClCompile Include="ClientSocket.cpp">
       <Filter>소스 파일\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="ListCommand.cpp">
+      <Filter>소스 파일\Command\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -65,9 +65,6 @@
     <ClInclude Include="DownloadCommand.h">
       <Filter>소스 파일\Command\Header</Filter>
     </ClInclude>
-    <ClInclude Include="MoveCommand.h">
-      <Filter>소스 파일\Command\Header</Filter>
-    </ClInclude>
     <ClInclude Include="PacketCommand.h">
       <Filter>소스 파일\Command\Header</Filter>
     </ClInclude>
@@ -76,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="ClientSocket.h">
       <Filter>소스 파일\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="ListCommand.h">
+      <Filter>소스 파일\Command\Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

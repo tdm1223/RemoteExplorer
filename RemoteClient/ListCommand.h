@@ -1,9 +1,9 @@
-#ifndef MOVECOMMAND_H
-#define MOVECOMMAND_H
+#ifndef LISTCOMMAND_H
+#define LISTCOMMAND_H
 #include<iostream>
 #include "PacketCommand.h"
 
-class MoveCommand : public PacketCommand
+class ListCommand : public PacketCommand
 {
     bool Execute(SOCKET sock, void* buffer);
 };

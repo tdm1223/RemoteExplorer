@@ -1,11 +1,8 @@
-#include "MoveCommand.h"
+#include "ListCommand.h"
 
-bool MoveCommand::Execute(SOCKET sock, void* buffer)
+bool ListCommand::Execute(SOCKET sock, void* buffer)
 {
-    std::cout << "MoveCommand" << std::endl;
-    std::string message;
-    std::cout << "ют╥б : ";
-    std::cin >> message;
+    std::cout << "ListCommand" << std::endl;
 
     memset((char*)buffer, 0, 4096);
 
@@ -20,13 +17,10 @@ bool MoveCommand::Execute(SOCKET sock, void* buffer)
     memcpy(msg + buildBufferSize, &command, 4);
     buildBufferSize += sizeof(int);
 
-    int length = message.length();
+    int length = 0;
     memcpy(msg + buildBufferSize, &length, sizeof(int));
     buildBufferSize += sizeof(int);
     std::cout << length << std::endl;
-
-    memcpy(msg + buildBufferSize, message.c_str(), message.length());
-    buildBufferSize += message.length();
 
     std::cout << buildBufferSize << std::endl;
     if (send(sock, msg, buildBufferSize, false))
@@ -34,5 +28,16 @@ bool MoveCommand::Execute(SOCKET sock, void* buffer)
         std::cout << "send success" << std::endl;
     }
 
+    // recv
+    int size = 0;
+    char buf[kBufferSize];
+    memset(buf, 0, kBufferSize);
+    Recv(sock, buf, &size);
+
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << buf[i];
+    }
+    std::cout << std::endl;
     return false;
 }

@@ -1,7 +1,7 @@
 ﻿#include"ClientSocket.h"
 #include"UploadCommand.h"
 #include"DownloadCommand.h"
-#include"MoveCommand.h"
+#include"ListCommand.h"
 #include"Receiver.h"
 #include<thread>
 
@@ -12,7 +12,7 @@ ClientSocket::ClientSocket()
     AddPacketCommand(nullptr);
     AddPacketCommand(new UploadCommand);
     AddPacketCommand(new DownloadCommand);
-    AddPacketCommand(new MoveCommand);
+    AddPacketCommand(new ListCommand);
 }
 
 void ClientSocket::AddPacketCommand(PacketCommand* packetCommand)
