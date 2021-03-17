@@ -19,10 +19,10 @@ void PacketCommand::SerializeInt(const int input, char* output)
 bool PacketCommand::SendLength(SOCKET& sock, int length)
 {
     // 길이를 담아서 보냄
-    char buffer[kBufferSize] = { 0 };
+    char buffer[Util::kBufferSize] = { 0 };
     SerializeInt(length, buffer);
 
-    if (send(sock, buffer, kBufferSize, 0) == SOCKET_ERROR)
+    if (send(sock, buffer, Util::kBufferSize, 0) == SOCKET_ERROR)
     {
         return false;
     }
@@ -89,7 +89,7 @@ bool PacketCommand::Recv(SOCKET& sock, char* outputString, int* size)
     }
 
     // 길이 만큼 데이터 받음
-    char buffer[kBufferSize];
+    char buffer[Util::kBufferSize];
     int receivedBytes = 0;
     int totalBytes = length;
     char* bufferPointer = buffer;

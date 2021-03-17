@@ -4,13 +4,7 @@
 #include<string>
 #include<vector>
 #include <WinSock2.h>
-
-enum protocolType
-{
-    kUpload,
-    kDownload,
-    kConnect
-};
+#include"Util.h"
 
 class PacketCommand
 {
@@ -24,7 +18,6 @@ public:
     int size = 0;
     std::vector<char> data;
 
-    static const int kBufferSize = 4096;
     static const int kLengthMessageSize = 4;
 
     void SerializeInt(const int input, char* output);

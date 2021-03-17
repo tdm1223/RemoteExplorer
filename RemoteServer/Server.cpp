@@ -1,4 +1,5 @@
 ﻿#include"Server.h"
+#include"Util.h"
 #include<iostream>
 
 Server::Server()
@@ -12,7 +13,6 @@ Server::Server()
         exit(1);
     }
     listenSock = SetServer(); // 대기 소켓 설정
-
     if (listenSock == -1)
     {
         perror("대기 소켓 오류");
@@ -41,7 +41,7 @@ SOCKET Server::SetServer()
     SOCKADDR_IN servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(PORT);
+    servaddr.sin_port = htons(Util::PORT);
 
     // 소켓 주소와 네트워크 인터페이스 결합
     if (bind(sock, (sockaddr*)&servaddr, sizeof(servaddr)) == -1)
@@ -104,10 +104,10 @@ void Server::EventLoop(SOCKET sock)
                 {
                     // 스레드 풀에 해당 작업을 추가함
                     // RECV용 버퍼 선언 및 초기화
-                    char recvBuffer[kBufferSize];
-                    memset(recvBuffer, 0, kBufferSize);
+                    char recvBuffer[Util::kBufferSize];
+                    memset(recvBuffer, 0, Util::kBufferSize);
                     // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
-                    if (recv(socketArray[sigEventIdx], recvBuffer, kBufferSize, 0) > 0)
+                    if (recv(socketArray[sigEventIdx], recvBuffer, Util::kBufferSize, 0) > 0)
                     {
                         // prefix와 command를 읽음
                         int offset = 0;

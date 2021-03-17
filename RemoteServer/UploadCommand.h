@@ -3,7 +3,7 @@
 #include"Command.h"
 #include<iostream>
 
-class Upload : public Command
+class UploadCommand : public Command
 {
 public:
     void Execute(SOCKET& sock);

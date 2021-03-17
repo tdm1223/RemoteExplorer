@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,23 +149,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Download.cpp" />
+    <ClCompile Include="..\Util\Util.cpp" />
+    <ClCompile Include="DownloadCommand.cpp" />
     <ClCompile Include="Invoker.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="ListCommand.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
-    <ClCompile Include="Upload.cpp" />
+    <ClCompile Include="UploadCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Download.h" />
+    <ClInclude Include="..\Util\Util.h" />
+    <ClInclude Include="DownloadCommand.h" />
     <ClInclude Include="Invoker.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="ListCommand.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Server.h" />
-    <ClInclude Include="Upload.h" />
+    <ClInclude Include="UploadCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

@@ -1,10 +1,12 @@
 ﻿#include"Invoker.h"
+#include"Util.h"
+
 void Invoker::Initialize()
 {
-    commandFactory[UPLOAD] = GetCommand("UPLOAD");
-    commandFactory[DOWNLOAD] = GetCommand("DOWNLOAD");
-    commandFactory[LIST] = GetCommand("LIST");
-    commandFactory[END] = GetCommand("END");
+    commandFactory[Util::UPLOAD] = GetCommand("UPLOAD");
+    commandFactory[Util::DOWNLOAD] = GetCommand("DOWNLOAD");
+    commandFactory[Util::LIST] = GetCommand("LIST");
+    commandFactory[Util::END] = GetCommand("END");
 }
 std::map<int, Command*> Invoker::GetCommandFactory()
 {

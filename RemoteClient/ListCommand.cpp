@@ -30,8 +30,8 @@ bool ListCommand::Execute(SOCKET sock, void* buffer)
 
     // recv
     int size = 0;
-    char buf[kBufferSize];
-    memset(buf, 0, kBufferSize);
+    char buf[Util::kBufferSize];
+    memset(buf, 0, Util::kBufferSize);
     Recv(sock, buf, &size);
 
     for (int i = 0; i < size; i++)

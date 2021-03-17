@@ -12,7 +12,7 @@ public:
     Receiver();
 
     void operator()(std::vector<std::unique_ptr<PacketCommand>>* commands);
-    char sendBuffer[4096];
+    char sendBuffer[Util::kBufferSize];
 };
 
 #endif

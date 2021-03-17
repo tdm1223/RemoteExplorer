@@ -2,7 +2,7 @@
 #include "Command.h"
 #include<iostream>
 
-class Download : public Command
+class DownloadCommand : public Command
 {
     void Execute(SOCKET& sock);
 };

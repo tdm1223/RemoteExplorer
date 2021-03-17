@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Command">
+      <UniqueIdentifier>{698940b5-d18e-40f1-b5ce-39625edeca26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Command">
+      <UniqueIdentifier>{b4802336-e4da-4faf-bdc0-8aa87ab8db92}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -27,17 +33,20 @@
     <ClCompile Include="Invoker.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="..\Util\Util.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Command.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Upload.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Download.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Command</Filter>
     </ClCompile>
     <ClCompile Include="ListCommand.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="DownloadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="UploadCommand.cpp">
+      <Filter>소스 파일\Command</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,17 +59,20 @@
     <ClInclude Include="Invoker.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\Util\Util.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="Command.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Upload.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Download.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Command</Filter>
     </ClInclude>
     <ClInclude Include="ListCommand.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="DownloadCommand.h">
+      <Filter>헤더 파일\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadCommand.h">
+      <Filter>헤더 파일\Command</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

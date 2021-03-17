@@ -5,7 +5,6 @@
 class Invoker
 {
 public:
-    enum { UPLOAD = 1, DOWNLOAD = 2, LIST = 3, END = 4 };
     void Initialize();
     std::map<int, Command*> GetCommandFactory();
 private:

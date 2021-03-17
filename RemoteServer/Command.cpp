@@ -1,17 +1,17 @@
 ﻿#include"Command.h"
-#include"Upload.h"
-#include"Download.h"
+#include"UploadCommand.h"
+#include"DownloadCommand.h"
 #include"ListCommand.h"
 
 Command* GetCommand(const std::string& command)
 {
     if (command == "UPLOAD")
     {
-        return (Command*)new Upload;
+        return (Command*)new UploadCommand;
     }
     else if (command == "DOWNLOAD")
     {
-        return (Command*)new Download;
+        return (Command*)new DownloadCommand;
     }
     else if (command == "LIST")
     {
