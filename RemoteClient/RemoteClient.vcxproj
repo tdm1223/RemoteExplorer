@@ -149,7 +149,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Util\Util.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ClientSocket.cpp" />
     <ClCompile Include="DownloadCommand.cpp" />

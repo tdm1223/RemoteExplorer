@@ -7,31 +7,11 @@ bool UploadCommand::Execute(SOCKET sock, void* buffer)
     std::cout << "ют╥б : ";
     std::cin >> message;
 
-    memset((char*)buffer, 0, 4096);
-
-    char* msg = (char*)buffer;
-
-    command = 1;
-    int buildBufferSize = 0;
-
-    memcpy(msg + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
-    buildBufferSize += 8;
-
-    memcpy(msg + buildBufferSize, &command, 4);
-    buildBufferSize += sizeof(int);
-
-    int length = message.length();
-    memcpy(msg + buildBufferSize, &length, sizeof(int));
-    buildBufferSize += sizeof(int);
-    std::cout << length << std::endl;
-
-    memcpy(msg + buildBufferSize, message.c_str(), message.length());
-    buildBufferSize += message.length();
-
-    std::cout << buildBufferSize << std::endl;
-    if (send(sock, msg, buildBufferSize, false))
+    memset((char*)buffer, 0, Util::kBufferSize);
+    // COMMAND SEND
+    if (!SendCommand(sock, (char*)buffer, Util::COMMAND::UPLOAD))
     {
-        std::cout << "send success" << std::endl;
+        return false;
     }
 
     return false;

@@ -1,4 +1,5 @@
 ﻿#include "PacketCommand.h"
+#include<iostream>
 
 PacketCommand::PacketCommand()
 {
@@ -11,7 +12,7 @@ PacketCommand::~PacketCommand()
 
 void PacketCommand::SerializeInt(const int input, char* output)
 {
-    SecureZeroMemory(output, 4);
+    memset(output, 0, 4);
     int* intPointer = reinterpret_cast<int*>(output);
     *intPointer = input;
 }
@@ -43,6 +44,26 @@ bool PacketCommand::Send(SOCKET& sock, char* message)
     {
         return false;
     }
+
+    return true;
+}
+
+bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)
+{
+    int buildBufferSize = 0;
+
+    memcpy(message + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
+    buildBufferSize += 8;
+
+    memcpy(message + buildBufferSize, &command, 4);
+    buildBufferSize += sizeof(int);
+
+    if (send(sock, message, buildBufferSize, false))
+    {
+        std::cout << "command " << command << " send success" << std::endl;
+        return true;
+    }
+    return false;
 }
 
 int PacketCommand::DeserializeInt(const char* input)
@@ -61,9 +82,9 @@ int PacketCommand::DeserializeInt(const char* input)
 
 bool PacketCommand::RecvLength(SOCKET& sock, int* outputInt)
 {
-    char buffer[kLengthMessageSize];
+    char buffer[Util::kLengthSize];
 
-    if (recv(sock, buffer, kLengthMessageSize, false) == SOCKET_ERROR)
+    if (recv(sock, buffer, Util::kLengthSize, false) == SOCKET_ERROR)
     {
         return false;
     }

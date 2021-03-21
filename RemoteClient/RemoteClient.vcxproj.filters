@@ -39,9 +39,6 @@
     <ClCompile Include="UploadCommand.cpp">
       <Filter>소스 파일\Command</Filter>
     </ClCompile>
-    <ClCompile Include="..\Util\Util.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ClientSocket.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

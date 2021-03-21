@@ -18,11 +18,10 @@ public:
     int size = 0;
     std::vector<char> data;
 
-    static const int kLengthMessageSize = 4;
-
     void SerializeInt(const int input, char* output);
     bool SendLength(SOCKET& sock, int length);
     bool Send(SOCKET& sock, char* message);
+    bool SendCommand(SOCKET& sock, char* message, int command);
 
     int DeserializeInt(const char* input);
     bool RecvLength(SOCKET& sock, int* outputInt);
