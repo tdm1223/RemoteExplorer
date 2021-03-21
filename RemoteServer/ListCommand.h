@@ -1,10 +1,16 @@
-#pragma once
+#ifndef SERVER_LIST_COMMAND_H
+#define SERVER_LIST_COMMAND_H
 
 #include"Command.h"
 #include<iostream>
+#include<filesystem>
+
+namespace fs = std::filesystem;
 
 class ListCommand : public Command
 {
 public:
-    void Execute(SOCKET& sock);
+    bool Execute(SOCKET& sock);
 };
+
+#endif // SERVER_LIST_COMMAND_H

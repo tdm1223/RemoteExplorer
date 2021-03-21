@@ -1,19 +1,37 @@
 #include"ListCommand.h"
+#include"Util.h"
 
-void ListCommand::Execute(SOCKET& sock)
+bool ListCommand::Execute(SOCKET& sock)
 {
     std::cout << "LIST" << std::endl;
+    int cnt = 0;
+    std::vector<std::string> fileVector;
+    std::string files;
+    for (const fs::directory_entry& entry : fs::directory_iterator(fs::current_path()))
+    {
+        files = entry.path().string();
+        size_t pos = files.rfind("\\");
+        files = files.substr(pos + 1);
+        fileVector.push_back(files);
+        cnt++;
+    }
 
-    std::string msg = "recv LIST command";
-    char buf[kBufSize];
-    memset(buf, 0, kBufSize);
+    // 파일 개수를 보냄
+    if (!SendLength(sock, cnt))
+    {
+        return false;
+    }
 
-    strcpy_s(buf, msg.c_str());
-
-    char msgLength[4];
-    memset(msgLength, 0, 4);
-    SerializeInt(msg.length(), msgLength);
-
-    send(sock, msgLength, 4, false);
-    send(sock, buf, msg.length(), false);
+    // 개수만큼 파일명을 보냄
+    char sendBuf[Util::kMaxFileNameLength];
+    for (auto& file : fileVector)
+    {
+        // 파일명 전송
+        strcpy(sendBuf, file.c_str());
+        if (!Send(sock, sendBuf))
+        {
+            return false;
+        }
+    }
+    return true;
 }

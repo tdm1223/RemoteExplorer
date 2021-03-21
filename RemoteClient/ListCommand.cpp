@@ -1,43 +1,38 @@
-#include "ListCommand.h"
+﻿#include "ListCommand.h"
 
 bool ListCommand::Execute(SOCKET sock, void* buffer)
 {
-    std::cout << "ListCommand" << std::endl;
-
-    memset((char*)buffer, 0, 4096);
-
-    char* msg = (char*)buffer;
-
-    command = 3;
-    int buildBufferSize = 0;
-
-    memcpy(msg + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
-    buildBufferSize += 8;
-
-    memcpy(msg + buildBufferSize, &command, 4);
-    buildBufferSize += sizeof(int);
-
-    int length = 0;
-    memcpy(msg + buildBufferSize, &length, sizeof(int));
-    buildBufferSize += sizeof(int);
-    std::cout << length << std::endl;
-
-    std::cout << buildBufferSize << std::endl;
-    if (send(sock, msg, buildBufferSize, false))
+    // COMMAND SEND
+    memset((char*)buffer, 0, Util::kBufferSize);
+    if (!SendCommand(sock, (char*)buffer, Util::COMMAND::LIST))
     {
-        std::cout << "send success" << std::endl;
+        return false;
     }
 
-    // recv
-    int size = 0;
-    char buf[Util::kBufferSize];
-    memset(buf, 0, Util::kBufferSize);
-    Recv(sock, buf, &size);
-
-    for (int i = 0; i < size; i++)
+    // RECV
+    int cnt = 0;
+    if (!RecvLength(sock, &cnt))
     {
-        std::cout << buf[i];
+        std::cout << "RECV LENGTH ERROR" << std::endl;
+        return false;
     }
-    std::cout << std::endl;
-    return false;
+
+    // 요청해서 파일 리스트 보여주는 코드
+    std::cout << "파일 개수 : " << cnt << std::endl;
+    char recvBuf[Util::kMaxFileNameLength];
+    for (int i = 0; i < cnt; i++)
+    {
+        int nameLen = 0;
+        if (!Recv(sock, recvBuf, &nameLen))
+        {
+            std::cout << "RECV DATA ERROR" << std::endl;
+            return false;
+        }
+        else
+        {
+            std::cout << recvBuf << std::endl;
+        }
+    }
+
+    return true;
 }
