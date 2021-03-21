@@ -41,7 +41,7 @@ SOCKET Server::SetServer()
     SOCKADDR_IN servaddr;
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(Util::PORT);
+    servaddr.sin_port = htons(Util::kPort);
 
     // 소켓 주소와 네트워크 인터페이스 결합
     if (bind(sock, (sockaddr*)&servaddr, sizeof(servaddr)) == -1)
@@ -123,21 +123,9 @@ void Server::EventLoop(SOCKET sock)
                         offset += sizeof(int);
                         std::cout << command << std::endl;
 
-                        // 아마 length는 받지 않고 command만 받아서 Execute 인자에 버퍼의 나머지 부분을 넘겨주도록 구현해야 할 것 같다.
-                        // Execute(sock, msg, msgLen); 이런식으로?
-                        // Execute 함수에서는 msg, msgLen 만큼 다시 읽어서 처리한다.
-                        // 모든 패킷은 prefix, command (length, data) 이런식으로 만들어진다.
-                        int length = 0;
-                        memcpy(&length, recvBuffer + offset, sizeof(int));
-                        offset += sizeof(int);
-                        std::cout << length << std::endl;
-
-                        if (length > 0)
-                        {
-                            memset(message, 0, 4096);
-                            memcpy(message, recvBuffer + offset, length);
-                            printf("%s\n", message);
-                        }
+                        // length는 받지 않고 command만 받아서 Execute 인자에 버퍼의 나머지 부분을 넘겨주도록 구현해야 할 것 같다.
+                        // 넘겨진 후에는 command끼리 패킷을 왔다갔다 하도록 처리한다.
+                        // 첫번째 패킷은 prefix, command로 만들어진다.
 
                         // 스레드풀에 실행명령을 넣음
                         threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx]); });

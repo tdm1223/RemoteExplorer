@@ -2,6 +2,7 @@
 #include"UploadCommand.h"
 #include"DownloadCommand.h"
 #include"ListCommand.h"
+#include"Util.h"
 
 Command* GetCommand(const std::string& command)
 {
@@ -26,7 +27,36 @@ Command* GetCommand(const std::string& command)
 
 void Command::SerializeInt(const int input, char* output)
 {
-    SecureZeroMemory(output, 4);
+    memset(output, 0, Util::kLengthSize);
     int* intPointer = reinterpret_cast<int*>(output);
     *intPointer = input;
+}
+
+bool Command::SendLength(SOCKET& sock, int length)
+{
+    char buffer[Util::kLengthSize] = { 0 };
+    SerializeInt(length, buffer);
+
+    if (send(sock, buffer, Util::kLengthSize, 0) == SOCKET_ERROR)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Command::Send(SOCKET& sock, char* message)
+{
+    // 길이 전송
+    if (!SendLength(sock, static_cast<int32_t>(strlen(message))))
+    {
+        return false;
+    }
+
+    // 길이 만큼 데이터 전송
+    if (send(sock, message, static_cast<int32_t>(strlen(message)), 0) == SOCKET_ERROR)
+    {
+        return false;
+    }
+    return true;
 }

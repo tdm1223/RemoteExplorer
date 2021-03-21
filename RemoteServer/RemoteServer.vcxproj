@@ -106,6 +106,7 @@
       <SDLCheck>false</SDLCheck>
       <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>$(SolutionDir)Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,7 +150,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Util\Util.cpp" />
     <ClCompile Include="DownloadCommand.cpp" />
     <ClCompile Include="Invoker.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -168,9 +168,6 @@
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="UploadCommand.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

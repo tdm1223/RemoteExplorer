@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef SERVER_UPLOAD_COMMAND_H
+#define SERVER_UPLOAD_COMMAND_H
 
 #include"Command.h"
 #include<iostream>
@@ -6,5 +7,7 @@
 class UploadCommand : public Command
 {
 public:
-    void Execute(SOCKET& sock);
+    bool Execute(SOCKET& sock);
 };
+
+#endif // _DEBUG

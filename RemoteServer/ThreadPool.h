@@ -1,4 +1,7 @@
-﻿#include <chrono>
+﻿#ifndef THREAD_POOL_H
+#define THREAD_POOL_H
+
+#include <chrono>
 #include <condition_variable>
 #include <cstdio>
 #include <functional>
@@ -32,3 +35,5 @@ private:
     // Worker 쓰레드
     void WorkerThread();
 };
+
+#endif // !THREAD_POOL_H

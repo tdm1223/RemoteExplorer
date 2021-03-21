@@ -33,9 +33,6 @@
     <ClCompile Include="Invoker.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\Util\Util.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Command.cpp">
       <Filter>소스 파일\Command</Filter>
     </ClCompile>
@@ -74,8 +71,5 @@
     <ClInclude Include="UploadCommand.h">
       <Filter>헤더 파일\Command</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

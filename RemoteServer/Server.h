@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef SERVER_H
+#define SERVER_H
+
 #include<winsock2.h>
 #include<thread>
 #include<iostream>
@@ -38,3 +40,4 @@ private:
     void CloseProc(int index, int& numOfClient);
 };
 
+#endif
