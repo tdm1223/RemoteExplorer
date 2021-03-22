@@ -4,6 +4,12 @@
 
 Server::Server()
 {
+    // 프로세서 개수를 구한다.
+    SYSTEM_INFO systemInfo;
+    GetSystemInfo(&systemInfo);
+    numberOfThreads_ = systemInfo.dwNumberOfProcessors * 2;
+    threadPool = std::make_unique<ThreadPool>(numberOfThreads_);
+    std::cout << "생성된 스레드 수 : " << numberOfThreads_ << std::endl;
     numOfClient = 0;
     WSADATA wsadata;
     commandInvoker.Initialize();

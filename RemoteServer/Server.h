@@ -25,7 +25,7 @@ public:
 
     void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     SOCKET listenSock;
-    std::unique_ptr<ThreadPool> threadPool = std::make_unique<ThreadPool>(8);
+    std::unique_ptr<ThreadPool> threadPool;
 
     Invoker commandInvoker;
     char message[4096];
@@ -38,6 +38,8 @@ private:
     void EventLoop(SOCKET sock);
 
     void CloseProc(int index, int& numOfClient);
+
+    int numberOfThreads_;
 };
 
 #endif
