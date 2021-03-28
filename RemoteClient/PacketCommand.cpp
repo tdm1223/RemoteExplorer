@@ -13,8 +13,8 @@ PacketCommand::~PacketCommand()
 void PacketCommand::SerializeInt(const int input, char* output)
 {
     memset(output, 0, 4);
-    int* intPointer = reinterpret_cast<int*>(output);
-    *intPointer = input;
+    int* ptr = reinterpret_cast<int*>(output);
+    *ptr = input;
 }
 
 bool PacketCommand::SendLength(SOCKET& sock, int length)
@@ -52,11 +52,11 @@ bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)
 {
     int buildBufferSize = 0;
 
-    memcpy(message + buildBufferSize, prefix.c_str(), sizeof(char) * 8);
-    buildBufferSize += 8;
+    memcpy(message + buildBufferSize, prefix.c_str(), Util::kPrefixSize);
+    buildBufferSize += Util::kPrefixSize;
 
-    memcpy(message + buildBufferSize, &command, 4);
-    buildBufferSize += sizeof(int);
+    memcpy(message + buildBufferSize, &command, Util::kCommandSize);
+    buildBufferSize += Util::kCommandSize;
 
     if (send(sock, message, buildBufferSize, false))
     {
@@ -70,17 +70,17 @@ int PacketCommand::DeserializeInt(const char* input)
 {
     int output = 0;
 
-    char* charPointer = reinterpret_cast<char*>(&output);
+    char* ptr = reinterpret_cast<char*>(&output);
     for (int i = 0; i < 3; i++)
     {
-        *charPointer = input[i];
-        ++charPointer;
+        *ptr = input[i];
+        ++ptr;
     }
-    *charPointer = input[3];
+    *ptr = input[3];
     return output;
 }
 
-bool PacketCommand::RecvLength(SOCKET& sock, int* outputInt)
+bool PacketCommand::RecvLength(SOCKET& sock, int* output)
 {
     char buffer[Util::kLengthSize];
 
@@ -90,7 +90,7 @@ bool PacketCommand::RecvLength(SOCKET& sock, int* outputInt)
     }
 
     // 메세지의 첫번째 Byte가 길이
-    *outputInt = DeserializeInt(buffer);
+    *output = DeserializeInt(buffer);
 
     return true;
 }

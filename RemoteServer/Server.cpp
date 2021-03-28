@@ -119,14 +119,14 @@ void Server::EventLoop(SOCKET sock)
                         int offset = 0;
 
                         // prefix check
-                        char prefix[8] = "";
-                        memcpy(prefix, recvBuffer, sizeof(char) * 8);
-                        offset += sizeof(char) * 8;
+                        char prefix[Util::kPrefixSize] = "";
+                        memcpy(prefix, recvBuffer, Util::kPrefixSize);
+                        offset += Util::kPrefixSize;
                         std::cout << prefix << std::endl;
 
                         int command = 0;
-                        memcpy(&command, recvBuffer + offset, sizeof(int));
-                        offset += sizeof(int);
+                        memcpy(&command, recvBuffer + offset, Util::kCommandSize);
+                        offset += Util::kCommandSize;
                         std::cout << command << std::endl;
 
                         // length는 받지 않고 command만 받아서 Execute 인자에 버퍼의 나머지 부분을 넘겨주도록 구현해야 할 것 같다.

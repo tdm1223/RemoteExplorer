@@ -5,6 +5,8 @@ public:
     static const int kMaxFileNameLength = 520;
     static const int kLengthSize = 4;
     static const int kPort = 9000;
+    static const int kPrefixSize = 8;
+    static const int kCommandSize = 4;
     enum COMMAND
     {
         UPLOAD = 1,

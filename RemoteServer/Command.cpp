@@ -28,8 +28,8 @@ Command* GetCommand(const std::string& command)
 void Command::SerializeInt(const int input, char* output)
 {
     memset(output, 0, Util::kLengthSize);
-    int* intPointer = reinterpret_cast<int*>(output);
-    *intPointer = input;
+    int* ptr = reinterpret_cast<int*>(output);
+    *ptr = input;
 }
 
 bool Command::SendLength(SOCKET& sock, int length)
