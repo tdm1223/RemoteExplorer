@@ -20,8 +20,9 @@ public:
 
     void SerializeInt(const int input, char* output);
     bool SendLength(SOCKET& sock, int length);
-    bool Send(SOCKET& sock, char* message);
+    bool Send(SOCKET& sock, const char* message);
     bool SendCommand(SOCKET& sock, char* message, int command);
+    bool SendCommandWithData(SOCKET& sock, char* message, int command, std::string data);
 
     int DeserializeInt(const char* input);
     bool RecvLength(SOCKET& sock, int* outputInt);

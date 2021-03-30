@@ -31,12 +31,16 @@ bool PacketCommand::SendLength(SOCKET& sock, int length)
     return true;
 }
 
-bool PacketCommand::Send(SOCKET& sock, char* message)
+bool PacketCommand::Send(SOCKET& sock, const char* message)
 {
     // 길이 전송
     if (!SendLength(sock, static_cast<int32_t>(strlen(message))))
     {
         return false;
+    }
+    else
+    {
+        std::cout << "SEND LEGNGTH : " << strlen(message) << std::endl;
     }
 
     // 길이 만큼 데이터 전송
@@ -44,8 +48,37 @@ bool PacketCommand::Send(SOCKET& sock, char* message)
     {
         return false;
     }
+    else
+    {
+        std::cout << "SEND MESSAGE : " << message << std::endl;
+    }
 
     return true;
+}
+
+bool PacketCommand::SendCommandWithData(SOCKET& sock, char* message, int command, std::string data)
+{
+    int buildBufferSize = 0;
+
+    memcpy(message + buildBufferSize, prefix.c_str(), Util::kPrefixSize);
+    buildBufferSize += Util::kPrefixSize;
+
+    memcpy(message + buildBufferSize, &command, Util::kCommandSize);
+    buildBufferSize += Util::kCommandSize;
+
+    int length = data.size();
+    memcpy(message + buildBufferSize, &length, Util::kLengthSize);
+    buildBufferSize += Util::kLengthSize;
+
+    memcpy(message + buildBufferSize, data.c_str(), data.size());
+    buildBufferSize += data.size();
+
+    if (send(sock, message, buildBufferSize, false))
+    {
+        std::cout << "COMMAND " << command << " DATA" << data << " send success" << std::endl;
+        return true;
+    }
+    return false;
 }
 
 bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)

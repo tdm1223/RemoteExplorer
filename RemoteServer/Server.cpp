@@ -108,34 +108,48 @@ void Server::EventLoop(SOCKET sock)
                 }
                 else if (net_events.lNetworkEvents == FD_READ)
                 {
+                    std::cout << "READ" << std::endl;
                     // 스레드 풀에 해당 작업을 추가함
                     // RECV용 버퍼 선언 및 초기화
                     char recvBuffer[Util::kBufferSize];
                     memset(recvBuffer, 0, Util::kBufferSize);
                     // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
-                    if (recv(socketArray[sigEventIdx], recvBuffer, Util::kBufferSize, 0) > 0)
+                    if (recv(socketArray[sigEventIdx], recvBuffer, Util::kBufferSize, 0) == SOCKET_ERROR)
                     {
-                        // prefix와 command를 읽음
-                        int offset = 0;
-
-                        // prefix check
-                        char prefix[Util::kPrefixSize] = "";
-                        memcpy(prefix, recvBuffer, Util::kPrefixSize);
-                        offset += Util::kPrefixSize;
-                        std::cout << prefix << std::endl;
-
-                        int command = 0;
-                        memcpy(&command, recvBuffer + offset, Util::kCommandSize);
-                        offset += Util::kCommandSize;
-                        std::cout << command << std::endl;
-
-                        // length는 받지 않고 command만 받아서 Execute 인자에 버퍼의 나머지 부분을 넘겨주도록 구현해야 할 것 같다.
-                        // 넘겨진 후에는 command끼리 패킷을 왔다갔다 하도록 처리한다.
-                        // 첫번째 패킷은 prefix, command로 만들어진다.
-
-                        // 스레드풀에 실행명령을 넣음
-                        threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx]); });
+                        return;
                     }
+                    // prefix와 command를 읽음
+                    int offset = 0;
+
+                    // prefix check
+                    char prefix[Util::kPrefixSize] = "";
+                    memcpy(prefix, recvBuffer, Util::kPrefixSize);
+                    offset += Util::kPrefixSize;
+                    std::cout << "PREFIX : " << prefix << std::endl;
+                    if (strcmp(prefix, "ESTSOFT") != 0)
+                    {
+                        continue;
+                    }
+                    int command = 0;
+                    memcpy(&command, recvBuffer + offset, Util::kCommandSize);
+                    offset += Util::kCommandSize;
+                    std::cout << "COMMAND : " << command << std::endl;
+
+                    int length = 0;
+                    memcpy(&length, recvBuffer + offset, Util::kLengthSize);
+                    offset += Util::kLengthSize;
+                    std::cout << "LENGTH : " << length << std::endl;
+
+                    char buf[Util::kMaxFileNameLength];
+                    memset(buf, 0, Util::kMaxFileNameLength);
+                    if (length > 0)
+                    {
+                        memcpy(buf, recvBuffer + offset, length);
+                        std::cout << buf << std::endl;
+                    }
+
+                    // 스레드풀에 실행명령을 넣음
+                    threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx], buf); });
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
                 {

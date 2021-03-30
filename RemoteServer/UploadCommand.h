@@ -7,7 +7,7 @@
 class UploadCommand : public Command
 {
 public:
-    bool Execute(SOCKET& sock);
+    bool Execute(SOCKET sock, char* buf);
 };
 
 #endif // _DEBUG

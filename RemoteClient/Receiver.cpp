@@ -22,6 +22,7 @@ void Receiver::operator()(std::vector<std::unique_ptr<PacketCommand>>* commands)
 
         if (command < commands->size())
         {
+            std::cout << "SENDCOMMAND" << std::endl;
             commands->at(command)->Execute(clientSocket->GetSocket(), sendBuffer);
         }
         else

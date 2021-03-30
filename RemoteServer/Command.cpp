@@ -45,7 +45,7 @@ bool Command::SendLength(SOCKET& sock, int length)
     return true;
 }
 
-bool Command::Send(SOCKET& sock, char* message)
+bool Command::Send(SOCKET& sock, const char* message)
 {
     // 길이 전송
     if (!SendLength(sock, static_cast<int32_t>(strlen(message))))
@@ -58,5 +58,75 @@ bool Command::Send(SOCKET& sock, char* message)
     {
         return false;
     }
+    return true;
+}
+
+int Command::DeserializeInt(const char* input)
+{
+    int output = 0;
+
+    char* ptr = reinterpret_cast<char*>(&output);
+    for (int i = 0; i < 3; i++)
+    {
+        *ptr = input[i];
+        ++ptr;
+    }
+    *ptr = input[3];
+    return output;
+}
+
+bool Command::RecvLength(SOCKET& sock, int* output)
+{
+    char buffer[Util::kLengthSize] = { 0 };
+
+    if (recv(sock, buffer, Util::kLengthSize, false) == SOCKET_ERROR)
+    {
+        return false;
+    }
+
+    // 메세지의 첫번째 Byte가 길이
+    *output = DeserializeInt(buffer);
+    std::cout << "LENGTH : " << output << std::endl;
+    return true;
+}
+
+bool Command::Recv(SOCKET& sock, char* outputString, int* size)
+{
+    // 길이 받음
+    int length = 0;
+    if (!RecvLength(sock, &length))
+    {
+        return false;
+    }
+
+    if (length == 0)
+    {
+        return false;
+    }
+
+    // 길이 만큼 데이터 받음
+    char buffer[Util::kBufferSize];
+    int receivedBytes = 0;
+    int totalBytes = length;
+    char* bufferPointer = buffer;
+    do
+    {
+        receivedBytes = recv(sock, bufferPointer, totalBytes, false);
+        if (receivedBytes == SOCKET_ERROR)
+        {
+            return false;
+        }
+        totalBytes -= receivedBytes;
+        bufferPointer += receivedBytes;
+    } while (totalBytes > 0);
+
+    memcpy_s(outputString, length, buffer, length);
+    outputString[length] = '\0';
+
+    if (size != nullptr)
+    {
+        *size = length;
+    }
+
     return true;
 }

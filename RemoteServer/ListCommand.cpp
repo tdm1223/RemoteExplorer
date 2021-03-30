@@ -1,7 +1,7 @@
 #include"ListCommand.h"
 #include"Util.h"
 
-bool ListCommand::Execute(SOCKET& sock)
+bool ListCommand::Execute(SOCKET sock, char* buf)
 {
     std::cout << "LIST" << std::endl;
     int cnt = 0;
@@ -27,8 +27,7 @@ bool ListCommand::Execute(SOCKET& sock)
     for (auto& file : fileVector)
     {
         // 파일명 전송
-        strcpy(sendBuf, file.c_str());
-        if (!Send(sock, sendBuf))
+        if (!Send(sock, file.c_str()))
         {
             return false;
         }
