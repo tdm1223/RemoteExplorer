@@ -1,4 +1,4 @@
-#ifndef RECEIVER_H
+﻿#ifndef RECEIVER_H
 #define RECEIVER_H
 
 #include"PacketCommand.h"

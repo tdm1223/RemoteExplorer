@@ -1,4 +1,4 @@
-#ifndef SERVER_LIST_COMMAND_H
+﻿#ifndef SERVER_LIST_COMMAND_H
 #define SERVER_LIST_COMMAND_H
 
 #include"Command.h"

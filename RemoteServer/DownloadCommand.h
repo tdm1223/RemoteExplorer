@@ -1,4 +1,4 @@
-#ifndef SERVER_DOWNLOAD_COMMAND_H
+﻿#ifndef SERVER_DOWNLOAD_COMMAND_H
 #define SERVER_DOWNLOAD_COMMAND_H
 
 #include "Command.h"

@@ -1,4 +1,4 @@
-#ifndef UPLOAD_COMMAND_H
+﻿#ifndef UPLOAD_COMMAND_H
 #define UPLOAD_COMMAND_H
 
 #include<iostream>

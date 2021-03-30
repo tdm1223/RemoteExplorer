@@ -1,4 +1,4 @@
-#ifndef DOWNLOAD_COMMAND_H
+﻿#ifndef DOWNLOAD_COMMAND_H
 #define DOWNLOAD_COMMAND_H
 #include<iostream>
 #include "PacketCommand.h"

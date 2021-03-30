@@ -1,4 +1,4 @@
-#include"DownloadCommand.h"
+﻿#include"DownloadCommand.h"
 #include"Util.h"
 
 bool DownloadCommand::Execute(SOCKET sock, char* buf)

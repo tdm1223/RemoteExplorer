@@ -1,4 +1,4 @@
-#include"ListCommand.h"
+ï»¿#include"ListCommand.h"
 #include"Util.h"
 
 bool ListCommand::Execute(SOCKET sock, char* buf)
@@ -16,17 +16,17 @@ bool ListCommand::Execute(SOCKET sock, char* buf)
         cnt++;
     }
 
-    // ÆÄÀÏ °³¼ö¸¦ º¸³¿
+    // íŒŒì¼ ê°œìˆ˜ë¥¼ ë³´ëƒ„
     if (!SendLength(sock, cnt))
     {
         return false;
     }
 
-    // °³¼ö¸¸Å­ ÆÄÀÏ¸íÀ» º¸³¿
+    // ê°œìˆ˜ë§Œí¼ íŒŒì¼ëª…ì„ ë³´ëƒ„
     char sendBuf[Util::kMaxFileNameLength];
     for (auto& file : fileVector)
     {
-        // ÆÄÀÏ¸í Àü¼Û
+        // íŒŒì¼ëª… ì „ì†¡
         if (!Send(sock, file.c_str()))
         {
             return false;

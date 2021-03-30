@@ -1,4 +1,4 @@
-#include "DownloadCommand.h"
+﻿#include "DownloadCommand.h"
 
 bool DownloadCommand::Execute(SOCKET sock, void* buffer)
 {
@@ -12,7 +12,7 @@ bool DownloadCommand::Execute(SOCKET sock, void* buffer)
 
     std::cout << "DownloadCommand" << std::endl;
     std::string fileName;
-    std::cout << "�Է� : ";
+    std::cout << "입력 : ";
     std::cin >> fileName;
 
     memset(buffers, 0, Util::kBufferSize);
