@@ -109,17 +109,7 @@ bool Command::Recv(SOCKET& sock, char* outputString, int* size)
     int receivedBytes = 0;
     int totalBytes = length;
     char* bufferPointer = buffer;
-    do
-    {
-        receivedBytes = recv(sock, bufferPointer, totalBytes, false);
-        if (receivedBytes == SOCKET_ERROR)
-        {
-            return false;
-        }
-        totalBytes -= receivedBytes;
-        bufferPointer += receivedBytes;
-    } while (totalBytes > 0);
-
+    receivedBytes = recv(sock, bufferPointer, totalBytes, false);
     memcpy_s(outputString, length, buffer, length);
     outputString[length] = '\0';
 

@@ -108,20 +108,20 @@ void Server::EventLoop(SOCKET sock)
                 }
                 else if (net_events.lNetworkEvents == FD_READ)
                 {
-                    std::cout << "READ" << std::endl;
                     // 스레드 풀에 해당 작업을 추가함
                     // RECV용 버퍼 선언 및 초기화
                     char recvBuffer[Util::kBufferSize];
                     memset(recvBuffer, 0, Util::kBufferSize);
+
                     // 버퍼 사이즈 만큼의 데이터를 가져와서 RECV용 버퍼에 저장
                     if (recv(socketArray[sigEventIdx], recvBuffer, Util::kBufferSize, 0) == SOCKET_ERROR)
                     {
-                        return;
+                        continue;
                     }
-                    // prefix와 command를 읽음
+
                     int offset = 0;
 
-                    // prefix check
+                    // read and check prefix
                     char prefix[Util::kPrefixSize] = "";
                     memcpy(prefix, recvBuffer, Util::kPrefixSize);
                     offset += Util::kPrefixSize;
@@ -130,26 +130,30 @@ void Server::EventLoop(SOCKET sock)
                     {
                         continue;
                     }
+
+                    // read and check command
                     int command = 0;
                     memcpy(&command, recvBuffer + offset, Util::kCommandSize);
                     offset += Util::kCommandSize;
                     std::cout << "COMMAND : " << command << std::endl;
 
+                    // read and check length
                     int length = 0;
                     memcpy(&length, recvBuffer + offset, Util::kLengthSize);
                     offset += Util::kLengthSize;
                     std::cout << "LENGTH : " << length << std::endl;
 
-                    char buf[Util::kMaxFileNameLength];
-                    memset(buf, 0, Util::kMaxFileNameLength);
+                    // read and check data
+                    char data[Util::kBufferSize];
+                    memset(data, 0, Util::kBufferSize);
                     if (length > 0)
                     {
-                        memcpy(buf, recvBuffer + offset, length);
-                        std::cout << buf << std::endl;
+                        memcpy(data, recvBuffer + offset, length);
+                        std::cout << data << std::endl;
                     }
 
                     // 스레드풀에 실행명령을 넣음
-                    threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx], buf); });
+                    threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx], data); });
                 }
                 else if (net_events.lNetworkEvents == FD_CLOSE)
                 {
