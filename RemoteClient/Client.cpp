@@ -10,8 +10,10 @@ Client::Client()
 void Client::Initialize()
 {
     clientSock = ClientSocket::GetInstance();
-    clientSock->Connect(kPort);
-
+    if (clientSock->Connect(kPort))
+    {
+        clientSock->Loop();
+    }
     // 소켓을 닫음
     clientSock->CloseSocket();
 }

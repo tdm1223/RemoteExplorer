@@ -54,11 +54,11 @@ void ClientSocket::CloseSocket()
     std::cout << "연결 종료" << std::endl;
 }
 
-void ClientSocket::Connect(int port)
+bool ClientSocket::Connect(int port)
 {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
-        exit(1);
+        return false;
     }
 
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -74,10 +74,14 @@ void ClientSocket::Connect(int port)
     if (connect(sock, (LPSOCKADDR)&serverAddress, sizeof(serverAddress)) != 0)
     {
         std::cout << GetLastError() << std::endl;
-        exit(1);
+        return false;
     }
     std::cout << "서버와 연결 성공" << std::endl;
+    return true;
+}
 
+void ClientSocket::Loop()
+{
     while (TRUE)
     {
         int command;

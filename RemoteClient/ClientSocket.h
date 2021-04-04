@@ -16,10 +16,10 @@ public:
     static void releaseInstance();
     SOCKET& GetSocket();
     void CloseSocket();
-    void Connect(int port);
+    bool Connect(int port);
     SOCKET sock;
     char sendBuffer[Util::kBufferSize];
-
+    void Loop();
 private:
     ClientSocket();
     void AddPacketCommand(PacketCommand* packetCommand);
