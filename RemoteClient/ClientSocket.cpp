@@ -2,8 +2,6 @@
 #include"UploadCommand.h"
 #include"DownloadCommand.h"
 #include"ListCommand.h"
-#include"Receiver.h"
-#include<thread>
 
 ClientSocket* ClientSocket::clientSocket = nullptr;
 
@@ -80,7 +78,23 @@ void ClientSocket::Connect(int port)
     }
     std::cout << "서버와 연결 성공" << std::endl;
 
-    Receiver receiver;
-    std::thread commandThread(receiver, &packetCommands);
-    commandThread.join();
+    while (TRUE)
+    {
+        int command;
+        std::cout << "1 - UPLOAD" << std::endl;
+        std::cout << "2 - DOWNLOAD" << std::endl;
+        std::cout << "3 - LIST" << std::endl;
+        std::cout << "4 - END" << std::endl;
+        std::cin >> command;
+
+        if (command < packetCommands.size())
+        {
+            std::cout << "SENDCOMMAND" << std::endl;
+            packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer);
+        }
+        else
+        {
+            return;
+        }
+    }
 }

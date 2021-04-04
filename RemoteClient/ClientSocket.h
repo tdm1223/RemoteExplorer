@@ -18,6 +18,7 @@ public:
     void CloseSocket();
     void Connect(int port);
     SOCKET sock;
+    char sendBuffer[Util::kBufferSize];
 
 private:
     ClientSocket();
