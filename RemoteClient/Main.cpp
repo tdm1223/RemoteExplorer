@@ -3,6 +3,9 @@
 int main()
 {
     Client* client = new Client();
-    client->Initialize();
+    if (client->Initialize())
+    {
+        client->Loop();
+    }
     return 0;
 }

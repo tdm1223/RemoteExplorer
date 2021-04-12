@@ -8,9 +8,12 @@ class Client
 {
 public:
     Client();
-    void Initialize();
+    bool Initialize();
+    void Loop();
+    void Close();
+    char sendBuffer[Util::kBufferSize];
+
 private:
     const int kPort = 9000;
-    std::vector<std::unique_ptr<PacketCommand>> commands;
-    ClientSocket* clientSock;
+    ClientSocket* clientSocket;
 };

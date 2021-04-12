@@ -58,6 +58,7 @@ bool ClientSocket::Connect(int port)
 {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
+        std::cout << GetLastError() << std::endl;
         return false;
     }
 
@@ -78,27 +79,4 @@ bool ClientSocket::Connect(int port)
     }
     std::cout << "서버와 연결 성공" << std::endl;
     return true;
-}
-
-void ClientSocket::Loop()
-{
-    while (TRUE)
-    {
-        int command;
-        std::cout << "1 - UPLOAD" << std::endl;
-        std::cout << "2 - DOWNLOAD" << std::endl;
-        std::cout << "3 - LIST" << std::endl;
-        std::cout << "4 - END" << std::endl;
-        std::cin >> command;
-
-        if (command < packetCommands.size())
-        {
-            std::cout << "SENDCOMMAND" << std::endl;
-            packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer);
-        }
-        else
-        {
-            return;
-        }
-    }
 }

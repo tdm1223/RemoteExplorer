@@ -19,7 +19,8 @@ public:
     bool Connect(int port);
     SOCKET sock;
     char sendBuffer[Util::kBufferSize];
-    void Loop();
+    std::vector<std::unique_ptr<PacketCommand>> packetCommands;
+
 private:
     ClientSocket();
     void AddPacketCommand(PacketCommand* packetCommand);
@@ -28,7 +29,6 @@ private:
     SOCKADDR_IN serverAddress;
     bool cleanSocket;
 
-    std::vector<std::unique_ptr<PacketCommand>> packetCommands;
 };
 
 #endif
