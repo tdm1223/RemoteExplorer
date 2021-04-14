@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef CLIENT_H
+#define CLIENT_H
+
 #include<WinSock2.h>
 #include"ClientSocket.h"
 
@@ -14,6 +16,7 @@ public:
     char sendBuffer[Util::kBufferSize];
 
 private:
-    const int kPort = 9000;
     ClientSocket* clientSocket;
 };
+
+#endif

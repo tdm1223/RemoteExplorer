@@ -5,6 +5,7 @@
 #include<vector>
 #include <WinSock2.h>
 #include"Util.h"
+#include<iostream>
 
 class PacketCommand
 {

@@ -1,5 +1,5 @@
 ﻿#include"Client.h"
-#include<thread>
+#include<iostream>
 
 Client::Client()
 {
@@ -7,11 +7,10 @@ Client::Client()
     clientSocket = nullptr;
 }
 
-#include<iostream>
 bool Client::Initialize()
 {
     clientSocket = ClientSocket::GetInstance();
-    if (clientSocket->Connect(kPort))
+    if (clientSocket->Connect(Util::kPort))
     {
         return true;
     }

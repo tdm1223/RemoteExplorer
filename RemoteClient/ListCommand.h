@@ -1,6 +1,6 @@
 #ifndef LISTCOMMAND_H
 #define LISTCOMMAND_H
-#include<iostream>
+
 #include "PacketCommand.h"
 
 class ListCommand : public PacketCommand

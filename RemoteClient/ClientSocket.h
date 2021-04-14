@@ -28,7 +28,6 @@ private:
     WSADATA wsaData;
     SOCKADDR_IN serverAddress;
     bool cleanSocket;
-
 };
 
 #endif
