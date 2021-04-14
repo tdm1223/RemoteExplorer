@@ -23,7 +23,6 @@ bool ListCommand::Execute(SOCKET sock, char* buf)
     }
 
     // 개수만큼 파일명을 보냄
-    char sendBuf[Util::kMaxFileNameLength];
     for (auto& file : fileVector)
     {
         // 파일명 전송

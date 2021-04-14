@@ -2,7 +2,6 @@
 #define SERVER_DOWNLOAD_COMMAND_H
 
 #include "Command.h"
-#include<iostream>
 
 class DownloadCommand : public Command
 {

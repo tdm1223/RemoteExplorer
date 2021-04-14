@@ -19,24 +19,22 @@ class Server
 public:
     Server();
     ~Server();
+
     SOCKET socketArray[FD_SETSIZE];
     HANDLE eventArray[FD_SETSIZE];
-    int numOfClient;
-
-    void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
-    SOCKET listenSock;
     std::unique_ptr<ThreadPool> threadPool;
-
+    SOCKET listenSock;
+    int numOfClient;
     Invoker commandInvoker;
-    char message[4096];
-private:
 
+private:
     SOCKET SetServer(); // 대기 소켓 설정
     SOCKET clientSock;
 
     void AddEvent(SOCKET sock, long eventType); // 클라이언트 소켓 등록하는 함수
     void EventLoop(SOCKET sock);
 
+    void GetClientAddress(SOCKADDR_IN& clientAddress, int index);
     void CloseProc(int index, int& numOfClient);
 
     int numberOfThreads_;

@@ -2,7 +2,6 @@
 #define SERVER_LIST_COMMAND_H
 
 #include"Command.h"
-#include<iostream>
 #include<filesystem>
 
 namespace fs = std::filesystem;

@@ -3,6 +3,7 @@
 
 #include<string>
 #include<WinSock2.h>
+#include<iostream>
 
 class Command
 {
