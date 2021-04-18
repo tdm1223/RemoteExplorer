@@ -3,12 +3,7 @@
 
 bool DownloadCommand::Execute(SOCKET sock, char* buf)
 {
-    std::cout << "Download" << std::endl;
-
-    int cnt = 0;
-
-    // RECV
-    // 파일 전송
+    // SERVER -> Client 파일 전송
     int fileSize = 0;
 
     FILE* fp = fopen(buf, "rb");
@@ -21,34 +16,51 @@ bool DownloadCommand::Execute(SOCKET sock, char* buf)
     fseek(fp, 0, SEEK_END);
     fileSize = ftell(fp);
 
-    char buffer[Util::kLengthSize];
-    SerializeInt(fileSize, buffer);
-    send(sock, buffer, Util::kLengthSize, 0);
+    char lengthSizeBuffer[Util::kLengthSize];
+    memset(lengthSizeBuffer, 0, Util::kLengthSize);
+
+    SerializeInt(fileSize, lengthSizeBuffer);
+    if (send(sock, lengthSizeBuffer, Util::kLengthSize, 0) == SOCKET_ERROR)
+    {
+        fclose(fp);
+        return false;
+    }
+
     rewind(fp);
     int sendSize = 0;
+
     // 파일 크기가 0보다 크다면 파일 전송
-    if (fileSize > 0)
+    char dataBuffer[Util::kBufferSize];
+    while (fileSize > 0)
     {
-        while (fileSize > 0)
+        memset(dataBuffer, 0, Util::kBufferSize);
+
+        sendSize = fread(dataBuffer, 1, Util::kBufferSize, fp);
+        SerializeInt(sendSize, lengthSizeBuffer);
+        if (send(sock, lengthSizeBuffer, Util::kLengthSize, 0) == SOCKET_ERROR)
         {
-            char dataBuffer[Util::kBufferSize];
-            memset(dataBuffer, 0, Util::kBufferSize);
-            sendSize = fread(dataBuffer, 1, fileSize, fp);
-            std::cout << "sendsize  : " << sendSize << std::endl;
-            SerializeInt(sendSize, buffer);
-            send(sock, buffer, Util::kLengthSize, 0);
-            if (sendSize < Util::kBufferSize)
-            {
-                std::cout << sendSize << "보냄" << std::endl;
-                send(sock, dataBuffer, sendSize, 0);
-                break;
-            }
-            send(sock, dataBuffer, Util::kBufferSize, 0);
-            fileSize -= sendSize;
+            fclose(fp);
+            return false;
         }
+
+        if (sendSize < Util::kBufferSize)
+        {
+            if (send(sock, dataBuffer, sendSize, 0) == SOCKET_ERROR)
+            {
+                fclose(fp);
+                return false;
+            }
+            break;
+        }
+
+        if (send(sock, dataBuffer, Util::kBufferSize, 0) == SOCKET_ERROR)
+        {
+            fclose(fp);
+            return false;
+        }
+        fileSize -= sendSize;
     }
 
     fclose(fp);
-    // 0이면 파일이 없는것
     return true;
 }
