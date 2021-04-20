@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ThreadPool", "ThreadPool\Th
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteClientUI", "RemoteClientUI\RemoteClientUI.vcxproj", "{50577538-65DF-4F09-ADD7-E1B8E5E93F27}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UIClient", "UIClient\UIClient.vcxproj", "{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{50577538-65DF-4F09-ADD7-E1B8E5E93F27}.Release|x64.Build.0 = Release|x64
 		{50577538-65DF-4F09-ADD7-E1B8E5E93F27}.Release|x86.ActiveCfg = Release|Win32
 		{50577538-65DF-4F09-ADD7-E1B8E5E93F27}.Release|x86.Build.0 = Release|Win32
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Debug|x64.ActiveCfg = Debug|x64
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Debug|x64.Build.0 = Debug|x64
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Debug|x86.ActiveCfg = Debug|Win32
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Debug|x86.Build.0 = Debug|Win32
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Release|x64.ActiveCfg = Release|x64
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Release|x64.Build.0 = Release|x64
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Release|x86.ActiveCfg = Release|Win32
+		{1245F401-F3F9-46CC-AC31-E7D94AD0AD6E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
