@@ -32,8 +32,6 @@ bool DownloadCommand::Execute(SOCKET sock, void* buffer)
                 fclose(fp);
                 return false;
             }
-
-            std::cout << "length : " << length << std::endl;
             memset(buffers, 0, Util::kBufferSize);
 
             if (length < Util::kBufferSize)
@@ -56,5 +54,11 @@ bool DownloadCommand::Execute(SOCKET sock, void* buffer)
         }
         fclose(fp);
     }
+    else
+    {
+        return false;
+    }
+
+    std::cout << "===== File Receive Success =====" << std::endl << std::endl << std::endl;
     return true;
 }

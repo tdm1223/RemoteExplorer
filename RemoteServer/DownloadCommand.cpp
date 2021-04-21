@@ -6,19 +6,21 @@ bool DownloadCommand::Execute(SOCKET sock, char* buf)
     // SERVER -> Client 파일 전송
     int fileSize = 0;
 
-    FILE* fp = fopen(buf, "rb");
-    if (fp == NULL)
-    {
-        std::cout << "없는 파일" << std::endl;
-        return false;
-    }
-    std::cout << "있는 파일" << std::endl;
-    fseek(fp, 0, SEEK_END);
-    fileSize = ftell(fp);
-
     char lengthSizeBuffer[Util::kLengthSize];
     memset(lengthSizeBuffer, 0, Util::kLengthSize);
 
+    FILE* fp = fopen(buf, "rb");
+    if (fp == NULL)
+    {
+        std::cout << "\"" << buf << "\" does not exist." << std::endl << std::endl << std::endl;
+        send(sock, lengthSizeBuffer, Util::kLengthSize, 0);
+        return false;
+    }
+    fseek(fp, 0, SEEK_END);
+    fileSize = ftell(fp);
+
+    std::cout << "Request File Name : " << buf << std::endl;
+    std::cout << "File Size : " << fileSize << std::endl;
     SerializeInt(fileSize, lengthSizeBuffer);
     if (send(sock, lengthSizeBuffer, Util::kLengthSize, 0) == SOCKET_ERROR)
     {
@@ -62,5 +64,6 @@ bool DownloadCommand::Execute(SOCKET sock, char* buf)
     }
 
     fclose(fp);
+    std::cout << "===== File Send Success =====" << std::endl << std::endl << std::endl;
     return true;
 }

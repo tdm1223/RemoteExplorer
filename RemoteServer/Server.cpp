@@ -125,7 +125,6 @@ void Server::EventLoop(SOCKET sock)
                     char prefix[Util::kPrefixSize] = "";
                     memcpy(prefix, recvBuffer, Util::kPrefixSize);
                     offset += Util::kPrefixSize;
-                    std::cout << "PREFIX : " << prefix << std::endl;
                     if (strcmp(prefix, "ESTSOFT") != 0)
                     {
                         continue;
@@ -141,7 +140,6 @@ void Server::EventLoop(SOCKET sock)
                     int length = 0;
                     memcpy(&length, recvBuffer + offset, Util::kLengthSize);
                     offset += Util::kLengthSize;
-                    std::cout << "LENGTH : " << length << std::endl;
 
                     // read and check data
                     char data[Util::kBufferSize];
@@ -149,7 +147,6 @@ void Server::EventLoop(SOCKET sock)
                     if (length > 0)
                     {
                         memcpy(data, recvBuffer + offset, length);
-                        std::cout << data << std::endl;
                     }
 
                     // 스레드풀에 실행명령을 넣음

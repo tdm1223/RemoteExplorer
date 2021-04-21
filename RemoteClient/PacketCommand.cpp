@@ -38,19 +38,11 @@ bool PacketCommand::Send(SOCKET& sock, const char* message)
     {
         return false;
     }
-    else
-    {
-        std::cout << "SEND LEGNGTH : " << strlen(message) << std::endl;
-    }
 
     // 길이 만큼 데이터 전송
     if (send(sock, message, static_cast<int32_t>(strlen(message)), 0) == SOCKET_ERROR)
     {
         return false;
-    }
-    else
-    {
-        std::cout << "SEND MESSAGE : " << message << std::endl;
     }
 
     return true;
@@ -73,12 +65,11 @@ bool PacketCommand::SendCommandWithData(SOCKET& sock, char* message, int command
     memcpy(message + buildBufferSize, data.c_str(), data.size());
     buildBufferSize += data.size();
 
-    if (send(sock, message, buildBufferSize, false))
+    if (send(sock, message, buildBufferSize, false) == SOCKET_ERROR)
     {
-        std::cout << "COMMAND " << command << " DATA" << data << " send success" << std::endl;
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)
@@ -91,12 +82,11 @@ bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)
     memcpy(message + buildBufferSize, &command, Util::kCommandSize);
     buildBufferSize += Util::kCommandSize;
 
-    if (send(sock, message, buildBufferSize, false))
+    if (send(sock, message, buildBufferSize, false) == SOCKET_ERROR)
     {
-        std::cout << "command " << command << " send success" << std::endl;
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 int PacketCommand::DeserializeInt(const char* input)
@@ -116,7 +106,6 @@ int PacketCommand::DeserializeInt(const char* input)
 bool PacketCommand::RecvLength(SOCKET& sock, int* output)
 {
     char buffer[Util::kLengthSize];
-
     if (recv(sock, buffer, Util::kLengthSize, false) == SOCKET_ERROR)
     {
         return false;
@@ -124,7 +113,6 @@ bool PacketCommand::RecvLength(SOCKET& sock, int* output)
 
     // 메세지의 첫번째 Byte가 길이
     *output = DeserializeInt(buffer);
-
     return true;
 }
 

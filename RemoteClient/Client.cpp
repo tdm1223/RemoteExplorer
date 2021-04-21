@@ -33,7 +33,6 @@ void Client::Loop()
 
         if (command < clientSocket->packetCommands.size())
         {
-            std::cout << "SENDCOMMAND" << std::endl;
             clientSocket->packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer);
         }
         else
