@@ -20,7 +20,7 @@ bool Client::Initialize()
     }
 }
 
-void Client::Loop()
+void Client::Start()
 {
     while (TRUE)
     {

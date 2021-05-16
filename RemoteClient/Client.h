@@ -11,7 +11,7 @@ class Client
 public:
     Client();
     bool Initialize();
-    void Loop();
+    void Start();
     void Close();
     char sendBuffer[Util::kBufferSize];
 

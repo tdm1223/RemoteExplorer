@@ -17,37 +17,6 @@ void PacketCommand::SerializeInt(const int input, char* output)
     *ptr = input;
 }
 
-bool PacketCommand::SendLength(SOCKET& sock, int length)
-{
-    // 길이를 담아서 보냄
-    char buffer[Util::kBufferSize] = { 0 };
-    SerializeInt(length, buffer);
-
-    if (send(sock, buffer, Util::kBufferSize, 0) == SOCKET_ERROR)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool PacketCommand::Send(SOCKET& sock, const char* message)
-{
-    // 길이 전송
-    if (!SendLength(sock, static_cast<int32_t>(strlen(message))))
-    {
-        return false;
-    }
-
-    // 길이 만큼 데이터 전송
-    if (send(sock, message, static_cast<int32_t>(strlen(message)), 0) == SOCKET_ERROR)
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool PacketCommand::SendCommandWithData(SOCKET& sock, char* message, int command, std::string data)
 {
     int buildBufferSize = 0;
