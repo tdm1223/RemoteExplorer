@@ -36,7 +36,7 @@
     <ClCompile Include="..\RemoteClient\PacketCommand.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\RemoteClient\EchoCommand.cpp">
+    <ClCompile Include="EchoCommand.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,8 +59,8 @@
     <ClInclude Include="..\RemoteClient\PacketCommand.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\RemoteClient\EchoCommand.h">
-      <Filter>소스 파일</Filter>
+    <ClInclude Include="EchoCommand.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

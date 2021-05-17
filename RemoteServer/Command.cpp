@@ -6,7 +6,7 @@
 
 Command* GetCommand(const std::string& command)
 {
-    if (command == "UPLOAD")
+    if (command == "ECHO")
     {
         return (Command*)new EchoCommand;
     }

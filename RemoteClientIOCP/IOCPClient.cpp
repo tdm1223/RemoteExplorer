@@ -2,15 +2,15 @@
 #include"NetworkContext.h"
 #include"NetworkSession.h"
 #include"IOCPClient.h"
-#include"UploadCommand.h"
 #include"DownloadCommand.h"
 #include"ListCommand.h"
+#include"EchoCommand.h"
 
 IOCPClient::IOCPClient() : isConnected_(false)
 {
     hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
     AddPacketCommand(nullptr);
-    AddPacketCommand(new UploadCommand);
+    AddPacketCommand(new EchoCommand);
     AddPacketCommand(new DownloadCommand);
     AddPacketCommand(new ListCommand);
 }
