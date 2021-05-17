@@ -4,6 +4,7 @@
 #include<string>
 #include<WinSock2.h>
 #include <WS2tcpip.h>
+#include"PacketCommand.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -15,7 +16,12 @@ public:
     bool Connect(const std::string& ip, const int port);
     bool Disconnect();
     bool Query(const char* message);
+    bool Query(int command);
+
     HANDLE hCompletionPort;
+
+    std::vector<std::unique_ptr<PacketCommand>> packetCommands;
+    void AddPacketCommand(PacketCommand* packetCommand);
 
 private:
     size_t connectSocket_;

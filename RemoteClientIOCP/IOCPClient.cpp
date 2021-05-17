@@ -2,10 +2,22 @@
 #include"NetworkContext.h"
 #include"NetworkSession.h"
 #include"IOCPClient.h"
+#include"UploadCommand.h"
+#include"DownloadCommand.h"
+#include"ListCommand.h"
 
 IOCPClient::IOCPClient() : isConnected_(false)
 {
     hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
+    AddPacketCommand(nullptr);
+    AddPacketCommand(new UploadCommand);
+    AddPacketCommand(new DownloadCommand);
+    AddPacketCommand(new ListCommand);
+}
+
+void IOCPClient::AddPacketCommand(PacketCommand* packetCommand)
+{
+    packetCommands.push_back(std::unique_ptr<PacketCommand>(packetCommand));
 }
 
 IOCPClient::~IOCPClient()
@@ -35,15 +47,15 @@ bool IOCPClient::Connect(const std::string& ip, const int port)
         return false;
     }
 
-    SOCKADDR_IN receiveAddress;
-    receiveAddress.sin_family = AF_INET;
-    receiveAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    receiveAddress.sin_port = htons(port);
+    SOCKADDR_IN servserAddress;
+    servserAddress.sin_family = AF_INET;
+    servserAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servserAddress.sin_port = htons(port);
 
-    NetworkSession* session = new NetworkSession(connectSocket_, receiveAddress);
+    NetworkSession* session = new NetworkSession(connectSocket_, servserAddress);
     CreateIoCompletionPort((HANDLE)connectSocket_, hCompletionPort, (DWORD)session, 0);
 
-    if (connect(connectSocket_, reinterpret_cast<SOCKADDR*>(&receiveAddress), sizeof(receiveAddress)) == SOCKET_ERROR)
+    if (connect(connectSocket_, reinterpret_cast<SOCKADDR*>(&servserAddress), sizeof(servserAddress)) == SOCKET_ERROR)
     {
         int32_t error = WSAGetLastError();
         printf("CONNECT ERROR %d\n", error);
@@ -64,6 +76,20 @@ bool IOCPClient::Disconnect()
     }
 
     return true;
+}
+
+bool IOCPClient::Query(int command)
+{
+    char buffer[4096];
+    if (command < packetCommands.size())
+    {
+        packetCommands.at(command)->Execute(connectSocket_, buffer);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool IOCPClient::Query(const char* message)

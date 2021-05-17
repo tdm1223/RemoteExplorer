@@ -1,8 +1,8 @@
 #include"IOCPServer.h"
 #include"Util.h"
 #include<iostream>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
+#include<WinSock2.h>
+#include<WS2tcpip.h>
 
 IOCPServer::IOCPServer()
 {
@@ -11,7 +11,6 @@ IOCPServer::IOCPServer()
     GetSystemInfo(&systemInfo);
     numberOfThreads_ = systemInfo.dwNumberOfProcessors * 2;
     isServerRunning_ = false;
-
 }
 
 void IOCPServer::WorkerThreadEntry_(void* iocpserver)
@@ -141,39 +140,6 @@ bool IOCPServer::InitializeIOCP_()
         returnValue = true;
     }
     return returnValue;
-}
-
-void IOCPServer::AddEvent(SOCKET sock, long eventType)
-{
-    HANDLE newEvent = WSACreateEvent();
-    socketArray[numOfClient] = sock;
-    eventArray[numOfClient] = newEvent;
-    numOfClient++;
-    WSAEventSelect(sock, newEvent, eventType);
-}
-
-void IOCPServer::GetClientAddress(SOCKADDR_IN& clientAddress, int index)
-{
-    int len = sizeof(clientAddress);
-    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
-}
-
-void IOCPServer::CloseProc(int index, int& numOfClient)
-{
-    SOCKADDR_IN clientAddress = { 0 };
-
-    GetClientAddress(clientAddress, index);
-    int len = sizeof(clientAddress);
-    getpeername(socketArray[index], (SOCKADDR*)&clientAddress, &len);
-
-    std::cout << "[" << inet_ntoa(clientAddress.sin_addr) << ":" << ntohs(clientAddress.sin_port) << "] 연결 종료" << std::endl;
-
-    closesocket(socketArray[index]);
-    WSACloseEvent(eventArray[index]);
-
-    numOfClient--;
-    socketArray[index] = socketArray[numOfClient];
-    eventArray[index] = eventArray[numOfClient];
 }
 
 void IOCPServer::WorkerThread_()

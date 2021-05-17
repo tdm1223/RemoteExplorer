@@ -118,6 +118,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Util;$(SolutionDir)RemoteServer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,12 +142,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\RemoteClient\DownloadCommand.cpp" />
+    <ClCompile Include="..\RemoteClient\EchoCommand.cpp" />
+    <ClCompile Include="..\RemoteClient\ListCommand.cpp" />
+    <ClCompile Include="..\RemoteClient\PacketCommand.cpp" />
     <ClCompile Include="..\Util\NetworkContext.cpp" />
     <ClCompile Include="..\Util\NetworkSession.cpp" />
     <ClCompile Include="IOCPClient.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RemoteClient\DownloadCommand.h" />
+    <ClInclude Include="..\RemoteClient\EchoCommand.h" />
+    <ClInclude Include="..\RemoteClient\ListCommand.h" />
+    <ClInclude Include="..\RemoteClient\PacketCommand.h" />
     <ClInclude Include="..\Util\NetworkContext.h" />
     <ClInclude Include="..\Util\NetworkSession.h" />
     <ClInclude Include="IOCPClient.h" />
