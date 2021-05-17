@@ -157,7 +157,7 @@
     <ClCompile Include="ListCommand.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
-    <ClCompile Include="UploadCommand.cpp" />
+    <ClCompile Include="EchoCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Util\Util.h" />
@@ -167,7 +167,7 @@
     <ClInclude Include="ListCommand.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Server.h" />
-    <ClInclude Include="UploadCommand.h" />
+    <ClInclude Include="EchoCommand.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

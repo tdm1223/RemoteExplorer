@@ -148,7 +148,7 @@ void Server::EventLoop(SOCKET sock)
                     {
                         memcpy(data, recvBuffer + offset, length);
                     }
-
+                    std::cout << "data : "<<data << std::endl;
                     // 스레드풀에 실행명령을 넣음
                     threadPool->EnqueueJob([&]() {commandInvoker.GetCommandFactory()[command]->Execute(socketArray[sigEventIdx], data); });
                 }
