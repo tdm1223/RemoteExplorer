@@ -26,6 +26,9 @@ public:
     int DeserializeInt(const char* input);
     bool RecvLength(SOCKET& sock, int* outputInt);
     bool Recv(SOCKET& sock, char* outputString, int* size);
+
+    bool Send(SOCKET& sock, const char* message);
+private:
 };
 
 #endif

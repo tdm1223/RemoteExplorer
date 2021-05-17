@@ -36,7 +36,7 @@
     <ClCompile Include="PacketCommand.cpp">
       <Filter>소스 파일\Command</Filter>
     </ClCompile>
-    <ClCompile Include="UploadCommand.cpp">
+    <ClCompile Include="EchoCommand.cpp">
       <Filter>소스 파일\Command</Filter>
     </ClCompile>
     <ClCompile Include="ClientSocket.cpp">
@@ -56,7 +56,7 @@
     <ClInclude Include="PacketCommand.h">
       <Filter>헤더 파일\Command</Filter>
     </ClInclude>
-    <ClInclude Include="UploadCommand.h">
+    <ClInclude Include="EchoCommand.h">
       <Filter>헤더 파일\Command</Filter>
     </ClInclude>
     <ClInclude Include="..\Util\Util.h">

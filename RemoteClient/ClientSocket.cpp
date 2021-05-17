@@ -1,5 +1,5 @@
 ﻿#include"ClientSocket.h"
-#include"UploadCommand.h"
+#include"EchoCommand.h"
 #include"DownloadCommand.h"
 #include"ListCommand.h"
 
@@ -8,7 +8,7 @@ ClientSocket* ClientSocket::clientSocket = nullptr;
 ClientSocket::ClientSocket()
 {
     AddPacketCommand(nullptr);
-    AddPacketCommand(new UploadCommand);
+    AddPacketCommand(new EchoCommand);
     AddPacketCommand(new DownloadCommand);
     AddPacketCommand(new ListCommand);
 }

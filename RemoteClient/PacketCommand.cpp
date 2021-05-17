@@ -41,6 +41,26 @@ bool PacketCommand::SendCommandWithData(SOCKET& sock, char* message, int command
     return true;
 }
 
+bool PacketCommand::Send(SOCKET& sock, const char* message)
+{
+    // 메세지 4바이트에 길이를 담아 보냄
+    char buffer[Util::kLengthSize] = { 0 };
+    int length = 0;
+    SerializeInt(length, buffer);
+
+    if (send(sock, buffer, Util::kLengthSize, 0) == SOCKET_ERROR)
+    {
+        return false;
+    }
+
+    if (send(sock, message, static_cast<int32_t>(strlen(message)), 0) == SOCKET_ERROR)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool PacketCommand::SendCommand(SOCKET& sock, char* message, int command)
 {
     int buildBufferSize = 0;
