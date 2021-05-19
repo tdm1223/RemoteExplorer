@@ -3,13 +3,12 @@
 bool EchoCommand::Execute(SOCKET sock, void* buffer)
 {
     // COMMAND SEND
-    std::string fileName;
-    std::cout << "입력 : ";
-    std::cin >> fileName;
+    std::string echoData;
+    echoData = (char*)buffer;
 
     char buffers[Util::kBufferSize];
     memset(buffers, 0, Util::kBufferSize);
-    if (!SendCommandWithData(sock, buffers, Util::COMMAND::UPLOAD, fileName))
+    if (!SendCommandWithData(sock, buffers, Util::COMMAND::UPLOAD, echoData))
     {
         return false;
     }

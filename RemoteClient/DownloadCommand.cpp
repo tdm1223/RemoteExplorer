@@ -4,8 +4,8 @@ bool DownloadCommand::Execute(SOCKET sock, void* buffer)
 {
     // COMMAND SEND
     std::string fileName;
-    std::cout << "입력 : ";
-    std::cin >> fileName;
+    fileName = (char*)buffer;
+    std::cout << "filename : " << fileName << std::endl;
 
     char buffers[Util::kBufferSize];
     memset(buffers, 0, Util::kBufferSize);

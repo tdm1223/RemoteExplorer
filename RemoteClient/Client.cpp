@@ -5,6 +5,12 @@ Client::Client()
 {
     memset(sendBuffer, 0, Util::kBufferSize);
     clientSocket = nullptr;
+
+    SYSTEM_INFO systemInfo;
+    GetSystemInfo(&systemInfo);
+    numberOfThreads_ = systemInfo.dwNumberOfProcessors * 2;
+    threadPool = std::make_unique<ThreadPool>(numberOfThreads_);
+    std::cout << "생성된 스레드 수 : " << numberOfThreads_ << std::endl;
 }
 
 bool Client::Initialize()
@@ -31,9 +37,17 @@ void Client::Start()
         std::cout << "4 - END" << std::endl;
         std::cin >> command;
 
+        memset(sendBuffer, 0, sizeof(Util::kBufferSize));
         if (command < clientSocket->packetCommands.size())
         {
-            clientSocket->packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer);
+            if (command == Util::COMMAND::DOWNLOAD || command == Util::COMMAND::UPLOAD)
+            {
+                std::cout << "input data : ";
+                std::string data;
+                std::cin >> data;
+                memcpy(sendBuffer, data.c_str(), data.size());
+            }
+            threadPool->EnqueueJob([&]() {clientSocket->packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer); });
         }
         else
         {

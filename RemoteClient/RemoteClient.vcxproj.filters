@@ -42,6 +42,9 @@
     <ClCompile Include="ClientSocket.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="..\ThreadPool\ThreadPool.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -63,6 +66,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ClientSocket.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThreadPool\ThreadPool.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

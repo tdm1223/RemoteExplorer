@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\ThreadPool\ThreadPool.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ClientSocket.cpp" />
     <ClCompile Include="DownloadCommand.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="EchoCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ThreadPool\ThreadPool.h" />
     <ClInclude Include="..\Util\Util.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientSocket.h" />
