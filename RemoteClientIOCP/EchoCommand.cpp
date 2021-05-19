@@ -9,7 +9,7 @@ bool EchoCommand::Execute(SOCKET sock, void* buffer)
 
     char buffers[Util::kBufferSize];
     memset(buffers, 0, Util::kBufferSize);
-    if (!SendCommandWithData(sock, buffers, Util::COMMAND::UPLOAD, fileName))
+    if (!SendCommandWithData(sock, buffers, Util::COMMAND::ECHO, fileName))
     {
         return false;
     }

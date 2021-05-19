@@ -9,7 +9,7 @@ int main()
         while (TRUE)
         {
             int command;
-            std::cout << "1 - UPLOAD" << std::endl;
+            std::cout << "1 - ECHO" << std::endl;
             std::cout << "2 - DOWNLOAD" << std::endl;
             std::cout << "3 - LIST" << std::endl;
             std::cout << "4 - END" << std::endl;

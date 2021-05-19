@@ -9,7 +9,7 @@ public:
     static const int kCommandSize = 4;
     enum COMMAND
     {
-        UPLOAD = 1,
+        ECHO = 1,
         DOWNLOAD = 2,
         LIST = 3,
         END = 4

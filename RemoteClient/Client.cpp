@@ -40,7 +40,7 @@ void Client::Start()
         memset(sendBuffer, 0, sizeof(Util::kBufferSize));
         if (command < clientSocket->packetCommands.size())
         {
-            if (command == Util::COMMAND::DOWNLOAD || command == Util::COMMAND::UPLOAD)
+            if (command == Util::COMMAND::DOWNLOAD || command == Util::COMMAND::ECHO)
             {
                 std::cout << "input data : ";
                 std::string data;
