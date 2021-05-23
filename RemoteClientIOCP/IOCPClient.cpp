@@ -83,7 +83,7 @@ bool IOCPClient::Query(int command)
     char buffer[4096];
     if (command < packetCommands.size())
     {
-        packetCommands.at(command)->Execute(connectSocket_, buffer);
+        packetCommands.at(command)->Execute(connectSocket_, buffer, 0);
         return true;
     }
     else

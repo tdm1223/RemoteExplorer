@@ -142,21 +142,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\RemoteClient\DownloadCommand.cpp" />
     <ClCompile Include="..\RemoteClient\ListCommand.cpp" />
     <ClCompile Include="..\RemoteClient\PacketCommand.cpp" />
     <ClCompile Include="..\Util\NetworkContext.cpp" />
     <ClCompile Include="..\Util\NetworkSession.cpp" />
+    <ClCompile Include="DownloadCommand.cpp" />
     <ClCompile Include="IOCPClient.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EchoCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\RemoteClient\DownloadCommand.h" />
     <ClInclude Include="..\RemoteClient\ListCommand.h" />
     <ClInclude Include="..\RemoteClient\PacketCommand.h" />
     <ClInclude Include="..\Util\NetworkContext.h" />
     <ClInclude Include="..\Util\NetworkSession.h" />
+    <ClInclude Include="DownloadCommand.h" />
     <ClInclude Include="IOCPClient.h" />
     <ClInclude Include="EchoCommand.h" />
   </ItemGroup>

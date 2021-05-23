@@ -1,7 +1,7 @@
 ﻿#include "ListCommand.h"
 #include<mutex>
 
-bool ListCommand::Execute(SOCKET sock, void* buffer)
+bool ListCommand::Execute(SOCKET sock, void* buffer, int length)
 {
     // COMMAND SEND
     memset((char*)buffer, 0, Util::kBufferSize);

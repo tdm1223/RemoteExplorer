@@ -1,15 +1,16 @@
 ﻿#include "EchoCommand.h"
 
-bool EchoCommand::Execute(SOCKET sock, void* buffer)
+bool EchoCommand::Execute(SOCKET sock, void* buffer, int bufferLength)
 {
     // COMMAND SEND
-    std::string fileName;
-    std::cout << "입력 : ";
-    std::cin >> fileName;
+    char echoData[Util::kBufferSize];
+    memset(echoData, 0, Util::kBufferSize);
+    memcpy(echoData, (char*)buffer, bufferLength);
+    std::cout << "echo send data : " << echoData << std::endl;
 
     char buffers[Util::kBufferSize];
     memset(buffers, 0, Util::kBufferSize);
-    if (!SendCommandWithData(sock, buffers, Util::COMMAND::ECHO, fileName))
+    if (!SendCommandWithData(sock, buffers, Util::COMMAND::ECHO, echoData))
     {
         return false;
     }

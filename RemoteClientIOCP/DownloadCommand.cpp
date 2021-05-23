@@ -1,11 +1,12 @@
 ﻿#include "DownloadCommand.h"
 
-bool DownloadCommand::Execute(SOCKET sock, void* buffer)
+bool DownloadCommand::Execute(SOCKET sock, void* buffer, int bufferLength)
 {
     // COMMAND SEND
-    std::string fileName;
-    std::cout << "입력 : ";
-    std::cin >> fileName;
+    char fileName[Util::kMaxFileNameLength];
+    memset(fileName, 0, Util::kMaxFileNameLength);
+    memcpy(fileName, (char*)buffer, bufferLength);
+    std::cout << "filename : " << fileName << std::endl;
 
     char buffers[Util::kBufferSize];
     memset(buffers, 0, Util::kBufferSize);
@@ -24,7 +25,7 @@ bool DownloadCommand::Execute(SOCKET sock, void* buffer)
     if (length > 0)
     {
         FILE* fp;
-        fp = fopen(fileName.c_str(), "wb+");
+        fp = fopen(fileName, "wb+");
         while (1)
         {
             if (!RecvLength(sock, &length))

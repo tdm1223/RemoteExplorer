@@ -38,6 +38,7 @@ void Client::Start()
         std::cin >> command;
 
         memset(sendBuffer, 0, sizeof(Util::kBufferSize));
+        int bufferLength = 0;
         if (command < clientSocket->packetCommands.size())
         {
             if (command == Util::COMMAND::DOWNLOAD || command == Util::COMMAND::ECHO)
@@ -46,8 +47,10 @@ void Client::Start()
                 std::string data;
                 std::cin >> data;
                 memcpy(sendBuffer, data.c_str(), data.size());
+                std::cout << "size : " << data.size() << std::endl;
+                bufferLength = data.size();
             }
-            threadPool->EnqueueJob([&]() {clientSocket->packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer); });
+            threadPool->EnqueueJob([&]() {clientSocket->packetCommands.at(command)->Execute(clientSocket->GetSocket(), sendBuffer, bufferLength); });
         }
         else
         {

@@ -12,7 +12,7 @@ class PacketCommand
 public:
     PacketCommand();
     virtual ~PacketCommand();
-    virtual bool Execute(SOCKET s, void* buffer) = 0;
+    virtual bool Execute(SOCKET s, void* buffer, int length) = 0;
 
     std::string prefix = "ESTSOFT";
     int command = 0;

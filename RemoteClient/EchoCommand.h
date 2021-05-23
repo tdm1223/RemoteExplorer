@@ -5,6 +5,6 @@
 
 class EchoCommand : public PacketCommand
 {
-    bool Execute(SOCKET sock, void* buffer);
+    bool Execute(SOCKET sock, void* buffer, int length);
 };
 #endif
